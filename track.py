@@ -47,6 +47,7 @@ def main(number, place, city, frequency, found_frequency):
                         # Handle possibly weird number format by NCZI gracefully and actually notice anything different from 0.
                         amount = 1
                     if amount > 0:
+                        click.echo(f" * Free places on {line['c_date']} at {aplace['title']} = {amount}.")
                         free[aplace["city"]] += amount
         if any(free.values()):
             click.echo("[*] Found places [*]")
