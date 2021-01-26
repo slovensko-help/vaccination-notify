@@ -1,0 +1,46 @@
+[
+  {
+    "item_code": "ZP",
+    "item_description_ui": "Zdravotnícky pracovník"
+  },
+  {
+    "item_code": "STU",
+    "item_description_ui": "Študent zdravotníckeho lekárskeho a nelekárskeho odboru, ktorý počas štúdia prichádza do kontaktu s pacientom"
+  },
+  {
+    "item_code": "JAN",
+    "item_description_ui": "Zamestnanec obslužnej organizácie, ktorý vykonáva svoju činnosť v nemocnici"
+  },
+  {
+    "item_code": "ZSSZ",
+    "item_description_ui": "Zamestnanec zariadenia sociálnych služieb (napríklad domova sociálnych služieb)"
+  },
+  {
+    "item_code": "TER",
+    "item_description_ui": "Terénny sociálny pracovník"
+  },
+  {
+    "item_code": "CON",
+    "item_description_ui": "Zamestnanec nemocnice, ktorý prichádza do kontaktu s pacientom"
+  },
+  {
+    "item_code": "PARA",
+    "item_description_ui": "Zamestnanec záchrannej zdravotnej služby a dopravnej zdravotnej služby, ktorý prichádza do kontaktu s pacientom"
+  },
+  {
+    "item_code": "MOM",
+    "item_description_ui": "Zamestnanec mobilného odberného miesta, ktorý prichádza do kontaktu s testovanou osobou"
+  },
+  {
+    "item_code": "85UP",
+    "item_description_ui": "Osoba 85+"
+  },
+  {
+    "item_code": "PRIEST",
+    "item_description_ui": "Osoba, ktorá v rámci cirkvi alebo náboženskej spoločnosti registrovanej podľa osobitného predpisu poskytuje duchovnú službu pre pacientov s ochorením COVID-19 v nemocnici alebo pre prijímateľov sociálnych služieb v zariadení sociálnych služieb"
+  },
+  {
+    "item_code": "75UP",
+    "item_description_ui": "Osoba 75+"
+  }
+]
