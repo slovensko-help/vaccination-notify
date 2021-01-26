@@ -46,7 +46,8 @@ def main(number, place, city, frequency, found_frequency):
                     except Exception:
                         # Handle possibly weird number format by NCZI gracefully and actually notice anything different from 0.
                         amount = 1
-                    free[aplace["city"]] += amount
+                    if amount > 0:
+                        free[aplace["city"]] += amount
         if any(free.values()):
             click.echo("[*] Found places [*]")
             msg_body = "Voľné miesta na očkovanie: " + ", ".join(f"{name} ({amount})" for name, amount in free.items() if amount != 0)
