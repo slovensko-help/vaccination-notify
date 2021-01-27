@@ -1,2 +1,4 @@
 .env
 .env.fish
+instance/
+**/*.pyc
