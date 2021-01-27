@@ -9,3 +9,4 @@ flask-redis
 flask-cors
 flask-sqlalchemy
 Flask-Migrate
+Flask-Mail

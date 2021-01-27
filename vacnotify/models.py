@@ -34,6 +34,7 @@ class VaccinationPlace(db.Model):
     street_name = db.Column(db.String(64))
     street_number = db.Column(db.String(64))
     online = db.Column(db.Boolean)
+    free = db.Column(db.Integer)
 
 
 class GroupSubscription(db.Model):

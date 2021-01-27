@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 from flask_redis import FlaskRedis
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
-
+from flask_mail import Mail
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile("config.py", silent=True)
@@ -44,6 +44,9 @@ db = SQLAlchemy(app)
 
 # Migrate
 migrate = Migrate(app, db, directory="vacnotify/migrations")
+
+# Email
+mail = Mail(app)
 
 
 from .views import main
