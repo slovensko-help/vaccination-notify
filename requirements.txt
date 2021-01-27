@@ -2,7 +2,10 @@ requests
 twilio
 click
 celery
+SQLAlchemy
 Flask
 flask-wtf
 flask-redis
 flask-cors
+flask-sqlalchemy
+Flask-Migrate

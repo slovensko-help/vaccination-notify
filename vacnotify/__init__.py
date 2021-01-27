@@ -1,44 +1,51 @@
-import os
-from flask import Flask, render_template, current_app, request
+from flask import Flask
 from celery import Celery, Task
 from flask_cors import CORS
+from flask_migrate import Migrate
 from flask_redis import FlaskRedis
+from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 
 
-def create_app():
-    app = Flask(__name__, instance_relative_config=True)
-    app.config.from_pyfile("config.py", silent=True)
+app = Flask(__name__, instance_relative_config=True)
+app.config.from_pyfile("config.py", silent=True)
 
-    # Celery
-    def make_celery(app):
-        class ContextTask(Task):
-            def __call__(self, *args, **kwargs):
-                with app.app_context():
-                    return self.run(*args, **kwargs)
 
-        celery = Celery(
-            app.import_name,
-            backend=app.config['CELERY_RESULT_BACKEND'],
-            broker=app.config['CELERY_BROKER_URL'],
-            task_cls=ContextTask
-        )
-        celery.conf.update(app.config)
-        return celery
+# Celery
+def make_celery(app):
+    class ContextTask(Task):
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return self.run(*args, **kwargs)
 
-    celery = make_celery(app)
+    celery = Celery(
+        app.import_name,
+        backend=app.config['CELERY_RESULT_BACKEND'],
+        broker=app.config['CELERY_BROKER_URL'],
+        task_cls=ContextTask
+    )
+    celery.conf.update(app.config)
+    return celery
 
-    # Redis
-    rds = FlaskRedis(app)
 
-    # CSRF protection
-    csrf = CSRFProtect(app)
+celery = make_celery(app)
 
-    # CORS (Cross-Origin Resource Sharing)
-    cors = CORS(app, origins="")
+# Redis
+rds = FlaskRedis(app)
 
-    @app.route("/")
-    def index():
-        return render_template("index.html.jinja2")
+# CSRF protection
+csrf = CSRFProtect(app)
 
-    return app
+# CORS (Cross-Origin Resource Sharing)
+cors = CORS(app, origins="")
+
+# DB
+db = SQLAlchemy(app)
+
+# Migrate
+migrate = Migrate(app, db, directory="vacnotify/migrations")
+
+
+from .views import main
+app.register_blueprint(main)
+

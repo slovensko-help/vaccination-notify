@@ -2,3 +2,4 @@
 .env.fish
 instance/
 **/*.pyc
+debug.db

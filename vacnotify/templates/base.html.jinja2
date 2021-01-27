@@ -23,7 +23,7 @@
 <body data-spy="scroll" data-target="#navbar" data-offset="57" class="position-relative">
 <div class="d-flex" id="wrapper">
     <nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light border-bottom fixed-top">
-        <a class="navbar-brand" href="{{ url_for("index") }}">COVID19 Vaccine availability notification</a>
+        <a class="navbar-brand" href="{{ url_for("main.index") }}"><i class="fas fa-virus"></i> COVID19 Vaccine availability notification</a>
         <!--
         <button class="btn btn-secondary" id="menu-toggle">Toggle Menu</button>
 
@@ -64,15 +64,17 @@
         </div>
 
     </nav>
+<!--
     <div class="bg-light border-right" id="sidebar-wrapper">
         {% set active_page = active_page|default('') %}
         <div class="sidebar-heading"><img src="{{ url_for('static', filename='logo.svg') }}" alt="COVID19"/></div>
         <div class="list-group list-group-flush">
-            <a href="{{ url_for('index') }}" class="list-group-item list-group-item-action bg-light {% if active_page == 'index' %}item-active{% endif %}">Index</a>
+            <a href="{{ url_for('main.index') }}" class="list-group-item list-group-item-action bg-light {% if active_page == 'index' %}item-active{% endif %}">Index</a>
         </div>
     </div>
+    -->
     <div id="page-content-wrapper">
-        <div id="content" class="container-fluid">
+        <div id="content" class="container">
             {% block content %}
             {% endblock %}
         </div>
