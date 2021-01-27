@@ -22,13 +22,25 @@ def make_celery(app):
         app.import_name,
         backend=app.config['CELERY_RESULT_BACKEND'],
         broker=app.config['CELERY_BROKER_URL'],
-        task_cls=ContextTask
+        task_cls=ContextTask,
+        timezone="Europe/Bratislava"
     )
     celery.conf.update(app.config)
     return celery
 
 
 celery = make_celery(app)
+
+# DB
+db = SQLAlchemy(app)
+
+from .tasks import run
+
+
+@celery.on_after_configure.connect
+def setup_periodic_tasks(sender, **kwargs):
+    sender.add_periodic_task(60 * 5, run.s(), name="Run the thing!")
+
 
 # Redis
 rds = FlaskRedis(app)
@@ -39,8 +51,7 @@ csrf = CSRFProtect(app)
 # CORS (Cross-Origin Resource Sharing)
 cors = CORS(app, origins="")
 
-# DB
-db = SQLAlchemy(app)
+
 
 # Migrate
 migrate = Migrate(app, db, directory="vacnotify/migrations")

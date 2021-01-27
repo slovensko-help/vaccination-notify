@@ -7,4 +7,6 @@ from vacnotify import mail
 
 @main.route("/")
 def index():
-    return render_template("index.html.jinja2")
+    groups = EligibilityGroup.query.all()
+
+    return render_template("index.html.jinja2", groups=groups)

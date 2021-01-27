@@ -3,3 +3,5 @@
 instance/
 **/*.pyc
 debug.db
+celery.log
+celerybeat-schedule

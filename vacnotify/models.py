@@ -1,5 +1,5 @@
 from enum import Enum, auto
-
+import secrets
 from vacnotify import db
 
 group_db = db.Table("group_map", db.metadata,
@@ -23,6 +23,10 @@ class EligibilityGroup(db.Model):
     item_id = db.Column(db.String(16))
     item_description = db.Column(db.String(256))
 
+    def __init__(self, item_id: str, item_description: str):
+        self.item_id = item_id
+        self.item_description = item_description
+
 
 class VaccinationPlace(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -36,6 +40,17 @@ class VaccinationPlace(db.Model):
     online = db.Column(db.Boolean)
     free = db.Column(db.Integer)
 
+    def __init__(self, nczi_id: int, title: str, longitude: float, latitude: float,
+                 city: str, street_name: str, street_number: str, online: bool):
+        self.nczi_id = nczi_id
+        self.title = title
+        self.longitude = longitude
+        self.latitude = latitude
+        self.city = city
+        self.street_name = street_name
+        self.street_number = street_number
+        self.online = online
+
 
 class GroupSubscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -43,6 +58,12 @@ class GroupSubscription(db.Model):
     secret = db.Column(db.LargeBinary(16))
     status = db.Column(db.Enum(Status))
     known_groups = db.relationship("EligibilityGroup", secondary=group_db)
+
+    def __init__(self, email: str, known_groups):
+        self.email = email
+        self.secret = secrets.token_bytes(16)
+        self.status = Status.UNCONFIRMED
+        self.known_groups = known_groups
 
 
 class SpotSubscription(db.Model):

@@ -4,6 +4,9 @@
     <div class="row">
         <div class="col-sm-6">
             <h1>Notifikácie o COVID19 vakcinácii</h1>
+            {% for group in groups %}
+                {{ group.item_description }}
+            {% endfor %}
         </div>
     </div>
 {% endblock %}
