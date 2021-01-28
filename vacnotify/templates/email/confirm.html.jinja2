@@ -10,7 +10,7 @@
 {% elif type == "spot" %}
     <p>
     Pre odber notifikácii o voľných miestach na očkovanie vo vami vybraných miestach kliknite na link nižšie alebo ho skopírujte
-    do svôjho prehliadača.
+    do svojho prehliadača.
     </p>
     <a href="{{ url_for('main.spot_confirm', secret=secret) }}" target="_blank">{{ url_for('main.spot_confirm', secret=secret) }}</a>
 {% endif %}

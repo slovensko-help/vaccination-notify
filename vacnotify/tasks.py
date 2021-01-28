@@ -1,16 +1,19 @@
 import random
-from datetime import date
-from typing import Set, Mapping
+from binascii import hexlify
 
 import requests
-from celery.utils.log import get_task_logger
-from flask import render_template
 
+from datetime import date, datetime, timedelta
+from typing import Set, Mapping, List
+from celery.utils.log import get_task_logger
+from flask import render_template, current_app
 from flask_mail import Message
+from sqlalchemy import and_, or_, not_
 
 from vacnotify import celery, mail, useragents
 from vacnotify.database import transaction
-from vacnotify.models import EligibilityGroup, VaccinationPlace, VaccinationDay
+from vacnotify.models import EligibilityGroup, VaccinationPlace, VaccinationDay, GroupSubscription, SpotSubscription, \
+    Status
 from operator import attrgetter, itemgetter
 
 logging = get_task_logger(__name__)
@@ -30,7 +33,7 @@ def email_confirmation(email: str, secret: str, subscription_type: str):
 
 
 @celery.task(ignore_result=True)
-def email_notification_group(email: str, secret: str, new_groups: Set[str]):
+def email_notification_group(email: str, secret: str, new_groups: List[str]):
     html = render_template("email/notification_group.html.jinja2", secret=secret, new_groups=new_groups)
     msg = Message("Nová skupina na očkovanie", recipients=[email], html=html)
     mail.send(msg)
@@ -106,6 +109,8 @@ def run():
 
     # Update the free spots in vaccination places.
     current_places = VaccinationPlace.query.all()
+    total_free = 0
+    total_free_online = 0
     for place in current_places:
         free_resp = s.post(QUERY_URL, json={"drivein_id": str(place.nczi_id)})
         if free_resp.status_code != 200:
@@ -128,10 +133,12 @@ def run():
                 day.open = open
                 day.capacity = capacity
                 days.append(day)
-                if capacity > 0:
+                if capacity > 0 and open:
                     free += capacity
             if free:
-                logging.info(f"Found free spots: {free} at {place.title}")
+                total_free += free
+                total_free_online += free if place.online else 0
+                logging.info(f"Found free spots: {free} at {place.title} and they are {'online' if place.online else 'offline'}")
             deleted_days = previous_days - set(days)
             with transaction() as t:
                 if deleted_days:
@@ -139,4 +146,44 @@ def run():
                         t.delete(deleted_day)
                 place.days = days
                 place.free = free
+    logging.info(f"Total free spots (online): {total_free} ({total_free_online})")
 
+    # Send out the group notifications.
+    all_groups = EligibilityGroup.query.all()
+    now = datetime.now()
+    group_backoff_time = timedelta(seconds=current_app.config["GROUP_NOTIFICATION_BACKOFF"])
+    to_notify_groups = set()
+    for group in all_groups:
+        group_notifications = GroupSubscription.query.join(GroupSubscription.known_groups).filter(
+            and_(GroupSubscription.status == Status.CONFIRMED,
+                 not_(EligibilityGroup.id == group.id),
+                 or_(GroupSubscription.last_notification_at.is_(None),
+                     GroupSubscription.last_notification_at < now - group_backoff_time))).all()
+        to_notify_groups.update(group_notifications)
+    for subscription in to_notify_groups:
+        logging.info(f"Sending group notification to {subscription.email}.")
+        new_subscription_groups = set(map(attrgetter("item_description"), set(all_groups) - set(subscription.known_groups)))
+        with transaction():
+            email_notification_group.delay(subscription.email, hexlify(subscription.secret).decode(), list(new_subscription_groups))
+            subscription.last_notification_at = now
+            subscription.known_groups = all_groups
+
+    # Send out the spot notifications.
+    now = datetime.now()
+    spot_backoff_time = timedelta(seconds=current_app.config["SPOT_NOTIFICATION_BACKOFF"])
+    to_notify_spots = SpotSubscription.query.join(SpotSubscription.places).filter(
+        and_(VaccinationPlace.free > 0,
+             VaccinationPlace.online,
+             SpotSubscription.status == Status.CONFIRMED,
+             or_(SpotSubscription.last_notification_at.is_(None),
+                 SpotSubscription.last_notification_at < now - spot_backoff_time))).all()
+    for subscription in to_notify_spots:
+        logging.info(f"Sending spot notification to {subscription.email}.")
+        new_subscription_cities = {}
+        for place in subscription.places:
+            if place.free > 0 and place.online:
+                new_subscription_cities.setdefault(place.city, 0)
+                new_subscription_cities[place.city] += place.free
+        with transaction():
+            email_notification_spot.delay(subscription.email, hexlify(subscription.secret).decode(), new_subscription_cities)
+            subscription.last_notification_at = now

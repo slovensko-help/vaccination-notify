@@ -13,8 +13,9 @@ from vacnotify.tasks import email_confirmation
 def index():
     groups = EligibilityGroup.query.all()
     places = VaccinationPlace.query.all()
+    dates = list(map(attrgetter("date"), places[0].days))
 
-    return render_template("index.html.jinja2", groups=groups, places=places)
+    return render_template("index.html.jinja2", groups=groups, places=places, dates=dates)
 
 
 @main.route("/groups/subscribe", methods=["GET", "POST"])
@@ -31,7 +32,7 @@ def group_subscribe():
                 with transaction() as t:
                     subscription = GroupSubscription(frm.email.data, EligibilityGroup.query.all())
                     t.add(subscription)
-                email_confirmation.delay(subscription.email, hexlify(subscription.secret), "group")
+                email_confirmation.delay(subscription.email, hexlify(subscription.secret).decode(), "group")
                 return render_template("ok.html.jinja2", msg=f"Na email {subscription.email} bol zaslaný potvrdzovací email. Potvrdenie žiadosti o notifikácie kliknutím na link v emaili je potrebné na získavnie notifikacii.")
         else:
             abort(400)
@@ -76,14 +77,14 @@ def spot_subscribe():
             if email_exists:
                 return render_template("error.html.jinja2", error="Na daný email už je nastavená notifikácia.")
             else:
-                selected_cities = filter(lambda x: str(x[0]) in frm.places.data, cities_id)
+                selected_cities = filter(lambda x: x[0] in frm.places.data, cities_id)
                 selected_places = set()
                 for _, selected_city in selected_cities:
                     selected_places.update(filter(lambda place: place.city == selected_city, places))
                 with transaction() as t:
                     subscription = SpotSubscription(frm.email.data, list(selected_places))
                     t.add(subscription)
-                email_confirmation.delay(subscription.email, hexlify(subscription.secret), "spot")
+                email_confirmation.delay(subscription.email, hexlify(subscription.secret).decode(), "spot")
                 return render_template("ok.html.jinja2", msg=f"Na email {subscription.email} bol zaslaný potvrdzovací email. Potvrdenie žiadosti o notifikácie kliknutím na link v emaili je potrebné na získavnie notifikacii.")
         else:
             abort(400)

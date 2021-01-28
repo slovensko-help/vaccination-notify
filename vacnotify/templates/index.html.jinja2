@@ -5,7 +5,7 @@
         <div class="col-sm-10">
             <h1>Notifikácie o COVID19 vakcinácii</h1>
             <p class="lead"><b>Aj vy ste sa dozvedeli o otvorení očkovania pre novú skupinu ľudí z Facebooku ministra
-            zdravotníctva? Už nikdy viac!</b> 🔥</p>
+                zdravotníctva? Už nikdy viac!</b> 🔥</p>
             <!-- Aj vy ste sa dozvedeli o otvorení očkovania novej skupiny ľudí z ministrovho Facebooku. Už nikdy viac! -->
             <p class="lead">Táto stránka poskytuje notifikácie o voľných miestach na očkovanie proti COVID19 a tiež
                 o momente otvorenia očkovacieho formuláru pre nové skupiny obyvateľov. Stránka používa informácie od
@@ -18,7 +18,8 @@
                 <div class="card-body">
                     <h5 class="card-title">Voľné miesta</h5>
                     <!--<h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6> -->
-                    <p class="card-text">Chcem dostávať notifikácie na email o voľných miestach na očkovanie vo vybraných očkovacích miestach.</p>
+                    <p class="card-text">Chcem dostávať notifikácie na email o voľných miestach na očkovanie vo
+                        vybraných očkovacích miestach.</p>
                     <a href="{{ url_for('main.spot_subscribe') }}" class="btn btn-primary">Ďalej</a>
                 </div>
             </div>
@@ -28,7 +29,8 @@
                 <div class="card-body">
                     <h5 class="card-title">Nová skupina</h5>
                     <!-- <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6> -->
-                    <p class="card-text">Chcem dostávať notifikácie na email o otvorení očkovania pre novú skupinu ľudí.</p>
+                    <p class="card-text">Chcem dostávať notifikácie na email o otvorení očkovania pre novú skupinu
+                        ľudí.</p>
                     <a href="{{ url_for('main.group_subscribe') }}" class="btn btn-primary">Ďalej</a>
                 </div>
             </div>
@@ -46,14 +48,25 @@
     </div>
     <div class="row mb-3">
         <div class="col-sm-10">
-            <h2><i class="fas fa-map-marker fa-fw"></i> Momentálne otvorené očkovacie miesta</h2>
-            <ul>
+            <h2><i class="fas fa-map-marker fa-fw"></i> Momentálne voľné očkovacie miesta</h2>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Očkovacie miesto</th>
+                    {% for date in dates %}
+                        <th scope="col">{{ date.strftime("%d.%m.") }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
                 {% for place in places %}
-                    {% if place.online %}
-                    <li>{{ place.title }}</li>
-                    {% endif %}
+                    <tr>
+                        <td><b>{{ place.title }}</b></td>
+                        {% for day in place.days %}
+                            <td class="{{ 'table-success' if place.online and day.capacity > 0 else 'table-danger' }}">{{ day.capacity }}</td>
+                        {% endfor %}
+                    </tr>
                 {% endfor %}
-            </ul>
+            </table>
         </div>
     </div>
 {% endblock %}

@@ -75,6 +75,7 @@ class GroupSubscription(db.Model):
     secret = db.Column(db.LargeBinary(16))
     status = db.Column(db.Enum(Status))
     known_groups = db.relationship("EligibilityGroup", secondary=group_db)
+    last_notification_at = db.Column(db.DateTime)
 
     def __init__(self, email: str, known_groups):
         self.email = email
@@ -89,6 +90,7 @@ class SpotSubscription(db.Model):
     secret = db.Column(db.LargeBinary(16))
     status = db.Column(db.Enum(Status))
     places = db.relationship("VaccinationPlace", secondary=place_db)
+    last_notification_at = db.Column(db.DateTime)
 
     def __init__(self, email: str, tracked_places):
         self.email = email
