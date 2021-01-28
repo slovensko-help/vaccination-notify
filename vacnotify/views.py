@@ -71,7 +71,7 @@ def spot_subscribe():
     places = VaccinationPlace.query.all()
     dates = list(map(attrgetter("date"), places[0].days))
     cities = set(map(attrgetter("city"), places))
-    cities_id = list(enumerate(sorted(cities)))
+    cities_id = list(map(lambda city: (hash(city), city), sorted(cities)))
     frm.places.choices = cities_id
     if request.method == "GET" or not frm.validate_on_submit():
         return render_template("subscribe_spot.jinja2", form=frm, places=places, dates=dates)
