@@ -1,0 +1,40 @@
+{% macro groups_row(groups) %}
+    <div class="row mb-3">
+        <div class="col-sm-10">
+            <h2><i class="fas fa-user fa-fw"></i> Momentálne otvorené skupiny na očkovanie</h2>
+            <ul>
+                {% for group in groups %}
+                    <li>{{ group.item_description }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro places_row(places, dates) %}
+    <div class="row mb-3">
+        <div class="col-sm-10">
+            <h2><i class="fas fa-map-marker fa-fw"></i> Momentálne voľné očkovacie miesta</h2>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Očkovacie miesto</th>
+                    {% for date in dates %}
+                        <th scope="col">{{ date.strftime("%d.%m.") }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                {% for place in places %}
+                    <tr>
+                        <td><b>{{ place.title }}{% if not place.online %}
+                            <i class="fas fa-exclamation-triangle" title="Očkovacie miesto nieje dostupné."
+                               data-toggle="tooltip"></i>{% endif %}</b></td>
+                        {% for day in place.days %}
+                            <td class="{{ 'table-success' if place.online and day.capacity > 0 and day.open else 'table-danger' }}">{{ day.capacity }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% endmacro %}

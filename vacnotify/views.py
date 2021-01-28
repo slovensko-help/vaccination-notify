@@ -4,7 +4,8 @@ from operator import attrgetter
 from flask import render_template, request, abort
 from vacnotify.blueprint import main
 from vacnotify.database import transaction
-from vacnotify.models import EligibilityGroup, VaccinationPlace, GroupSubscription, Status, SpotSubscription
+from vacnotify.models import EligibilityGroup, VaccinationPlace, GroupSubscription, Status, SpotSubscription, \
+    VaccinationStats
 from vacnotify.forms import GroupSubscriptionForm, SpotSubscriptionForm
 from vacnotify.tasks import email_confirmation
 
@@ -15,7 +16,9 @@ def index():
     places = VaccinationPlace.query.all()
     dates = list(map(attrgetter("date"), places[0].days))
 
-    return render_template("index.html.jinja2", groups=groups, places=places, dates=dates)
+    current_stats = VaccinationStats.query.order_by(VaccinationStats.id.desc()).first()
+
+    return render_template("index.html.jinja2", groups=groups, places=places, dates=dates, current_stats=current_stats)
 
 
 @main.route("/groups/subscribe", methods=["GET", "POST"])
@@ -66,11 +69,12 @@ def group_confirm(secret):
 def spot_subscribe():
     frm = SpotSubscriptionForm()
     places = VaccinationPlace.query.all()
+    dates = list(map(attrgetter("date"), places[0].days))
     cities = set(map(attrgetter("city"), places))
     cities_id = list(enumerate(sorted(cities)))
     frm.places.choices = cities_id
     if request.method == "GET" or not frm.validate_on_submit():
-        return render_template("subscribe_spot.jinja2", form=frm, places=places)
+        return render_template("subscribe_spot.jinja2", form=frm, places=places, dates=dates)
     else:
         if frm.validate_on_submit():
             email_exists = SpotSubscription.query.filter_by(email=frm.email.data).first() is not None

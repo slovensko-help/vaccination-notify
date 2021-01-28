@@ -13,7 +13,7 @@ from sqlalchemy import and_, or_, not_
 from vacnotify import celery, mail, useragents
 from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, VaccinationDay, GroupSubscription, SpotSubscription, \
-    Status
+    Status, VaccinationStats
 from operator import attrgetter, itemgetter
 
 logging = get_task_logger(__name__)
@@ -147,6 +147,16 @@ def run():
                 place.days = days
                 place.free = free
     logging.info(f"Total free spots (online): {total_free} ({total_free_online})")
+    total_places = len(current_places)
+    online_places = len(list(filter(attrgetter("online"), current_places)))
+    logging.info(f"Total places (online): {total_places} ({online_places})")
+
+    # Add stats
+    now = datetime.now()
+    with transaction() as t:
+        stats = VaccinationStats(now, total_free_spots=total_free, total_free_online_spots=total_free_online,
+                                 total_places=total_places, online_places=online_places)
+        t.add(stats)
 
     # Send out the group notifications.
     all_groups = EligibilityGroup.query.all()

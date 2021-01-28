@@ -97,3 +97,19 @@ class SpotSubscription(db.Model):
         self.secret = secrets.token_bytes(16)
         self.status = Status.UNCONFIRMED
         self.places = tracked_places
+
+
+class VaccinationStats(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    datetime = db.Column(db.DateTime)
+    total_free_spots = db.Column(db.Integer)
+    total_free_online_spots = db.Column(db.Integer)
+    online_places = db.Column(db.Integer)
+    total_places = db.Column(db.Integer)
+
+    def __init__(self, datetime, total_free_spots: int, total_free_online_spots: int, online_places: int, total_places: int):
+        self.datetime = datetime
+        self.total_free_spots = total_free_spots
+        self.total_free_online_spots = total_free_online_spots
+        self.online_places = online_places
+        self.total_places = total_places

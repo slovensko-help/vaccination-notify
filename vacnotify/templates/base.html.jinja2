@@ -6,7 +6,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <meta name="application-name" content="COVID19-vaccine-availability"/>
-        {% block title %}<title>{{ title|default("COVID19 Vaccine availability notification") }}</title>{% endblock %}
+        {% block title %}<title>{{ title|default("Notifikácie o COVID-19 vakcinácii") }}</title>{% endblock %}
         <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}"/>
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome.min.css') }}">
@@ -23,7 +23,7 @@
 <body data-spy="scroll" data-target="#navbar" data-offset="57" class="position-relative">
 <div class="d-flex" id="wrapper">
     <nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light border-bottom fixed-top">
-        <a class="navbar-brand" href="{{ url_for("main.index") }}"><i class="fas fa-virus"></i> COVID19 Vaccine availability notification</a>
+        <a class="navbar-brand" href="{{ url_for("main.index") }}"><i class="fas fa-virus"></i> Notifikácie o COVID-19 vakcinácii</a>
         <!--
         <button class="btn btn-secondary" id="menu-toggle">Toggle Menu</button>
 
@@ -89,6 +89,7 @@
         $('[data-toggle="tooltip"]').tooltip()
     });
 </script>
+<footer></footer>
 </body>
 
 </html>
