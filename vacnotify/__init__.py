@@ -10,6 +10,8 @@ from flask_mail import Mail
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile("config.py", silent=True)
 
+# DB
+db = SQLAlchemy(app)
 
 # Celery
 def make_celery(app):
@@ -31,17 +33,6 @@ def make_celery(app):
 
 celery = make_celery(app)
 
-# DB
-db = SQLAlchemy(app)
-
-from .tasks import run
-
-
-@celery.on_after_configure.connect
-def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(60 * 5, run.s(), name="Run the thing!")
-
-
 # Redis
 rds = FlaskRedis(app)
 
@@ -51,13 +42,18 @@ csrf = CSRFProtect(app)
 # CORS (Cross-Origin Resource Sharing)
 cors = CORS(app, origins="")
 
-
-
 # Migrate
 migrate = Migrate(app, db, directory="vacnotify/migrations")
 
 # Email
 mail = Mail(app)
+
+from .tasks import run
+
+
+@celery.on_after_configure.connect
+def setup_periodic_tasks(sender, **kwargs):
+    sender.add_periodic_task(60 * 5, run.s(), name="Query the state!")
 
 
 from .views import main

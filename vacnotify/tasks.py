@@ -1,8 +1,15 @@
+from typing import Set
+
 import requests
 from celery.utils.log import get_task_logger
-from vacnotify import celery
+from flask import render_template
+from binascii import hexlify
+
+from flask_mail import Message
+
+from vacnotify import celery, mail
 from vacnotify.database import transaction
-from vacnotify.models import EligibilityGroup, VaccinationPlace
+from vacnotify.models import EligibilityGroup, VaccinationPlace, GroupSubscription, SpotSubscription
 from operator import attrgetter, itemgetter
 
 logging = get_task_logger(__name__)
@@ -10,6 +17,17 @@ logging = get_task_logger(__name__)
 GROUPS_URL = "https://mojeezdravie.nczisk.sk/api/v1/web/get_vaccination_groups"
 PLACES_URL = "https://mojeezdravie.nczisk.sk/api/v1/web/get_driveins_vacc"
 QUERY_URL = "https://mojeezdravie.nczisk.sk/api/v1/web/validate_drivein_times_vacc"
+
+
+@celery.task(ignore_result=True)
+def email_confirmation(email, subscription_type):
+    if subscription_type not in ("group", "spot"):
+        raise ValueError
+    subscription_class = GroupSubscription if subscription_type == "group" else SpotSubscription
+    subscription = subscription_class.query.filter_by(email=email).first()
+    html = render_template("email/confirm.html.jinja2", secret=hexlify(subscription.secret), type=subscription_type)
+    msg = Message("Potvrdenie odberu notifikácii", recipients=[email], html=html)
+    mail.send(msg)
 
 
 @celery.task(ignore_result=True)
@@ -41,29 +59,30 @@ def run():
     else:
         places_payload = places_resp.json()["payload"]
         current_places = VaccinationPlace.query.all()
-        place_ids = set(map(itemgetter("id"), places_payload))
-        current_place_nczi_ids = set(map(attrgetter("nczi_id"), current_places))
+        place_ids: Set[str] = set(map(itemgetter("id"), places_payload))
+        current_place_nczi_ids: Set[int] = set(map(attrgetter("nczi_id"), current_places))
         # Update places to online.
-        online_places = filter(lambda place: place.nczi_id in place_ids, current_places)
+        online_places = filter(lambda place: str(place.nczi_id) in place_ids, current_places)
         with transaction():
             for online_place in online_places:
                 online_place.online = True
 
         # Add new places.
-        new_places = filter(lambda place: place["id"] not in current_place_nczi_ids, places_payload)
+        new_places = filter(lambda place: int(place["id"]) not in current_place_nczi_ids, places_payload)
         if new_places:
             logging.info("Found new places")
             with transaction() as t:
                 for new_place in new_places:
-                    place = VaccinationPlace(new_place["id"], new_place["title"], float(new_place["longitude"]),
+                    place = VaccinationPlace(int(new_place["id"]), new_place["title"], float(new_place["longitude"]),
                                              float(new_place["latitude"]), new_place["city"], new_place["street_name"],
-                                             new_place["street_number"], True)
+                                             new_place["street_number"], True, 0)
                     t.add(place)
         else:
             logging.info("No new places")
 
         # Set places to offline.
-        offline_places = filter(lambda place: place.nczi_id not in place_ids, current_places)
+        offline_places = filter(lambda place: str(place.nczi_id) not in place_ids, current_places)
+        # TODO: This is logging always, that is weird, figure it out...
         if offline_places:
             logging.info("Found some places that are now offline")
             with transaction():
@@ -75,7 +94,7 @@ def run():
     # Update the free spots in vaccination places.
     current_places = VaccinationPlace.query.all()
     for place in current_places:
-        free_resp = s.get(QUERY_URL, json={"drivein_id": str(place.nczi_id)})
+        free_resp = s.post(QUERY_URL, json={"drivein_id": str(place.nczi_id)})
         if free_resp.status_code != 200:
             logging.error(f"Couldn't get free spots -> {free_resp.status_code}")
         else:

@@ -41,7 +41,7 @@ class VaccinationPlace(db.Model):
     free = db.Column(db.Integer)
 
     def __init__(self, nczi_id: int, title: str, longitude: float, latitude: float,
-                 city: str, street_name: str, street_number: str, online: bool):
+                 city: str, street_name: str, street_number: str, online: bool, free: int):
         self.nczi_id = nczi_id
         self.title = title
         self.longitude = longitude
@@ -50,6 +50,7 @@ class VaccinationPlace(db.Model):
         self.street_name = street_name
         self.street_number = street_number
         self.online = online
+        self.free = free
 
 
 class GroupSubscription(db.Model):
@@ -72,3 +73,9 @@ class SpotSubscription(db.Model):
     secret = db.Column(db.LargeBinary(16))
     status = db.Column(db.Enum(Status))
     places = db.relationship("VaccinationPlace", secondary=place_db)
+
+    def __init__(self, email: str, tracked_places):
+        self.email = email
+        self.secret = secrets.token_bytes(16)
+        self.status = Status.UNCONFIRMED
+        self.places = tracked_places

@@ -1,0 +1,19 @@
+<html>
+<body>
+
+{% if type == "group" %}
+    <p>
+    Pre odber notifikácii o otvorení očkovania pre nové skupiny kliknite na link nižšie alebo ho skopírujte
+    do svôjho prehliadača.
+    </p>
+    <a href="{{ url_for('main.group_confirm', secret=secret) }}" target="_blank">{{ url_for('main.group_confirm', secret=secret) }}</a>
+{% elif type == "spot" %}
+    <p>
+    Pre odber notifikácii o voľných miestach na očkovanie vo vami vybraných miestach kliknite na link nižšie alebo ho skopírujte
+    do svôjho prehliadača.
+    </p>
+    <a href="{{ url_for('main.spot_confirm', secret=secret) }}" target="_blank">{{ url_for('main.spot_confirm', secret=secret) }}</a>
+{% endif %}
+
+</body>
+</html>

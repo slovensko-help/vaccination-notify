@@ -1,0 +1,11 @@
+{% extends "base.html.jinja2" %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-10">
+            <h1><i class="fas fa-exclamation-triangle"></i> Chyba</h1>
+            <p class="lead">
+                {{ error }}
+            </p>
+        </div>
+    </div>
+{% endblock %}

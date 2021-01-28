@@ -1,0 +1,36 @@
+{% extends "base.html.jinja2" %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-10">
+            <h1>Notifikácie o novej skupine</h1>
+            <p class="lead">
+                Chcem dostávať notifikácie na email o otvorení očkovania pre novú skupinu ľudí.
+            </p>
+        </div>
+    </div>
+    <div class="row mt-2 mb-5">
+        <div class="col-sm-10">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <form action="{{ url_for('main.group_subscribe') }}" method="post">
+                        {{ form.csrf_token }}
+
+                        <h4>Email</h4>
+                        {{ form.email() }}
+                        <input type="submit" class="btn btn-primary" value="Odoslať"/>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-sm-10">
+            <h2><i class="fas fa-user fa-fw"></i> Momentálne otvorené skupiny na očkovanie</h2>
+            <ul>
+                {% for group in groups %}
+                    <li>{{ group.item_description }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}
