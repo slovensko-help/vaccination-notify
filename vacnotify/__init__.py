@@ -70,3 +70,8 @@ app.register_blueprint(main)
 def errorhandler(error):
     return render_template("error.html.jinja2", error="Stránka neexistuje.")
 
+
+@app.errorhandler(Exception)
+def errorhandler_exc(error):
+    return render_template("error.html.jinja2", error="Chyba servera, pravdepodobne som niečo pokazil. Skúste znova.")
+

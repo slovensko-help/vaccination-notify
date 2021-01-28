@@ -162,21 +162,18 @@ def run():
     all_groups = EligibilityGroup.query.all()
     now = datetime.now()
     group_backoff_time = timedelta(seconds=current_app.config["GROUP_NOTIFICATION_BACKOFF"])
-    to_notify_groups = set()
-    for group in all_groups:
-        group_notifications = GroupSubscription.query.join(GroupSubscription.known_groups).filter(
-            and_(GroupSubscription.status == Status.CONFIRMED,
-                 not_(EligibilityGroup.id == group.id),
-                 or_(GroupSubscription.last_notification_at.is_(None),
-                     GroupSubscription.last_notification_at < now - group_backoff_time))).all()
-        to_notify_groups.update(group_notifications)
-    for subscription in to_notify_groups:
-        logging.info(f"Sending group notification to {subscription.email}.")
+    # XXX: This is lame but will work...
+    all_group_subscriptions = GroupSubscription.query.filter(and_(GroupSubscription.status == Status.CONFIRMED,
+                                                                  or_(GroupSubscription.last_notification_at.is_(None),
+                                                                      GroupSubscription.last_notification_at < now - group_backoff_time))).all()
+    for subscription in all_group_subscriptions:
         new_subscription_groups = set(map(attrgetter("item_description"), set(all_groups) - set(subscription.known_groups)))
-        with transaction():
-            email_notification_group.delay(subscription.email, hexlify(subscription.secret).decode(), list(new_subscription_groups))
-            subscription.last_notification_at = now
-            subscription.known_groups = all_groups
+        if new_subscription_groups:
+            logging.info(f"Sending group notification to {subscription.email}.")
+            with transaction():
+                email_notification_group.delay(subscription.email, hexlify(subscription.secret).decode(), list(new_subscription_groups))
+                subscription.last_notification_at = now
+                subscription.known_groups = all_groups
 
     # Send out the spot notifications.
     now = datetime.now()
