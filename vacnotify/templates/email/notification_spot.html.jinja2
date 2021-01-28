@@ -1,0 +1,17 @@
+<html>
+<body>
+
+<p>
+    Vo <a href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" target="_blank">formulári na registráciu na
+    očkovanie</a> pribudli nové voľné miesta na očkovanie v nasledujúcich mestách a počtoch:
+</p>
+<ul>
+    {% for city, free in cities_free.items() %}
+        <li><b>{{ city }}</b>: {{ free }}</li>
+    {% endfor %}
+</ul>
+
+<p>Ak už nechcete dostávať notifikačné emaily, kliknite na link nižšie alebo ho skopírujte do svôjho webovéhoo prehliadača.</p>
+<a href="{{ url_for('main.spot_unsubscribe', secret=secret) }}" target="_blank">{{ url_for('main.spot_unsubscribe', secret=secret) }}</a>
+</body>
+</html>

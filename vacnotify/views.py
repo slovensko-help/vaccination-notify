@@ -1,4 +1,4 @@
-from binascii import unhexlify
+from binascii import unhexlify, hexlify
 from operator import attrgetter
 
 from flask import render_template, request, abort
@@ -31,10 +31,22 @@ def group_subscribe():
                 with transaction() as t:
                     subscription = GroupSubscription(frm.email.data, EligibilityGroup.query.all())
                     t.add(subscription)
-                email_confirmation.delay(subscription.email, "group")
+                email_confirmation.delay(subscription.email, hexlify(subscription.secret), "group")
                 return render_template("ok.html.jinja2", msg=f"Na email {subscription.email} bol zaslaný potvrdzovací email. Potvrdenie žiadosti o notifikácie kliknutím na link v emaili je potrebné na získavnie notifikacii.")
         else:
             abort(400)
+
+
+@main.route("/groups/unsubscribe/<string(length=32):secret>")
+def group_unsubscribe(secret):
+    try:
+        secret_bytes = unhexlify(secret)
+    except Exception:
+        abort(404)
+    subscription = GroupSubscription.query.filter_by(secret=secret_bytes).first_or_404()
+    with transaction() as t:
+        t.delete(subscription)
+    return render_template("ok.html.jinja2", msg="Odber notifikácii bol úspešne zrušený.")
 
 
 @main.route("/groups/confirm/<string(length=32):secret>")
@@ -71,10 +83,22 @@ def spot_subscribe():
                 with transaction() as t:
                     subscription = SpotSubscription(frm.email.data, list(selected_places))
                     t.add(subscription)
-                email_confirmation.delay(subscription.email, "spot")
+                email_confirmation.delay(subscription.email, hexlify(subscription.secret), "spot")
                 return render_template("ok.html.jinja2", msg=f"Na email {subscription.email} bol zaslaný potvrdzovací email. Potvrdenie žiadosti o notifikácie kliknutím na link v emaili je potrebné na získavnie notifikacii.")
         else:
             abort(400)
+
+
+@main.route("/spots/unsubscribe/<string(length=32):secret>")
+def spot_unsubscribe(secret):
+    try:
+        secret_bytes = unhexlify(secret)
+    except Exception:
+        abort(404)
+    subscription = SpotSubscription.query.filter_by(secret=secret_bytes).first_or_404()
+    with transaction() as t:
+        t.delete(subscription)
+    return render_template("ok.html.jinja2", msg="Odber notifikácii bol úspešne zrušený.")
 
 
 @main.route("/spots/confirm/<string(length=32):secret>")

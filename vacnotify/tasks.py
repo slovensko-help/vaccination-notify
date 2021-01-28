@@ -1,4 +1,4 @@
-from typing import Set
+from typing import Set, Mapping
 
 import requests
 from celery.utils.log import get_task_logger
@@ -20,13 +20,25 @@ QUERY_URL = "https://mojeezdravie.nczisk.sk/api/v1/web/validate_drivein_times_va
 
 
 @celery.task(ignore_result=True)
-def email_confirmation(email, subscription_type):
+def email_confirmation(email: str, secret: str, subscription_type: str):
     if subscription_type not in ("group", "spot"):
         raise ValueError
-    subscription_class = GroupSubscription if subscription_type == "group" else SpotSubscription
-    subscription = subscription_class.query.filter_by(email=email).first()
-    html = render_template("email/confirm.html.jinja2", secret=hexlify(subscription.secret), type=subscription_type)
+    html = render_template("email/confirm.html.jinja2", secret=secret, type=subscription_type)
     msg = Message("Potvrdenie odberu notifikácii", recipients=[email], html=html)
+    mail.send(msg)
+
+
+@celery.task(ignore_result=True)
+def email_notification_group(email: str, secret: str, new_groups: Set[str]):
+    html = render_template("email/notification_group.html.jinja2", secret=secret, new_groups=new_groups)
+    msg = Message("Nová skupina na očkovanie", recipients=[email], html=html)
+    mail.send(msg)
+
+
+@celery.task(ignore_result=True)
+def email_notification_spot(email: str, secret: str, cities_free: Mapping[str: int]):
+    html = render_template("email/notification_spot.html.jinja2", secret=secret, cities_free=cities_free)
+    msg = Message("Voľné miesta na očkovanie", recipients=[email], html=html)
     mail.send(msg)
 
 
