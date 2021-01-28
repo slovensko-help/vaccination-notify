@@ -18,6 +18,21 @@ class Status(Enum):
     CONFIRMED = auto()
 
 
+class VaccinationDay(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date)
+    open = db.Column(db.Boolean)
+    capacity = db.Column(db.Integer)
+    place_id = db.Column(db.Integer, db.ForeignKey("vaccination_place.id"), nullable=False)
+    # <- place (dynamic backref)
+
+    def __init__(self, date, open: bool, capacity: int, place):
+        self.date = date
+        self.open = open
+        self.capacity = capacity
+        self.place = place
+
+
 class EligibilityGroup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.String(16))
@@ -39,6 +54,7 @@ class VaccinationPlace(db.Model):
     street_number = db.Column(db.String(64))
     online = db.Column(db.Boolean)
     free = db.Column(db.Integer)
+    days = db.relationship("VaccinationDay", backref="place", lazy=True)
 
     def __init__(self, nczi_id: int, title: str, longitude: float, latitude: float,
                  city: str, street_name: str, street_number: str, online: bool, free: int):

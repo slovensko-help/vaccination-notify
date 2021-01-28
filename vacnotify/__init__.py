@@ -1,4 +1,6 @@
-from flask import Flask
+import json
+
+from flask import Flask, render_template
 from celery import Celery, Task
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -10,8 +12,12 @@ from flask_mail import Mail
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile("config.py", silent=True)
 
+with app.open_resource("useragents.json") as f:
+    useragents = json.load(f)
+
 # DB
 db = SQLAlchemy(app)
+
 
 # Celery
 def make_celery(app):
@@ -24,10 +30,10 @@ def make_celery(app):
         app.import_name,
         backend=app.config['CELERY_RESULT_BACKEND'],
         broker=app.config['CELERY_BROKER_URL'],
+        result_backend=app.config['CELERY_RESULT_BACKEND'],
         task_cls=ContextTask,
         timezone="Europe/Bratislava"
     )
-    celery.conf.update(app.config)
     return celery
 
 
@@ -53,9 +59,14 @@ from .tasks import run
 
 @celery.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(60 * 5, run.s(), name="Query the state!")
+    sender.add_periodic_task(60, run.s(), name="Query the state!")
 
 
 from .views import main
 app.register_blueprint(main)
+
+
+@app.errorhandler(404)
+def errorhandler(error):
+    return render_template("error.html.jinja2", error="Stránka neexistuje.")
 
