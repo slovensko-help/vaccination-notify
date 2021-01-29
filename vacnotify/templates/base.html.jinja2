@@ -13,6 +13,7 @@
         <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&display=swap"
               rel="stylesheet">
         <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+        <script type="text/javascript" src="{{ url_for('static', filename='mail.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='jquery.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='d3.min.js') }}"></script>
@@ -25,14 +26,6 @@
 <div class="d-flex align-items-center" id="wrapper">
     <nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light border-bottom fixed-top">
         <a class="navbar-brand" href="{{ url_for("main.index") }}"><i class="fas fa-virus"></i> Notifikácie o COVID-19 vakcinácii</a>
-        <!--
-        <button class="btn btn-secondary" id="menu-toggle">Toggle Menu</button>
-
-        <button class="navbar-toggler" type="button" data-toggle="collapse"
-                data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-            -->
         </button>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -65,15 +58,6 @@
         </div>
 
     </nav>
-<!--
-    <div class="bg-light border-right" id="sidebar-wrapper">
-        {% set active_page = active_page|default('') %}
-        <div class="sidebar-heading"><img src="{{ url_for('static', filename='logo.svg') }}" alt="COVID19"/></div>
-        <div class="list-group list-group-flush">
-            <a href="{{ url_for('main.index') }}" class="list-group-item list-group-item-action bg-light {% if active_page == 'index' %}item-active{% endif %}">Index</a>
-        </div>
-    </div>
-    -->
     <div id="page-content-wrapper">
         <div id="content" class="container">
             {% block content %}
@@ -92,10 +76,16 @@
 </script>
 <footer>
     <div class="container">
-        <div class="row mb-5 mb-5">
+        <div class="row mt-5 mb-5">
             <div class="col-sm-10 position-relative">
-                <div class="position-absolute start-50 translate-middle">
-                    <a href="mailto:johny@neuromancer.sk" class="text-decoration-none"><i class="fas fa-envelope"></i> johny@neuromancer.sk</a>
+                <div class="position-absolute start-50 translate-middle text-center">
+                    <a data-rot13="wbual@arhebznapre.fx" class="mail-href text-decoration-none"><i class="fas fa-envelope"></i> johny@neuromancer.sk</a> |
+                    <a href="https://github.com/slovensko-help/vaccination-notify" class="text-decoration-none"><i class="fab fa-github"></i> GitHub</a> |
+                    <a href="https://neuromancer.sk" class="text-decoration-none"><i class="far fa-copyright"></i> 2021 Ján Jančár</a>
+                    <br/>
+                    <p class="text-muted">Problémy so službou hláste na
+                        <a href="https://github.com/slovensko-help/vaccination-notify/issues/new/choose" target="_blank" class="text-decoration-none">linku</a>
+                    alebo na <a data-rot13="wbual@arhebznapre.fx" class="mail-href text-decoration-none">emaili</a>.</p>
                 </div>
             </div>
         </div>

@@ -1,6 +1,5 @@
 {% extends "base.html.jinja2" %}
 {% from "utils.html.jinja2" import groups_row, places_row %}
-{% set active_page = "index" %}
 {% block content %}
     <div class="row">
         <div class="col-sm-10">
@@ -54,10 +53,10 @@
                 </div>
                 <div class="col-sm-10 mt-3">
                     <p>
-                        Očkovací termín je voľný ak očkovacie miesto hlási v daný deň kapacitu a nieje v daný deň zatvorené.
-                        Očkovací termín je navyše aj dostupný, ak je možné sa nanho zaregistrovať vo formulári NCZI a teda
+                        Očkovací termín je voľný, ak očkovacie miesto hlási v daný deň kapacitu a nieje v daný deň zatvorené.
+                        Očkovací termín je navyše aj dostupný, ak je možné sa naňho zaregistrovať vo formulári NCZI a teda
                         keď je očkovacie miesto dostupné. Očkovacie miesta bývajú nedostupné (a vtedy niesu ani viditeľné a
-                        na výber fo formulári NCZI) keď sa aktualizujú ich počty dostupných vakcín, čo býva často v noci.
+                        na výber fo formulári NCZI), keď sa aktualizujú ich počty dostupných vakcín, čo býva často v noci.
                         Dáta sa aktualizujú každých 5 minút.
                     </p>
                 </div>
