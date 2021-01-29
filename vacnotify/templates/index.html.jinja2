@@ -19,7 +19,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Voľné miesta</h5>
                     <!--<h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6> -->
-                    <p class="card-text">Chcem dostávať notifikácie na email o voľných miestach na očkovanie vo
+                    <p class="card-text">Chcem dostávať notifikácie na email o voľných termínoch na očkovanie vo
                         vybraných očkovacích miestach.</p>
                     <a href="{{ url_for('main.spot_subscribe') }}" class="btn btn-primary">Ďalej</a>
                 </div>
@@ -43,8 +43,8 @@
                 <h2><i class="fas fa-chart-line fa-fw"></i> Štatistiky</h2>
             </div>
             <div class="col-sm-5">
-                <b>Voľných (dostupný) očkovacích miest</b>: {{ current_stats.total_free_online_spots }} <i class="fas fa-syringe"></i><br/>
-                <b>Voľnych očkovacích miest</b>: {{ current_stats.total_free_spots }} <i class="fas fa-syringe"></i><br/>
+                <b>Voľných (dostupný) očkovacích termínov</b>: {{ current_stats.total_free_online_spots }} <i class="fas fa-syringe"></i><br/>
+                <b>Voľnych očkovacích termínov</b>: {{ current_stats.total_free_spots }} <i class="fas fa-syringe"></i><br/>
                 <b>Posledná aktualizácia o</b>: {{ current_stats.datetime.strftime("%d.%m.%Y %H:%M") }}
             </div>
             <div class="col-sm-5">
