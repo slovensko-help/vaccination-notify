@@ -69,8 +69,13 @@ app.register_blueprint(main)
 
 
 @app.errorhandler(404)
-def errorhandler(error):
+def errorhandler_notfound(error):
     return render_template("error.html.jinja2", error="Stránka neexistuje.")
+
+
+@app.errorhandler(403)
+def errorhandler_hcaptcha(error):
+    return render_template("error.html.jinja2", error="Prístup zamietnutý.")
 
 
 @app.errorhandler(Exception)

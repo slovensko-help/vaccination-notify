@@ -66,7 +66,7 @@
                 <div class="col-sm-10 mt-2">
                     <div id="stats"></div>
                 </div>
-                <script>
+                <script type="text/javascript">
                     let stats = JSON.parse('{{ stats | tojson }}');
                     stats = stats.map(function (d) {return {...d, datetime: Date.parse(d.datetime)}});
                     let width = 600;

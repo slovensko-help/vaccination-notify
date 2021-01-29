@@ -9,6 +9,7 @@ from vacnotify.models import EligibilityGroup, VaccinationPlace, GroupSubscripti
     VaccinationStats
 from vacnotify.forms import GroupSubscriptionForm, SpotSubscriptionForm
 from vacnotify.tasks import email_confirmation
+from vacnotify.utils import hcaptcha_required
 
 
 @main.route("/")
@@ -24,6 +25,7 @@ def index():
 
 
 @main.route("/groups/subscribe", methods=["GET", "POST"])
+@hcaptcha_required
 def group_subscribe():
     frm = GroupSubscriptionForm()
     if request.method == "GET" or not frm.validate_on_submit():
@@ -68,6 +70,7 @@ def group_confirm(secret):
 
 
 @main.route("/spots/subscribe", methods=["GET", "POST"])
+@hcaptcha_required
 def spot_subscribe():
     frm = SpotSubscriptionForm()
     places = VaccinationPlace.query.order_by(VaccinationPlace.city).all()
