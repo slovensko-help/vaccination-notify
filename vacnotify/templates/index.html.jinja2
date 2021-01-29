@@ -37,20 +37,236 @@
             </div>
         </div>
     </div>
-    {% if current_stats %}
+    {% if current_stats or stats %}
         <div class="row mb-5">
             <div class="col-sm-10">
                 <h2><i class="fas fa-chart-line fa-fw"></i> Štatistiky</h2>
             </div>
-            <div class="col-sm-5">
-                <b>Voľných (dostupný) očkovacích termínov</b>: {{ current_stats.total_free_online_spots }} <i class="fas fa-syringe"></i><br/>
-                <b>Voľnych očkovacích termínov</b>: {{ current_stats.total_free_spots }} <i class="fas fa-syringe"></i><br/>
-                <b>Posledná aktualizácia o</b>: {{ current_stats.datetime.strftime("%d.%m.%Y %H:%M") }}
-            </div>
-            <div class="col-sm-5">
-                <b>Dostupné očkovacie miesta:</b> {{ current_stats.online_places }} <i class="fas fa-home"></i><br/>
-                <b>Očkovacie miesta:</b> {{ current_stats.total_places }} <i class="fas fa-home"></i>
-            </div>
+            {% if current_stats %}
+                <div class="col-sm-5">
+                    <b>Voľných (dostupných) očkovacích termínov</b>: {{ current_stats.total_free_online_spots }} <i class="fas fa-syringe"></i><br/>
+                    <b>Voľnych očkovacích termínov</b>: {{ current_stats.total_free_spots }} <i class="fas fa-syringe"></i><br/>
+                    <b>Posledná aktualizácia o</b>: {{ current_stats.datetime.strftime("%d.%m.%Y %H:%M") }}
+                </div>
+                <div class="col-sm-5">
+                    <b>Dostupné očkovacie miesta:</b> {{ current_stats.online_places }} <i class="fas fa-home"></i><br/>
+                    <b>Očkovacie miesta:</b> {{ current_stats.total_places }} <i class="fas fa-home"></i>
+                </div>
+                <div class="col-sm-10 mt-3">
+                    <p>
+                        Očkovací termín je voľný ak očkovacie miesto hlási v daný deň kapacitu a nieje v daný deň zatvorené.
+                        Očkovací termín je navyše aj dostupný, ak je možné sa nanho zaregistrovať vo formulári NCZI a teda
+                        keď je očkovacie miesto dostupné. Očkovacie miesta bývajú nedostupné (a vtedy niesu ani viditeľné a
+                        na výber fo formulári NCZI) keď sa aktualizujú ich počty dostupných vakcín, čo býva často v noci.
+                        Dáta sa aktualizujú každých 5 minút.
+                    </p>
+                </div>
+            {% endif %}
+            {% if stats %}
+                <div class="col-sm-10 mt-2">
+                    <div id="stats"></div>
+                </div>
+                <script>
+                    let stats = JSON.parse('{{ stats | tojson }}');
+                    stats = stats.map(function (d) {return {...d, datetime: Date.parse(d.datetime)}});
+                    let width = 600;
+                    let height = 200;
+                    let margin = ({top: 20, right: 30, bottom: 30, left: 50});
+
+
+                    let locale = {
+                        "dateTime": "%A,%e.%B %Y, %X",
+                        "date": "%-d.%-m.%Y",
+                        "time": "%H:%M:%S",
+                        "periods": ["AM", "PM"],
+                        "days": ["nedeľa", "pondelok", "utorok", "streda", "štvrtok", "piatok", "sobota"],
+                        "shortDays": ["ne.", "po.", "ut.", "st.", "št.", "pia.", "so."],
+                        "months": ["január", "február", "marec", "apríl", "máj", "jún", "júl", "august", "september", "október", "november", "december"],
+                        "shortMonths": ["jan", "feb", "mar", "apr", "máj", "jún", "júl", "aug", "sep", "okt", "nov", "dec"]
+                    }
+                    d3.timeFormatDefaultLocale(locale);
+
+                    let formatMillisecond = d3.timeFormat(".%L"),
+                        formatSecond = d3.timeFormat(":%S"),
+                        formatMinute = d3.timeFormat("%I:%M"),
+                        formatHour = d3.timeFormat("%H:00"),
+                        formatDay = d3.timeFormat("%a %d"),
+                        formatWeek = d3.timeFormat("%b %d"),
+                        formatMonth = d3.timeFormat("%B"),
+                        formatYear = d3.timeFormat("%Y");
+
+
+
+                    function multiFormat(date) {
+                        return (d3.timeSecond(date) < date ? formatMillisecond
+                            : d3.timeMinute(date) < date ? formatSecond
+                                : d3.timeHour(date) < date ? formatMinute
+                                    : d3.timeDay(date) < date ? formatHour
+                                        : d3.timeMonth(date) < date ? (d3.timeWeek(date) < date ? formatDay : formatWeek)
+                                            : d3.timeYear(date) < date ? formatMonth
+                                                : formatYear)(date);
+                    }
+
+                    function spotStats() {
+                        let y = d3.scaleLinear()
+                            .domain([0, d3.max(stats, d => d.total_free_spots) + 3000]).nice()
+                            .range([height - margin.bottom, margin.top]);
+                        let yAxis = g => g
+                            .attr("transform", `translate(${margin.left},0)`)
+                            .call(d3.axisLeft(y))
+                            .call(g => g.selectAll(".tick line").clone()
+                                .attr("x2", width - (margin.right + margin.left))
+                                .attr("stroke-opacity", 0.1))
+                            .call(g => g.select(".tick:last-of-type").insert("circle")
+                                .attr("fill", "steelblue")
+                                .attr("cx", 10)
+                                .attr("r", 4))
+                            .call(g => g.select(".tick:last-of-type text").clone()
+                                .attr("x", 15)
+                                .attr("text-anchor", "start")
+                                .attr("font-weight", "bold")
+                                .text("Voľné očkovacie termíny"))
+                            .call(g => g.select(".tick:nth-last-of-type(2)").insert("circle")
+                                .attr("fill", "red")
+                                .attr("cx", 10)
+                                .attr("r", 4))
+                            .call(g => g.select(".tick:nth-last-of-type(2) text").clone()
+                                .attr("x", 15)
+                                .attr("text-anchor", "start")
+                                .attr("font-weight", "bold")
+                                .text("Voľné (dostupné) očkovacie termíny"));
+                        let x = d3.scaleTime()
+                            .domain(d3.extent(stats, d => d.datetime))
+                            .range([margin.left, width - margin.right]);
+                        let xAxis = g => g
+                            .attr("transform", `translate(0,${height - margin.bottom})`)
+                            .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0).tickFormat(multiFormat))
+                            .call(g => g.selectAll(".tick line").clone()
+                                .attr("y2", -height + margin.top + margin.bottom)
+                                .attr("stroke-opacity", 0.1));
+                        let lineTotal = d3.line()
+                            .defined(d => !isNaN(d.total_free_spots))
+                            .x(d => x(d.datetime))
+                            .y(d => y(d.total_free_spots));
+                        let lineOnline = d3.line()
+                            .defined(d => !isNaN(d.total_free_online_spots))
+                            .x(d => x(d.datetime))
+                            .y(d => y(d.total_free_online_spots));
+
+
+                        const svg = d3.create("svg")
+                            .attr("viewBox", [0, 0, width, height]);
+
+                        svg.append("path")
+                            .datum(stats)
+                            .attr("fill", "none")
+                            .attr("stroke", "steelblue")
+                            .attr("stroke-width", 1.5)
+                            .attr("stroke-linejoin", "round")
+                            .attr("stroke-linecap", "round")
+                            .attr("d", lineTotal);
+
+                        svg.append("path")
+                            .datum(stats)
+                            .attr("fill", "none")
+                            .attr("stroke", "red")
+                            .attr("stroke-width", 1.5)
+                            .attr("stroke-linejoin", "round")
+                            .attr("stroke-linecap", "round")
+                            .attr("d", lineOnline)
+
+                        svg.append("g")
+                            .call(xAxis);
+
+                        svg.append("g")
+                            .call(yAxis);
+
+                        d3.select("#stats").append(() => svg.node());
+                    }
+
+                    spotStats();
+
+                    function placeStats() {
+                        let y = d3.scaleLinear()
+                            .domain([0, d3.max(stats, d => d.total_places) + 5]).nice()
+                            .range([height - margin.bottom, margin.top]);
+                        let yAxis = g => g
+                            .attr("transform", `translate(${margin.left},0)`)
+                            .call(d3.axisLeft(y))
+                            .call(g => g.selectAll(".tick line").clone()
+                                .attr("x2", width - (margin.right + margin.left))
+                                .attr("stroke-opacity", 0.1))
+                            .call(g => g.select(".tick:last-of-type").insert("circle")
+                                .attr("fill", "steelblue")
+                                .attr("cx", 10)
+                                .attr("r", 4))
+                            .call(g => g.select(".tick:last-of-type text").clone()
+                                .attr("x", 15)
+                                .attr("text-anchor", "start")
+                                .attr("font-weight", "bold")
+                                .text("Očkovacie miesta"))
+                            .call(g => g.select(".tick:nth-last-of-type(2)").insert("circle")
+                                .attr("fill", "red")
+                                .attr("cx", 10)
+                                .attr("r", 4))
+                            .call(g => g.select(".tick:nth-last-of-type(2) text").clone()
+                                .attr("x", 15)
+                                .attr("text-anchor", "start")
+                                .attr("font-weight", "bold")
+                                .text("Dostupné očkovacie miesta"));
+                        let x = d3.scaleTime()
+                            .domain(d3.extent(stats, d => d.datetime))
+                            .range([margin.left, width - margin.right]);
+                        let xAxis = g => g
+                            .attr("transform", `translate(0,${height - margin.bottom})`)
+                            .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0).tickFormat(multiFormat))
+                            .call(g => g.selectAll(".tick line").clone()
+                                .attr("y2", -height + margin.top + margin.bottom)
+                                .attr("stroke-opacity", 0.1));
+                        let lineTotal = d3.line()
+                            .defined(d => !isNaN(d.total_places))
+                            .x(d => x(d.datetime))
+                            .y(d => y(d.total_places));
+                        let lineOnline = d3.line()
+                            .defined(d => !isNaN(d.online_places))
+                            .x(d => x(d.datetime))
+                            .y(d => y(d.online_places));
+
+
+                        const svg = d3.create("svg")
+                            .attr("viewBox", [0, 0, width, height]);
+
+                        svg.append("path")
+                            .datum(stats)
+                            .attr("fill", "none")
+                            .attr("stroke", "steelblue")
+                            .attr("stroke-width", 1.5)
+                            .attr("stroke-linejoin", "round")
+                            .attr("stroke-linecap", "round")
+                            .attr("d", lineTotal);
+
+                        svg.append("path")
+                            .datum(stats)
+                            .attr("fill", "none")
+                            .attr("stroke", "red")
+                            .attr("stroke-width", 1.5)
+                            .attr("stroke-linejoin", "round")
+                            .attr("stroke-linecap", "round")
+                            .attr("d", lineOnline)
+
+                        svg.append("g")
+                            .call(xAxis);
+
+                        svg.append("g")
+                            .call(yAxis);
+
+                        d3.select("#stats").append(() => svg.node());
+                    }
+
+                    placeStats();
+                </script>
+
+            {% endif %}
         </div>
     {% endif %}
     {{ groups_row(groups) }}

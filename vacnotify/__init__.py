@@ -8,9 +8,11 @@ from flask_redis import FlaskRedis
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 from flask_mail import Mail
+from vacnotify.utils import CustomEncoder
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile("config.py", silent=True)
+app.json_encoder = CustomEncoder
 
 with app.open_resource("useragents.json") as f:
     useragents = json.load(f)
@@ -72,6 +74,7 @@ def errorhandler(error):
 
 
 @app.errorhandler(Exception)
-def errorhandler_exc(error):
+def errorhandler_exc(error: Exception):
+    app.logger.error(f"Error: {error}")
     return render_template("error.html.jinja2", error="Chyba servera, pravdepodobne som niečo pokazil. Skúste znova.")
 

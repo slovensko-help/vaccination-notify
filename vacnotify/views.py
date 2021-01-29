@@ -1,4 +1,5 @@
 from binascii import unhexlify, hexlify
+from datetime import datetime, timedelta
 from operator import attrgetter
 
 from flask import render_template, request, abort
@@ -13,12 +14,13 @@ from vacnotify.tasks import email_confirmation
 @main.route("/")
 def index():
     groups = EligibilityGroup.query.all()
-    places = VaccinationPlace.query.all()
+    places = VaccinationPlace.query.order_by(VaccinationPlace.city).all()
     dates = list(map(attrgetter("date"), places[0].days))
 
+    stats = VaccinationStats.query.filter(VaccinationStats.datetime > (datetime.now() - timedelta(days=1))).order_by(VaccinationStats.id.desc()).all()
     current_stats = VaccinationStats.query.order_by(VaccinationStats.id.desc()).first()
 
-    return render_template("index.html.jinja2", groups=groups, places=places, dates=dates, current_stats=current_stats)
+    return render_template("index.html.jinja2", groups=groups, places=places, dates=dates, stats=stats, current_stats=current_stats)
 
 
 @main.route("/groups/subscribe", methods=["GET", "POST"])
@@ -68,7 +70,7 @@ def group_confirm(secret):
 @main.route("/spots/subscribe", methods=["GET", "POST"])
 def spot_subscribe():
     frm = SpotSubscriptionForm()
-    places = VaccinationPlace.query.all()
+    places = VaccinationPlace.query.order_by(VaccinationPlace.city).all()
     dates = list(map(attrgetter("date"), places[0].days))
     cities = set(map(attrgetter("city"), places))
     cities_id = list(map(lambda city: (hash(city), city), sorted(cities)))

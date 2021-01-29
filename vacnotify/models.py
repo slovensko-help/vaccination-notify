@@ -113,3 +113,6 @@ class VaccinationStats(db.Model):
         self.total_free_online_spots = total_free_online_spots
         self.online_places = online_places
         self.total_places = total_places
+
+    def __json__(self):
+        return {key: getattr(self, key) for key in dir(self) if not key.startswith("_") and key not in ("metadata", "query", "query_class")}
