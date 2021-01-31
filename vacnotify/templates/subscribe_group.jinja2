@@ -1,5 +1,14 @@
 {% extends "base.html.jinja2" %}
-{% from "utils.html.jinja2" import groups_row %}
+{% block head %}
+    {{ super() }}
+    <meta property="og:title" content="Notifikácie o COVID-19 vakcinácii"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content="{{ url_for('static', filename='virus.svg') }}"/>
+    <meta property="og:image:alt" content="Obrázok vírusu"/>
+    <meta property="og:url" content="{{ url_for('main.spot_subscribe') }}"/>
+    <meta property="og:locale" content="sk_SK"/>
+    <meta property="og:description" content="Táto stránka poskytuje notifikácie na Váš email o momente otvorenia očkovacieho formuláru pre nové skupiny obyvateľov."/>
+{% endblock %}
 {% block content %}
     <div class="row">
         <div class="col-sm-10 mx-auto">
@@ -16,8 +25,11 @@
                     <form id="group-form" action="{{ url_for('main.group_subscribe') }}" method="post">
                         {{ form.csrf_token }}
 
-                        <h4>Email</h4>
-                        {{ form.email() }}
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            {{ form.email(class_="form-control") }}
+                            <div class="form-text">Na tento email Vám budú chodiť notifikácie.</div>
+                        </div>
                         <input type="submit" class="btn btn-primary h-captcha" value="Odoslať" data-sitekey="{{ config["HCAPTCHA_SITEKEY"] }}" data-callback="submitForm"/>
                     </form>
                     <script type="text/javascript">
@@ -29,5 +41,15 @@
             </div>
         </div>
     </div>
-    {{ groups_row(groups) }}
+    <div class="row mb-3 anchor" id="groups-list">
+        <div class="col-sm-10 mx-auto">
+            <h2 class="mb-3"><i class="fas fa-users fa-fw"></i> Momentálne otvorené skupiny na očkovanie</h2>
+            <b>Posledná aktualizácia o:</b> {{ last_stats.datetime.strftime("%d.%m.%Y %H:%M") }}<br/>
+            <ul class="mt-4 list-group">
+                {% for group in groups %}
+                    <li class="list-group-item">{{ group.item_description }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 {% endblock %}

@@ -20,7 +20,7 @@ app.json_encoder = CustomEncoder
 sentry_sdk.init(
     dsn=app.config["SENTRY_INGEST"],
     integrations=[FlaskIntegration()],
-    traces_sample_rate=1.0,
+    traces_sample_rate=app.config["SENTRY_SAMPLE_RATE"],
     environment=app.env
 )
 

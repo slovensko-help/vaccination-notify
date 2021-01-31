@@ -36,7 +36,7 @@ def email_confirmation(email: str, secret: str, subscription_type: str):
 def email_notification_group(email: str, secret: str, new_groups: List[str]):
     html = render_template("email/notification_group.html.jinja2", secret=secret, new_groups=new_groups)
     msg = Message("Nová skupina na očkovanie", recipients=[email], html=html, extra_headers={"List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-                                                                                             "List-Unsubscribe": url_for("main.group_unsubscribe", secret=secret)})
+                                                                                             "List-Unsubscribe": "<" + url_for("main.group_unsubscribe", secret=secret) + ">"})
     mail.send(msg)
 
 
@@ -44,7 +44,7 @@ def email_notification_group(email: str, secret: str, new_groups: List[str]):
 def email_notification_spot(email: str, secret: str, cities_free: Mapping[str, int]):
     html = render_template("email/notification_spot.html.jinja2", secret=secret, cities_free=cities_free)
     msg = Message("Voľné miesta na očkovanie", recipients=[email], html=html, extra_headers={"List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-                                                                                             "List-Unsubscribe": url_for("main.spot_unsubscribe", secret=secret)})
+                                                                                             "List-Unsubscribe": "<" + url_for("main.spot_unsubscribe", secret=secret) + ">"})
     mail.send(msg)
 
 

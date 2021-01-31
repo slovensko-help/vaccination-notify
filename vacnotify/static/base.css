@@ -74,6 +74,10 @@
     width: 100%;
 }
 
+.table-nopad th, .table-nopad td {
+    padding: 0 0.4em 0 0;
+}
+
 .anchor {
     padding-top: 57px;
     margin-top: -57px;

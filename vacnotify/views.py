@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from operator import attrgetter
 
 from flask import render_template, request, abort, current_app
+from sqlalchemy.orm import joinedload
+
 from vacnotify.blueprint import main
 from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, GroupSubscription, Status, SpotSubscription, \
@@ -25,7 +27,8 @@ def index():
 def group_subscribe():
     frm = GroupSubscriptionForm()
     if request.method == "GET" or not frm.validate_on_submit():
-        return render_template("subscribe_group.jinja2", form=frm, groups=EligibilityGroup.query.all())
+        last_stats = VaccinationStats.query.order_by(VaccinationStats.id.desc()).first()
+        return render_template("subscribe_group.jinja2", form=frm, groups=EligibilityGroup.query.all(), last_stats=last_stats)
     else:
         if frm.validate_on_submit():
             email_exists = GroupSubscription.query.filter_by(email=frm.email.data).first() is not None
@@ -71,13 +74,14 @@ def group_confirm(secret):
 @hcaptcha_required
 def spot_subscribe():
     frm = SpotSubscriptionForm()
-    places = VaccinationPlace.query.order_by(VaccinationPlace.city).all()
+    places = VaccinationPlace.query.options(joinedload(VaccinationPlace.days)).order_by(VaccinationPlace.city).all()
     dates = list(map(attrgetter("date"), places[0].days))
     cities = set(map(attrgetter("city"), places))
     cities_id = list(map(lambda city: (hash(city), city), sorted(cities)))
     frm.places.choices = cities_id
     if request.method == "GET" or not frm.validate_on_submit():
-        return render_template("subscribe_spot.jinja2", form=frm, places=places, dates=dates)
+        last_stats = VaccinationStats.query.order_by(VaccinationStats.id.desc()).first()
+        return render_template("subscribe_spot.jinja2", form=frm, places=places, dates=dates, last_stats=last_stats)
     else:
         if frm.validate_on_submit():
             email_exists = SpotSubscription.query.filter_by(email=frm.email.data).first() is not None

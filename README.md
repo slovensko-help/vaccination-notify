@@ -42,3 +42,9 @@ there are new groups of vaccination-eligible people, it will query the form ever
 > env FLASK_ENV=development celery -A vacnotify.celery worker --concurrency 2 -B -s celerybeat-schedule --detach --loglevel INFO -f celery.log
 > env FLASK_ENV=development FLASK_APP=vacnotify flask run
 ```
+
+### Prod
+
+Use uWSGI and its `smart-attach-daemon` to start celery. Start redis as a service manually.
+Don't forget to restart celery if changes to its tasks are made (restarting uWSGI will not kill it).
+
