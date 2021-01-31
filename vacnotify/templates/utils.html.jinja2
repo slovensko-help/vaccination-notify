@@ -31,7 +31,15 @@
                             <i class="fas fa-exclamation-triangle" title="Očkovacie miesto nieje dostupné."
                                data-toggle="tooltip"></i>{% endif %}</b></td>
                         {% for day in place.days %}
-                            <td class="{{ 'table-success' if place.online and day.capacity > 0 and day.open else 'table-danger' }}">{{ day.capacity }}</td>
+                            <td class="{{ 'table-success' if place.online and day.capacity > 0 and day.open else 'table-danger' }}">
+                            {% if day.capacity > 0 %}
+                                {{ day.capacity }}
+                            {% elif day.capacity < 0 %}
+                                <span title="Počet termínov reportovaný od NCZI je záporný ({{ day.capacity }})." data-toggle="tooltip">0*</span>
+                            {% else %}
+                                0
+                            {% endif %}
+                            </td>
                         {% endfor %}
                     </tr>
                 {% endfor %}

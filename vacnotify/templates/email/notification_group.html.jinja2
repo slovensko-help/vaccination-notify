@@ -1,9 +1,13 @@
-<html>
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
 <body>
 
 <p>
-    Vo <a href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" target="_blank">formulári na registráciu na
-    očkovanie</a>
+    Vo formulári na registráciu na očkovanie
     {% if new_groups|length > 1 %}
         pribudli nové skupiny
     {% else %}
@@ -16,6 +20,8 @@
         <li>{{ group }}</li>
     {% endfor %}
 </ul>
+
+<p>Pre registráciu na očkovanie použite <a href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" target="_blank">formulár NCZI</a>.</p>
 
 <p>Ak už nechcete dostávať notifikačné emaily, kliknite na link nižšie alebo ho skopírujte do svojho webového prehliadača.</p>
 <a href="{{ url_for('main.group_unsubscribe', secret=secret) }}" target="_blank">{{ url_for('main.group_unsubscribe', secret=secret) }}</a>

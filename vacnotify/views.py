@@ -2,7 +2,7 @@ from binascii import unhexlify, hexlify
 from datetime import datetime, timedelta
 from operator import attrgetter
 
-from flask import render_template, request, abort
+from flask import render_template, request, abort, current_app
 from vacnotify.blueprint import main
 from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, GroupSubscription, Status, SpotSubscription, \
@@ -40,12 +40,14 @@ def group_subscribe():
                     subscription = GroupSubscription(frm.email.data, EligibilityGroup.query.all())
                     t.add(subscription)
                 email_confirmation.delay(subscription.email, hexlify(subscription.secret).decode(), "group")
-                return render_template("ok.html.jinja2", msg=f"Na email {subscription.email} bol zaslaný potvrdzovací email. Potvrdenie žiadosti o notifikácie kliknutím na link v emaili je potrebné na získavnie notifikacii.")
+                return render_template("ok.html.jinja2",
+                                       msg=f"Na email {subscription.email} bol zaslaný potvrdzovací email. Potvrdenie žiadosti o notifikácie kliknutím na link v emaili je potrebné na získavanie notifikacii. "
+                                           f"Skontrolujte aj priečinok SPAM do ktorého sa potvrdzovací email mohol dostať. Email prichádza z adresy {current_app.config['MAIL_DEFAULT_SENDER']}.")
         else:
             abort(400)
 
 
-@main.route("/groups/unsubscribe/<string(length=32):secret>")
+@main.route("/groups/unsubscribe/<string(length=32):secret>", methods=["GET", "POST"])
 def group_unsubscribe(secret):
     try:
         secret_bytes = unhexlify(secret)
@@ -94,12 +96,14 @@ def spot_subscribe():
                     subscription = SpotSubscription(frm.email.data, list(selected_places))
                     t.add(subscription)
                 email_confirmation.delay(subscription.email, hexlify(subscription.secret).decode(), "spot")
-                return render_template("ok.html.jinja2", msg=f"Na email {subscription.email} bol zaslaný potvrdzovací email. Potvrdenie žiadosti o notifikácie kliknutím na link v emaili je potrebné na získavnie notifikacii.")
+                return render_template("ok.html.jinja2",
+                                       msg=f"Na email {subscription.email} bol zaslaný potvrdzovací email. Potvrdenie žiadosti o notifikácie kliknutím na link v emaili je potrebné na získavanie notifikacii. "
+                                           f"Skontrolujte aj priečinok SPAM do ktorého sa potvrdzovací email mohol dostať. Email prichádza z adresy {current_app.config['MAIL_DEFAULT_SENDER']}.")
         else:
             abort(400)
 
 
-@main.route("/spots/unsubscribe/<string(length=32):secret>")
+@main.route("/spots/unsubscribe/<string(length=32):secret>", methods=["GET", "POST"])
 def spot_unsubscribe(secret):
     try:
         secret_bytes = unhexlify(secret)

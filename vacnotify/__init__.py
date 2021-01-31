@@ -1,5 +1,7 @@
 import json
 
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
 from flask import Flask, render_template
 from celery import Celery, Task
 from flask_cors import CORS
@@ -10,9 +12,18 @@ from flask_wtf import CSRFProtect
 from flask_mail import Mail
 from vacnotify.utils import CustomEncoder
 
+
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile("config.py", silent=True)
 app.json_encoder = CustomEncoder
+
+sentry_sdk.init(
+    dsn=app.config["SENTRY_INGEST"],
+    integrations=[FlaskIntegration()],
+    traces_sample_rate=1.0,
+    environment=app.env
+)
+
 
 with app.open_resource("useragents.json") as f:
     useragents = json.load(f)
