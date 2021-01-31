@@ -2,7 +2,7 @@
 {% from "utils.html.jinja2" import groups_row, places_row %}
 {% block content %}
     <div class="row">
-        <div class="col-sm-10">
+        <div class="col-sm-10 mx-auto">
             <h1>Notifikácie o COVID-19 vakcinácii</h1>
             <p class="lead"><b>Aj vy ste sa dozvedeli o otvorení očkovania pre novú skupinu ľudí z Facebooku ministra
                 zdravotníctva? Už nikdy viac!</b> 🔥</p>
@@ -13,262 +13,296 @@
         </div>
     </div>
     <div class="row mt-2 mb-5">
-        <div class="col-sm-5">
-            <div class="card bg-light">
-                <div class="card-body">
-                    <h5 class="card-title">Voľné miesta</h5>
-                    <!--<h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6> -->
-                    <p class="card-text">Chcem dostávať notifikácie na email o voľných termínoch na očkovanie vo
-                        vybraných očkovacích miestach.</p>
-                    <a href="{{ url_for('main.spot_subscribe') }}" class="btn btn-primary">Ďalej</a>
+        <div class="col-sm-10 mx-auto">
+            <div class="row gx-4 gy-4">
+                <div class="col-sm">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Voľné miesta</h5>
+                            <!--<h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6> -->
+                            <p class="card-text">Chcem dostávať notifikácie na email o voľných termínoch na očkovanie vo
+                                vybraných očkovacích miestach.</p>
+                            <a href="{{ url_for('main.spot_subscribe') }}" class="btn btn-primary">Ďalej</a>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-sm-5">
-            <div class="card bg-light">
-                <div class="card-body">
-                    <h5 class="card-title">Nová skupina</h5>
-                    <!-- <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6> -->
-                    <p class="card-text">Chcem dostávať notifikácie na email o otvorení očkovania pre novú skupinu
-                        ľudí.</p>
-                    <a href="{{ url_for('main.group_subscribe') }}" class="btn btn-primary">Ďalej</a>
+                <div class="col-sm">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Nová skupina</h5>
+                            <!-- <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6> -->
+                            <p class="card-text">Chcem dostávať notifikácie na email o otvorení očkovania pre novú
+                                skupinu ľudí.</p>
+                            <a href="{{ url_for('main.group_subscribe') }}" class="btn btn-primary">Ďalej</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     {% if current_stats or stats %}
-        <div class="row mb-5">
-            <div class="col-sm-10">
+        <div class="row">
+            <div class="col-sm-10 mx-auto">
                 <h2><i class="fas fa-chart-line fa-fw"></i> Štatistiky</h2>
             </div>
-            {% if current_stats %}
-                <div class="col-sm-5">
-                    <b>Voľných (dostupných) očkovacích termínov</b>: {{ current_stats.total_free_online_spots }} <i class="fas fa-syringe"></i><br/>
-                    <b>Voľnych očkovacích termínov</b>: {{ current_stats.total_free_spots }} <i class="fas fa-syringe"></i><br/>
-                    <b>Posledná aktualizácia o</b>: {{ current_stats.datetime.strftime("%d.%m.%Y %H:%M") }}
+        </div>
+        {% if current_stats %}
+            <div class="row">
+                <div class="col-sm-10 mx-auto">
+                    <div class="row">
+                        <div class="col-sm">
+                            <b>Dostupné očkovacie termíny</b>: {{ current_stats.total_free_online_spots }}
+                            <i class="fas fa-syringe"></i><br/>
+                            <b>Dostupné + pripravované očkovacie termíny</b>: {{ current_stats.total_free_spots }} <i
+                                class="fas fa-syringe"></i><br/>
+                            <b>Posledná aktualizácia o</b>: {{ current_stats.datetime.strftime("%d.%m.%Y %H:%M") }}
+                        </div>
+                        <div class="col-sm">
+                            <b>Dostupné očkovacie miesta:</b> {{ current_stats.online_places }} <i
+                                class="fas fa-home"></i><br/>
+                            <b>Očkovacie miesta:</b> {{ current_stats.total_places }} <i class="fas fa-home"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-sm-5">
-                    <b>Dostupné očkovacie miesta:</b> {{ current_stats.online_places }} <i class="fas fa-home"></i><br/>
-                    <b>Očkovacie miesta:</b> {{ current_stats.total_places }} <i class="fas fa-home"></i>
-                </div>
-                <div class="col-sm-10 mt-3">
+            </div>
+            <div class="row">
+                <div class="col-sm-10 mx-auto mt-3">
                     <p>
-                        Očkovací termín je voľný, ak očkovacie miesto hlási v daný deň kapacitu a nieje v daný deň zatvorené.
-                        Očkovací termín je navyše aj dostupný, ak je možné sa naňho zaregistrovať vo formulári NCZI a teda
-                        keď je očkovacie miesto dostupné. Očkovacie miesta bývajú nedostupné (a vtedy niesu ani viditeľné a
-                        na výber fo formulári NCZI), keď sa aktualizujú ich počty dostupných vakcín, čo býva často v noci.
                         Dáta sa aktualizujú každých 5 minút.
+                        Očkovací termín je dostupný, ak očkovacie miesto hlási v daný deň kapacitu a nieje v daný deň
+                        zatvorené. Očkovacie miesta bývajú nedostupné (a vtedy nie sú ani viditeľné a na výber fo formulári NCZI),
+                        keď sa aktualizuje ich kapacita, čo často býva v noci.
                     </p>
                 </div>
-            {% endif %}
-            {% if stats %}
-                <div class="col-sm-10 mt-2">
+            </div>
+        {% endif %}
+        {% if stats %}
+            <div class="row mb-3">
+                <div class="col-sm-10 mx-auto mt-2">
                     <div id="stats"></div>
                 </div>
-                <script type="text/javascript">
-                    let stats = JSON.parse('{{ stats | tojson }}');
-                    stats = stats.map(function (d) {return {...d, datetime: Date.parse(d.datetime)}});
-                    let width = 600;
-                    let height = 200;
-                    let margin = ({top: 20, right: 30, bottom: 30, left: 50});
+            </div>
+            <script type="text/javascript">
+                let stats = JSON.parse('{{ stats | tojson }}');
+                stats = stats.map(function (d) {
+                    return {...d, datetime: Date.parse(d.datetime)}
+                });
+                const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+                const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+                const bp = Math.max(vw, vh);
+                let width = 600;
+                let height = 200;
+                if (bp < 576) {
+                    width *= 0.7;
+                    height *= 0.7;
+                } else if (bp <= 768) {
+                    width *= 0.8;
+                    height *= 0.8;
+                } else if (bp <= 992) {
+                    width *= 0.9;
+                    height *= 0.9;
+                } else if (bp <= 1200) {
+                } else {
+                    width *= 1.1;
+                    height *= 1.1;
+                }
+
+                let margin = ({top: 20, right: 30, bottom: 30, left: 50});
 
 
-                    let locale = {
-                        "dateTime": "%A,%e.%B %Y, %X",
-                        "date": "%-d.%-m.%Y",
-                        "time": "%H:%M:%S",
-                        "periods": ["AM", "PM"],
-                        "days": ["nedeľa", "pondelok", "utorok", "streda", "štvrtok", "piatok", "sobota"],
-                        "shortDays": ["ne.", "po.", "ut.", "st.", "št.", "pia.", "so."],
-                        "months": ["január", "február", "marec", "apríl", "máj", "jún", "júl", "august", "september", "október", "november", "december"],
-                        "shortMonths": ["jan", "feb", "mar", "apr", "máj", "jún", "júl", "aug", "sep", "okt", "nov", "dec"]
-                    }
-                    d3.timeFormatDefaultLocale(locale);
+                let locale = {
+                    "dateTime": "%A,%e.%B %Y, %X",
+                    "date": "%-d.%-m.%Y",
+                    "time": "%H:%M:%S",
+                    "periods": ["AM", "PM"],
+                    "days": ["nedeľa", "pondelok", "utorok", "streda", "štvrtok", "piatok", "sobota"],
+                    "shortDays": ["ne.", "po.", "ut.", "st.", "št.", "pia.", "so."],
+                    "months": ["január", "február", "marec", "apríl", "máj", "jún", "júl", "august", "september", "október", "november", "december"],
+                    "shortMonths": ["jan", "feb", "mar", "apr", "máj", "jún", "júl", "aug", "sep", "okt", "nov", "dec"]
+                }
+                d3.timeFormatDefaultLocale(locale);
 
-                    let formatMillisecond = d3.timeFormat(".%L"),
-                        formatSecond = d3.timeFormat(":%S"),
-                        formatMinute = d3.timeFormat("%H:%M"),
-                        formatHour = d3.timeFormat("%H:00"),
-                        formatDay = d3.timeFormat("%a %d"),
-                        formatWeek = d3.timeFormat("%b %d"),
-                        formatMonth = d3.timeFormat("%B"),
-                        formatYear = d3.timeFormat("%Y");
-
-
-
-                    function multiFormat(date) {
-                        return (d3.timeSecond(date) < date ? formatMillisecond
-                            : d3.timeMinute(date) < date ? formatSecond
-                                : d3.timeHour(date) < date ? formatMinute
-                                    : d3.timeDay(date) < date ? formatHour
-                                        : d3.timeMonth(date) < date ? (d3.timeWeek(date) < date ? formatDay : formatWeek)
-                                            : d3.timeYear(date) < date ? formatMonth
-                                                : formatYear)(date);
-                    }
-
-                    function spotStats() {
-                        let y = d3.scaleLinear()
-                            .domain([0, d3.max(stats, d => d.total_free_spots) + 3000]).nice()
-                            .range([height - margin.bottom, margin.top]);
-                        let yAxis = g => g
-                            .attr("transform", `translate(${margin.left},0)`)
-                            .call(d3.axisLeft(y))
-                            .call(g => g.selectAll(".tick line").clone()
-                                .attr("x2", width - (margin.right + margin.left))
-                                .attr("stroke-opacity", 0.1))
-                            .call(g => g.select(".tick:last-of-type").insert("circle")
-                                .attr("fill", "steelblue")
-                                .attr("cx", 10)
-                                .attr("r", 4))
-                            .call(g => g.select(".tick:last-of-type text").clone()
-                                .attr("x", 15)
-                                .attr("text-anchor", "start")
-                                .attr("font-weight", "bold")
-                                .text("Voľné očkovacie termíny"))
-                            .call(g => g.select(".tick:nth-last-of-type(2)").insert("circle")
-                                .attr("fill", "red")
-                                .attr("cx", 10)
-                                .attr("r", 4))
-                            .call(g => g.select(".tick:nth-last-of-type(2) text").clone()
-                                .attr("x", 15)
-                                .attr("text-anchor", "start")
-                                .attr("font-weight", "bold")
-                                .text("Voľné (dostupné) očkovacie termíny"));
-                        let x = d3.scaleTime()
-                            .domain(d3.extent(stats, d => d.datetime))
-                            .range([margin.left, width - margin.right]);
-                        let xAxis = g => g
-                            .attr("transform", `translate(0,${height - margin.bottom})`)
-                            .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0).tickFormat(multiFormat))
-                            .call(g => g.selectAll(".tick line").clone()
-                                .attr("y2", -height + margin.top + margin.bottom)
-                                .attr("stroke-opacity", 0.1));
-                        let lineTotal = d3.line()
-                            .defined(d => !isNaN(d.total_free_spots))
-                            .x(d => x(d.datetime))
-                            .y(d => y(d.total_free_spots));
-                        let lineOnline = d3.line()
-                            .defined(d => !isNaN(d.total_free_online_spots))
-                            .x(d => x(d.datetime))
-                            .y(d => y(d.total_free_online_spots));
+                let formatMillisecond = d3.timeFormat(".%L"),
+                    formatSecond = d3.timeFormat(":%S"),
+                    formatMinute = d3.timeFormat("%H:%M"),
+                    formatHour = d3.timeFormat("%H:00"),
+                    formatDay = d3.timeFormat("%a %d"),
+                    formatWeek = d3.timeFormat("%b %d"),
+                    formatMonth = d3.timeFormat("%B"),
+                    formatYear = d3.timeFormat("%Y");
 
 
-                        const svg = d3.create("svg")
-                            .attr("viewBox", [0, 0, width, height]);
+                function multiFormat(date) {
+                    return (d3.timeSecond(date) < date ? formatMillisecond
+                        : d3.timeMinute(date) < date ? formatSecond
+                            : d3.timeHour(date) < date ? formatMinute
+                                : d3.timeDay(date) < date ? formatHour
+                                    : d3.timeMonth(date) < date ? (d3.timeWeek(date) < date ? formatDay : formatWeek)
+                                        : d3.timeYear(date) < date ? formatMonth
+                                            : formatYear)(date);
+                }
 
-                        svg.append("path")
-                            .datum(stats)
-                            .attr("fill", "none")
-                            .attr("stroke", "steelblue")
-                            .attr("stroke-width", 1.5)
-                            .attr("stroke-linejoin", "round")
-                            .attr("stroke-linecap", "round")
-                            .attr("d", lineTotal);
-
-                        svg.append("path")
-                            .datum(stats)
-                            .attr("fill", "none")
-                            .attr("stroke", "red")
-                            .attr("stroke-width", 1.5)
-                            .attr("stroke-linejoin", "round")
-                            .attr("stroke-linecap", "round")
-                            .attr("d", lineOnline)
-
-                        svg.append("g")
-                            .call(xAxis);
-
-                        svg.append("g")
-                            .call(yAxis);
-
-                        d3.select("#stats").append(() => svg.node());
-                    }
-
-                    spotStats();
-
-                    function placeStats() {
-                        let y = d3.scaleLinear()
-                            .domain([0, d3.max(stats, d => d.total_places) + 5]).nice()
-                            .range([height - margin.bottom, margin.top]);
-                        let yAxis = g => g
-                            .attr("transform", `translate(${margin.left},0)`)
-                            .call(d3.axisLeft(y))
-                            .call(g => g.selectAll(".tick line").clone()
-                                .attr("x2", width - (margin.right + margin.left))
-                                .attr("stroke-opacity", 0.1))
-                            .call(g => g.select(".tick:last-of-type").insert("circle")
-                                .attr("fill", "steelblue")
-                                .attr("cx", 10)
-                                .attr("r", 4))
-                            .call(g => g.select(".tick:last-of-type text").clone()
-                                .attr("x", 15)
-                                .attr("text-anchor", "start")
-                                .attr("font-weight", "bold")
-                                .text("Očkovacie miesta"))
-                            .call(g => g.select(".tick:nth-last-of-type(2)").insert("circle")
-                                .attr("fill", "red")
-                                .attr("cx", 10)
-                                .attr("r", 4))
-                            .call(g => g.select(".tick:nth-last-of-type(2) text").clone()
-                                .attr("x", 15)
-                                .attr("text-anchor", "start")
-                                .attr("font-weight", "bold")
-                                .text("Dostupné očkovacie miesta"));
-                        let x = d3.scaleTime()
-                            .domain(d3.extent(stats, d => d.datetime))
-                            .range([margin.left, width - margin.right]);
-                        let xAxis = g => g
-                            .attr("transform", `translate(0,${height - margin.bottom})`)
-                            .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0).tickFormat(multiFormat))
-                            .call(g => g.selectAll(".tick line").clone()
-                                .attr("y2", -height + margin.top + margin.bottom)
-                                .attr("stroke-opacity", 0.1));
-                        let lineTotal = d3.line()
-                            .defined(d => !isNaN(d.total_places))
-                            .x(d => x(d.datetime))
-                            .y(d => y(d.total_places));
-                        let lineOnline = d3.line()
-                            .defined(d => !isNaN(d.online_places))
-                            .x(d => x(d.datetime))
-                            .y(d => y(d.online_places));
+                function spotStats() {
+                    let y = d3.scaleLinear()
+                        .domain([0, d3.max(stats, d => d.total_free_spots) + 3000]).nice()
+                        .range([height - margin.bottom, margin.top]);
+                    let yAxis = g => g
+                        .attr("transform", `translate(${margin.left},0)`)
+                        .call(d3.axisLeft(y))
+                        .call(g => g.selectAll(".tick line").clone()
+                            .attr("x2", width - (margin.right + margin.left))
+                            .attr("stroke-opacity", 0.1))
+                        .call(g => g.select(".tick:nth-of-type(2)").insert("circle")
+                            .attr("fill", "grey")
+                            .attr("cx", 10)
+                            .attr("r", 4))
+                        .call(g => g.select(".tick:nth-of-type(2) text").clone()
+                            .attr("x", 15)
+                            .attr("text-anchor", "start")
+                            .attr("font-weight", "bold")
+                            .text("Dostupné + pripravované očkovacie termíny"))
+                        .call(g => g.select(".tick:nth-of-type(3)").insert("circle")
+                            .attr("fill", "#0d6efd")
+                            .attr("cx", 10)
+                            .attr("r", 4))
+                        .call(g => g.select(".tick:nth-of-type(3) text").clone()
+                            .attr("x", 15)
+                            .attr("text-anchor", "start")
+                            .attr("font-weight", "bold")
+                            .text("Dostupné očkovacie termíny"));
+                    let x = d3.scaleTime()
+                        .domain(d3.extent(stats, d => d.datetime))
+                        .range([margin.left, width - margin.right]);
+                    let xAxis = g => g
+                        .attr("transform", `translate(0,${height - margin.bottom})`)
+                        .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0).tickFormat(multiFormat))
+                        .call(g => g.selectAll(".tick line").clone()
+                            .attr("y2", -height + margin.top + margin.bottom)
+                            .attr("stroke-opacity", 0.1));
+                    let lineTotal = d3.line()
+                        .defined(d => !isNaN(d.total_free_spots))
+                        .x(d => x(d.datetime))
+                        .y(d => y(d.total_free_spots));
+                    let lineOnline = d3.line()
+                        .defined(d => !isNaN(d.total_free_online_spots))
+                        .x(d => x(d.datetime))
+                        .y(d => y(d.total_free_online_spots));
 
 
-                        const svg = d3.create("svg")
-                            .attr("viewBox", [0, 0, width, height]);
+                    const svg = d3.create("svg")
+                        .attr("viewBox", [0, 0, width, height]);
 
-                        svg.append("path")
-                            .datum(stats)
-                            .attr("fill", "none")
-                            .attr("stroke", "steelblue")
-                            .attr("stroke-width", 1.5)
-                            .attr("stroke-linejoin", "round")
-                            .attr("stroke-linecap", "round")
-                            .attr("d", lineTotal);
+                    svg.append("path")
+                        .datum(stats)
+                        .attr("fill", "none")
+                        .attr("stroke", "grey")
+                        .attr("fill-opacity", 0.8)
+                        .attr("stroke-width", 1.5)
+                        .attr("stroke-dasharray", ("3, 3"))
+                        .attr("stroke-linejoin", "round")
+                        .attr("stroke-linecap", "round")
+                        .attr("d", lineTotal);
 
-                        svg.append("path")
-                            .datum(stats)
-                            .attr("fill", "none")
-                            .attr("stroke", "red")
-                            .attr("stroke-width", 1.5)
-                            .attr("stroke-linejoin", "round")
-                            .attr("stroke-linecap", "round")
-                            .attr("d", lineOnline)
+                    svg.append("path")
+                        .datum(stats)
+                        .attr("fill", "none")
+                        .attr("stroke", "#0d6efd")
+                        .attr("stroke-width", 1.5)
+                        .attr("stroke-linejoin", "round")
+                        .attr("stroke-linecap", "round")
+                        .attr("d", lineOnline)
 
-                        svg.append("g")
-                            .call(xAxis);
+                    svg.append("g")
+                        .call(xAxis);
 
-                        svg.append("g")
-                            .call(yAxis);
+                    svg.append("g")
+                        .call(yAxis);
 
-                        d3.select("#stats").append(() => svg.node());
-                    }
+                    d3.select("#stats").append(() => svg.node());
+                }
 
-                    placeStats();
-                </script>
+                spotStats();
 
-            {% endif %}
-        </div>
+                function placeStats() {
+                    let y = d3.scaleLinear()
+                        .domain([0, d3.max(stats, d => d.total_places) + 5]).nice()
+                        .range([height - margin.bottom, margin.top]);
+                    let yAxis = g => g
+                        .attr("transform", `translate(${margin.left},0)`)
+                        .call(d3.axisLeft(y))
+                        .call(g => g.selectAll(".tick line").clone()
+                            .attr("x2", width - (margin.right + margin.left))
+                            .attr("stroke-opacity", 0.1))
+                        .call(g => g.select(".tick:nth-of-type(2)").insert("circle")
+                            .attr("fill", "grey")
+                            .attr("cx", 10)
+                            .attr("r", 4))
+                        .call(g => g.select(".tick:nth-of-type(2) text").clone()
+                            .attr("x", 15)
+                            .attr("text-anchor", "start")
+                            .attr("font-weight", "bold")
+                            .text("Očkovacie miesta"))
+                        .call(g => g.select(".tick:nth-of-type(3)").insert("circle")
+                            .attr("fill", "#0d6efd")
+                            .attr("cx", 10)
+                            .attr("r", 4))
+                        .call(g => g.select(".tick:nth-of-type(3) text").clone()
+                            .attr("x", 15)
+                            .attr("text-anchor", "start")
+                            .attr("font-weight", "bold")
+                            .text("Dostupné očkovacie miesta"));
+                    let x = d3.scaleTime()
+                        .domain(d3.extent(stats, d => d.datetime))
+                        .range([margin.left, width - margin.right]);
+                    let xAxis = g => g
+                        .attr("transform", `translate(0,${height - margin.bottom})`)
+                        .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0).tickFormat(multiFormat))
+                        .call(g => g.selectAll(".tick line").clone()
+                            .attr("y2", -height + margin.top + margin.bottom)
+                            .attr("stroke-opacity", 0.1));
+                    let lineTotal = d3.line()
+                        .defined(d => !isNaN(d.total_places))
+                        .x(d => x(d.datetime))
+                        .y(d => y(d.total_places));
+                    let lineOnline = d3.line()
+                        .defined(d => !isNaN(d.online_places))
+                        .x(d => x(d.datetime))
+                        .y(d => y(d.online_places));
+
+
+                    const svg = d3.create("svg")
+                        .attr("viewBox", [0, 0, width, height]);
+
+                    svg.append("path")
+                        .datum(stats)
+                        .attr("fill", "none")
+                        .attr("stroke", "grey")
+                        .attr("stroke-width", 1.5)
+                        .attr("stroke-dasharray", ("3, 3"))
+                        .attr("stroke-linejoin", "round")
+                        .attr("stroke-linecap", "round")
+                        .attr("d", lineTotal);
+
+                    svg.append("path")
+                        .datum(stats)
+                        .attr("fill", "none")
+                        .attr("stroke", "#0d6efd")
+                        .attr("stroke-width", 1.5)
+                        .attr("stroke-linejoin", "round")
+                        .attr("stroke-linecap", "round")
+                        .attr("d", lineOnline)
+
+                    svg.append("g")
+                        .call(xAxis);
+
+                    svg.append("g")
+                        .call(yAxis);
+
+                    d3.select("#stats").append(() => svg.node());
+                }
+
+                placeStats();
+            </script>
+        {% endif %}
     {% endif %}
-    {{ groups_row(groups) }}
-    {{ places_row(places, dates) }}
-
 {% endblock %}

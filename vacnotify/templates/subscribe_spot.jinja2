@@ -2,7 +2,7 @@
 {% from "utils.html.jinja2" import places_row %}
 {% block content %}
     <div class="row">
-        <div class="col-sm-10">
+        <div class="col-sm-10 mx-auto">
             <h1>Notifikácie o voľných miestach</h1>
             <p class="lead">
                 Chcem dostávať notifikácie na email o voľných termínoch na očkovanie vo vybraných očkovacích miestach.
@@ -10,7 +10,7 @@
         </div>
     </div>
     <div class="row mt-2 mb-5">
-        <div class="col-sm-10">
+        <div class="col-sm-10 mx-auto">
             <div class="card bg-light">
                 <div class="card-body">
                     <form id="spot-form" action="{{ url_for('main.spot_subscribe') }}" method="post">

@@ -14,14 +14,10 @@ from vacnotify.utils import hcaptcha_required
 
 @main.route("/")
 def index():
-    groups = EligibilityGroup.query.all()
-    places = VaccinationPlace.query.order_by(VaccinationPlace.city).all()
-    dates = list(map(attrgetter("date"), places[0].days))
-
     stats = VaccinationStats.query.filter(VaccinationStats.datetime > (datetime.now() - timedelta(days=1))).order_by(VaccinationStats.id.desc()).all()
     current_stats = VaccinationStats.query.order_by(VaccinationStats.id.desc()).first()
 
-    return render_template("index.html.jinja2", groups=groups, places=places, dates=dates, stats=stats, current_stats=current_stats)
+    return render_template("index.html.jinja2", stats=stats, current_stats=current_stats)  # groups=groups, places=places, dates=dates
 
 
 @main.route("/groups/subscribe", methods=["GET", "POST"])

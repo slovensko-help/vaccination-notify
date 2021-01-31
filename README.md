@@ -39,6 +39,6 @@ there are new groups of vaccination-eligible people, it will query the form ever
 
 ### Debug
 ```shell
-> celery -A vacnotify.celery worker --concurrency 2 -B -s celerybeat-schedule --detach --loglevel INFO -f celery.log
-> env FLASK_APP=vacnotify flask run
+> env FLASK_ENV=development celery -A vacnotify.celery worker --concurrency 2 -B -s celerybeat-schedule --detach --loglevel INFO -f celery.log
+> env FLASK_ENV=development FLASK_APP=vacnotify flask run
 ```
