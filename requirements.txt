@@ -1,6 +1,8 @@
 requests
 twilio
 sentry-sdk[flask]
+MarkupSafe
+Werkzeug
 click
 celery
 SQLAlchemy

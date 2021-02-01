@@ -1,3 +1,5 @@
+import math
+
 from markupsafe import Markup
 from wtforms import validators, SelectMultipleField
 from wtforms.fields.html5 import EmailField
@@ -17,12 +19,13 @@ class ListWidget(object):
         html = [f'<div class="row" {html_params(**kwargs)}>']
         fields = [(subfield(**field_kwargs), subfield.label) for subfield in field]
         total = len(fields)
-        col = total // size
+        col = math.ceil(total / size)
         for i in range(size):
             html.append('<div class="col-sm">')
             html.append(f'<div class="list-group">')
             for j in range(col):
                 idx = i * col + j
+                print(idx)
                 if idx >= total:
                     break
                 subfield, label = fields[idx]

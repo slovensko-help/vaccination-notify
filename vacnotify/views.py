@@ -39,9 +39,7 @@ def group_subscribe():
                     subscription = GroupSubscription(frm.email.data, EligibilityGroup.query.all())
                     t.add(subscription)
                 email_confirmation.delay(subscription.email, hexlify(subscription.secret).decode(), "group")
-                return render_template("ok.html.jinja2",
-                                       msg=f"Na email {subscription.email} bol zaslaný potvrdzovací email. Potvrdenie žiadosti o notifikácie kliknutím na link v emaili je potrebné na získavanie notifikacii. "
-                                           f"Skontrolujte aj priečinok SPAM do ktorého sa potvrdzovací email mohol dostať. Email prichádza z adresy {current_app.config['MAIL_DEFAULT_SENDER']}.")
+                return render_template("confirmation_sent.jinja2", email=subscription.email)
         else:
             abort(400)
 
@@ -96,9 +94,7 @@ def spot_subscribe():
                     subscription = SpotSubscription(frm.email.data, list(selected_places))
                     t.add(subscription)
                 email_confirmation.delay(subscription.email, hexlify(subscription.secret).decode(), "spot")
-                return render_template("ok.html.jinja2",
-                                       msg=f"Na email {subscription.email} bol zaslaný potvrdzovací email. Potvrdenie žiadosti o notifikácie kliknutím na link v emaili je potrebné na získavanie notifikacii. "
-                                           f"Skontrolujte aj priečinok SPAM do ktorého sa potvrdzovací email mohol dostať. Email prichádza z adresy {current_app.config['MAIL_DEFAULT_SENDER']}.")
+                return render_template("confirmation_sent.jinja2", email=subscription.email)
         else:
             abort(400)
 

@@ -1,0 +1,13 @@
+{% extends "base.html.jinja2" %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-10 mx-auto text-center">
+            <h1><i class="fas fa-check-circle"></i> OK</h1>
+            <p class="lead">
+                Na email {{ email }} bol zaslaný potvrdzovací email. Potvrdenie žiadosti o notifikácie kliknutím na link v emaili je potrebné na získavanie notifikacii.
+                Skontrolujte aj priečinok <b>SPAM</b> do ktorého sa potvrdzovací email mohol dostať. Email prichádza z adresy <b>{{ config['MAIL_DEFAULT_SENDER']}}</b>.
+            </p>
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary">Naspať na domovskú stránku</a>
+        </div>
+    </div>
+{% endblock %}
