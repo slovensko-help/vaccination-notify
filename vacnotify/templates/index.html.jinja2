@@ -3,12 +3,11 @@
     {{ super() }}
     <meta property="og:title" content="Notifikácie o COVID-19 vakcinácii"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:image" content="{{ url_for('static', filename='virus.svg') }}"/>
+    <meta property="og:image" content="{{ url_for('static', filename='virus.svg', _external=True) }}"/>
     <meta property="og:image:alt" content="Obrázok vírusu"/>
     <meta property="og:url" content="{{ url_for('main.index') }}"/>
     <meta property="og:locale" content="sk_SK"/>
-    <meta property="og:description" content="Táto stránka poskytuje notifikácie na Váš email o voľných miestach na očkovanie proti COVID-19 a tiež
-                o momente otvorenia očkovacieho formuláru pre nové skupiny obyvateľov."/>
+    <meta property="og:description" content="Táto stránka poskytuje notifikácie na Váš email o voľných miestach na očkovanie proti COVID-19 a tiež o momente otvorenia očkovacieho formuláru pre nové skupiny obyvateľov."/>
 {% endblock %}
 {% block content %}
     <div class="row">

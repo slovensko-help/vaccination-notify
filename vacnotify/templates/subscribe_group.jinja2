@@ -3,7 +3,7 @@
     {{ super() }}
     <meta property="og:title" content="Notifikácie o COVID-19 vakcinácii"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:image" content="{{ url_for('static', filename='virus.svg') }}"/>
+    <meta property="og:image" content="{{ url_for('static', filename='virus.svg', _external=True) }}"/>
     <meta property="og:image:alt" content="Obrázok vírusu"/>
     <meta property="og:url" content="{{ url_for('main.spot_subscribe') }}"/>
     <meta property="og:locale" content="sk_SK"/>

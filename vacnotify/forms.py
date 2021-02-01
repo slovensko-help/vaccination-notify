@@ -19,7 +19,7 @@ class ListWidget(object):
         total = len(fields)
         col = total // size
         for i in range(size):
-            html.append('<div class="col">')
+            html.append('<div class="col-sm">')
             html.append(f'<div class="list-group">')
             for j in range(col):
                 idx = i * col + j
