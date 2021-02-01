@@ -22,41 +22,27 @@
     {% endblock %}
 </head>
 
-<body data-target="#navbar" data-offset="57" class="position-relative">
+<body class="position-relative">
 <div class="d-flex align-items-center" id="wrapper">
     <nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light border-bottom fixed-top">
-        <a class="navbar-brand" href="{{ url_for("main.index") }}"><i class="fas fa-virus"></i> Notifikácie o COVID-19 vakcinácii</a>
-
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="{{ url_for("main.index") }}"><i class="fas fa-virus"></i> <span class="d-none d-md-inline">Notifikácie o COVID-19 vakcinácii</span><span class="d-sm-none">Domov</span></a>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
-
-                <li class="nav-item">
+                <li class="nav-item mx-2">
                     <a class="nav-link" href="{{ url_for('main.spot_subscribe') }}">Voľné miesta</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item mx-2">
                     <a class="nav-link" href="{{ url_for('main.group_subscribe') }}">Nová skupina</a>
                 </li>
-
-                {% block navbar %}
-                {% endblock %}
-                <!--
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Dropdown
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="#">Action</a>
-                        <a class="dropdown-item" href="#">Another action</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Something else here</a>
-                    </div>
+                <li class="nav-item mx-2">
+                    <a class="nav-link" href="{{ url_for('main.privacy') }}">Zásady ochrany osobných údajov</a>
                 </li>
-                -->
             </ul>
         </div>
-
     </nav>
     <div id="page-content-wrapper">
         <div id="content" class="container">
@@ -65,9 +51,10 @@
         </div>
     </div>
 </div>
-<script>
+<script type="text/javascript">
     $(function () {
         $('[data-toggle="tooltip"]').tooltip()
+        $('[data-toggle="collapse"]').collapse()
     });
 </script>
 <footer>
@@ -75,7 +62,7 @@
         <div class="row mt-5 mb-5">
             <div class="col-sm-10 mx-auto position-relative">
                 <div class="position-absolute start-50 translate-middle text-center">
-                    <a data-rot13="wbual@arhebznapre.fx" class="mail-href text-decoration-none"><i class="fas fa-envelope"></i> johny@neuromancer.sk</a> |
+                    <a data-rot13="wbual@arhebznapre.fx" class="mail-href text-decoration-none"><i class="fas fa-envelope"></i> <span data-rot13="wbual@arhebznapre.fx" class="mail-inner">ENABLE@JAVASCRIPT</span></a> |
                     <a href="https://github.com/slovensko-help/vaccination-notify" class="text-decoration-none"><i class="fab fa-github"></i> GitHub</a> |
                     <a href="https://neuromancer.sk" class="text-decoration-none"><i class="far fa-copyright"></i> 2021 Ján Jančár</a>
                     <br/>

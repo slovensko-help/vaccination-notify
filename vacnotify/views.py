@@ -22,6 +22,11 @@ def index():
     return render_template("index.html.jinja2", stats=stats, current_stats=current_stats)  # groups=groups, places=places, dates=dates
 
 
+@main.route("/privacy")
+def privacy():
+    return render_template("privacy_policy.html.jinja2")
+
+
 @main.route("/groups/subscribe", methods=["GET", "POST"])
 @hcaptcha_required
 def group_subscribe():
@@ -53,7 +58,7 @@ def group_unsubscribe(secret):
     subscription = GroupSubscription.query.filter_by(secret=secret_bytes).first_or_404()
     with transaction() as t:
         t.delete(subscription)
-    return render_template("ok.html.jinja2", msg="Odber notifikácii bol úspešne zrušený.")
+    return render_template("ok.html.jinja2", msg="Odber notifikácii bol úspešne zrušený a Váše osobné údaje (email) boli odstránené.")
 
 
 @main.route("/groups/confirm/<string(length=32):secret>")
@@ -110,7 +115,7 @@ def spot_unsubscribe(secret):
     subscription = SpotSubscription.query.filter_by(secret=secret_bytes).first_or_404()
     with transaction() as t:
         t.delete(subscription)
-    return render_template("ok.html.jinja2", msg="Odber notifikácii bol úspešne zrušený.")
+    return render_template("ok.html.jinja2", msg="Odber notifikácii bol úspešne zrušený a Váše osobné údaje (email) boli odstránené.")
 
 
 @main.route("/spots/confirm/<string(length=32):secret>")
