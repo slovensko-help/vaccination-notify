@@ -25,7 +25,6 @@ class ListWidget(object):
             html.append(f'<div class="list-group">')
             for j in range(col):
                 idx = i * col + j
-                print(idx)
                 if idx >= total:
                     break
                 subfield, label = fields[idx]

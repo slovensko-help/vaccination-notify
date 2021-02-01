@@ -1,4 +1,5 @@
 {% extends "base.html.jinja2" %}
+{% from "utils.html.jinja2" import render_alerts %}
 {% block head %}
     {{ super() }}
     <meta property="og:title" content="Notifikácie o COVID-19 vakcinácii"/>
@@ -16,11 +17,7 @@
             <p class="lead">
                 Chcem dostávať notifikácie na email o otvorení očkovania pre novú skupinu ľudí.
             </p>
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle"></i> Z dôvodu zablokovania služby zo strany NCZI sú notifikácie
-                momentálne nedostupné a dáta sa neaktualizujú.
-                Môžete sa prihlásiť na odber notifikácii a budete ich dostávať keď sa služba znova rozbehne.
-            </div>
+            {{ render_alerts(get_alerts()) }}
         </div>
     </div>
     <div class="row mt-2 mb-5">

@@ -79,7 +79,7 @@ class RetrySession(object):
             try:
                 return self.sess.get(*args, **kwargs)
             except Exception as e:
-                logging.error(f"Got {e}")
+                logging.info(f"Got {e}")
                 if i != self.retries - 1:
                     self.reset_session()
                 else:
@@ -90,7 +90,7 @@ class RetrySession(object):
             try:
                 return self.sess.post(*args, **kwargs)
             except Exception as e:
-                logging.error(f"Got {e}")
+                logging.info(f"Got {e}")
                 if i != self.retries - 1:
                     self.reset_session()
                 else:

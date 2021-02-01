@@ -1,4 +1,5 @@
 import json
+import locale
 
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -24,10 +25,19 @@ sentry_sdk.init(
     environment=app.env
 )
 
+try:
+    locale.setlocale(locale.LC_ALL, "sk_SK.UTF-8")
+except locale.Error:
+    pass
 
 with app.open_resource("useragents.json") as f:
     useragents = json.load(f)
 
+try:
+    with app.open_instance_resource("alerts.json") as f:
+        alerts = json.load(f)
+except FileNotFoundError:
+    alerts = []
 # DB
 db = SQLAlchemy(app)
 
@@ -94,3 +104,7 @@ def errorhandler_exc(error: Exception):
     app.logger.error(f"Error: {error}")
     return render_template("error.html.jinja2", error="Chyba servera, pravdepodobne som niečo pokazil. Skúste znova.")
 
+
+@app.template_global()
+def get_alerts():
+    return alerts

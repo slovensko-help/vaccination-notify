@@ -1,3 +1,7 @@
-{% macro groups_row(groups) %}
-
+{% macro render_alerts(alerts) %}
+    {% for alert in alerts %}
+        <div class="alert alert-{{ alert['class'] }}">
+            <i class="fas fa-{{ alert['icon'] }}"></i> {{ alert['text'] }}
+        </div>
+    {% endfor %}
 {% endmacro %}

@@ -74,6 +74,8 @@ def spot_subscribe():
     frm = SpotSubscriptionForm()
     places = VaccinationPlace.query.options(joinedload(VaccinationPlace.days)).order_by(VaccinationPlace.city).all()
     dates = list(map(attrgetter("date"), places[0].days))
+    dates.sort()
+
     cities = set(map(attrgetter("city"), places))
     cities_id = list(map(lambda city: (hash(city), city), sorted(cities)))
     frm.places.choices = cities_id
