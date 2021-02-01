@@ -48,3 +48,4 @@ there are new groups of vaccination-eligible people, it will query the form ever
 Use uWSGI and its `smart-attach-daemon` to start celery. Start redis as a service manually.
 Don't forget to restart celery if changes to its tasks are made (restarting uWSGI will not kill it).
 
+Install Tor and run it with control port enabled.

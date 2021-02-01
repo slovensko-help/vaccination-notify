@@ -1,5 +1,6 @@
-requests
+requests[socks]
 twilio
+stem
 sentry-sdk[flask]
 MarkupSafe
 Werkzeug

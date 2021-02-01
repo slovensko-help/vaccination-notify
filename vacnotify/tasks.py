@@ -1,4 +1,6 @@
+import http.client
 import random
+import time
 from binascii import hexlify
 
 import requests
@@ -8,7 +10,10 @@ from typing import Set, Mapping, List
 from celery.utils.log import get_task_logger
 from flask import render_template, current_app, url_for
 from flask_mail import Message
-from sqlalchemy import and_, or_, not_
+from sqlalchemy import and_, or_
+from stem import Signal
+from stem.control import Controller
+from stem.util.log import get_logger as get_stem_logger
 
 from vacnotify import celery, mail, useragents
 from vacnotify.database import transaction
@@ -17,6 +22,7 @@ from vacnotify.models import EligibilityGroup, VaccinationPlace, VaccinationDay,
 from operator import attrgetter, itemgetter
 
 logging = get_task_logger(__name__)
+get_stem_logger().propagate = False
 
 GROUPS_URL = "https://mojeezdravie.nczisk.sk/api/v1/web/get_vaccination_groups"
 PLACES_URL = "https://mojeezdravie.nczisk.sk/api/v1/web/get_driveins_vacc"
@@ -48,10 +54,52 @@ def email_notification_spot(email: str, secret: str, cities_free: Mapping[str, i
     mail.send(msg)
 
 
+class RetrySession(object):
+    def __init__(self, retries: int = 5):
+        self.retries = retries
+        self.sess = None
+        self.reset_session()
+
+    def reset_session(self):
+        self.sess = requests.Session()
+        if current_app.config["TOR_USE"]:
+            self.sess.proxies = {"http": current_app.config["TOR_SOCKS"],
+                                 "https": current_app.config["TOR_SOCKS"]}
+            with Controller.from_port(address=current_app.config["TOR_CONTROL_ADDRESS"],
+                                      port=current_app.config["TOR_CONTROL_PORT"]) as controller:
+                controller.authenticate(password=current_app.config["TOR_CONTROL_PASSWORD"])
+                controller.signal(Signal.NEWNYM)
+        ip = self.sess.get("https://icanhazip.com").content.decode().strip()
+        useragent = random.choice(useragents)
+        self.sess.headers["User-Agent"] = useragent
+        logging.info(f"Now I am {ip} using {useragent}")
+
+    def get(self, *args, **kwargs):
+        for i in range(self.retries):
+            try:
+                return self.sess.get(*args, **kwargs)
+            except Exception as e:
+                logging.error(f"Got {e}")
+                if i != self.retries - 1:
+                    self.reset_session()
+                else:
+                    raise e
+
+    def post(self, *args, **kwargs):
+        for i in range(self.retries):
+            try:
+                return self.sess.post(*args, **kwargs)
+            except Exception as e:
+                logging.error(f"Got {e}")
+                if i != self.retries - 1:
+                    self.reset_session()
+                else:
+                    raise e
+
+
 @celery.task(ignore_result=True)
 def run():
-    s = requests.Session()
-    s.headers["User-Agent"] = random.choice(useragents)
+    s = RetrySession()
 
     # Get the new groups.
     groups_resp = s.get(GROUPS_URL)
@@ -115,6 +163,7 @@ def run():
     total_free_online = 0
     for place in current_places:
         free_resp = s.post(QUERY_URL, json={"drivein_id": str(place.nczi_id)})
+        time.sleep(0.5)
         if free_resp.status_code != 200:
             logging.error(f"Couldn't get free spots -> {free_resp.status_code}")
         else:
