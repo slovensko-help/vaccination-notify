@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="sk">
 <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta charset="utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 </head>
 <body>
 
@@ -21,9 +21,13 @@
     {% endfor %}
 </ul>
 
-<p>Pre registráciu na očkovanie použite <a href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" target="_blank">formulár NCZI</a>.</p>
+<p>Pre registráciu na očkovanie použite <a href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php"
+                                           target="_blank">formulár NCZI</a>.</p>
 
-<p>Ak už nechcete dostávať notifikačné emaily, kliknite na link nižšie alebo ho skopírujte do svojho webového prehliadača.</p>
-<a href="{{ url_for('main.group_unsubscribe', secret=secret) }}" target="_blank">{{ url_for('main.group_unsubscribe', secret=secret) }}</a>
+<p>Ak už nechcete dostávať notifikačné emaily, kliknite na link nižšie alebo ho skopírujte do svojho webového
+    prehliadača. Po odhlásení už notifikácie dostávať nebudete a Vaše osobné údaje (email) budú vymazané.
+</p>
+<a href="{{ url_for('main.group_unsubscribe', secret=secret) }}"
+   target="_blank">{{ url_for('main.group_unsubscribe', secret=secret) }}</a>
 </body>
 </html>
