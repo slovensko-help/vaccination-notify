@@ -1,11 +1,9 @@
 import json
 import locale
-import hashlib
-from pprint import pprint
 import sentry_sdk
 
 from sentry_sdk.integrations.flask import FlaskIntegration
-from flask import Flask, render_template
+from flask import Flask, render_template, session
 from celery import Celery, Task
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -13,7 +11,7 @@ from flask_redis import FlaskRedis
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 from flask_mail import Mail
-from vacnotify.utils import CustomEncoder
+from vacnotify.utils import CustomEncoder, remove_pii
 
 
 app = Flask(__name__, instance_relative_config=True)
@@ -23,7 +21,10 @@ app.json_encoder = CustomEncoder
 
 def before_send(event, hint):
     if "request" in event and "data" in event["request"] and "email" in event["request"]["data"]:
-        event["request"]["data"]["email"] = hashlib.blake2b(event["request"]["data"]["email"].encode(), digest_size=20).hexdigest()
+        event["request"]["data"]["email"] = remove_pii(event["request"]["data"]["email"])
+    if event["location"] in ("vacnotify.tasts.email_confirmation", "vacnotify.tasts.email_notification_spot", "vacnotify.tasts.email_notification_group"):
+        celery_args = event["extra"]["celery-job"]["args"]
+        celery_args[0] = remove_pii(celery_args[0])
     return event
 
 
@@ -97,6 +98,19 @@ def setup_periodic_tasks(sender, **kwargs):
 
 from .views import main
 app.register_blueprint(main)
+
+
+@app.before_request
+def set_sentry_user():
+    try:
+        user = []
+        for k, v in session.items():
+            user.append(str(k))
+            user.append(str(v))
+        user_hash = remove_pii(*user)
+        sentry_sdk.set_user({"user_hash": user_hash})
+    except Exception:
+        pass
 
 
 @app.errorhandler(404)

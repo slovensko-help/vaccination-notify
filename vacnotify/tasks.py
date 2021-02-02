@@ -14,7 +14,7 @@ from stem import Signal
 from stem.control import Controller
 from stem.util.log import get_logger as get_stem_logger
 
-from vacnotify import celery, mail, useragents
+from vacnotify import celery, mail, useragents, remove_pii
 from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, VaccinationDay, GroupSubscription, SpotSubscription, \
     Status, VaccinationStats
@@ -220,7 +220,7 @@ def run():
     for subscription in all_group_subscriptions:
         new_subscription_groups = set(map(attrgetter("item_description"), set(all_groups) - set(subscription.known_groups)))
         if new_subscription_groups:
-            logging.info(f"Sending group notification to {subscription.email}.")
+            logging.info(f"Sending group notification to [{subscription.id}] {remove_pii(subscription.email)}.")
             with transaction():
                 email_notification_group.delay(subscription.email, hexlify(subscription.secret).decode(), list(new_subscription_groups))
                 subscription.last_notification_at = now
@@ -236,7 +236,7 @@ def run():
              or_(SpotSubscription.last_notification_at.is_(None),
                  SpotSubscription.last_notification_at < now - spot_backoff_time))).all()
     for subscription in to_notify_spots:
-        logging.info(f"Sending spot notification to {subscription.email}.")
+        logging.info(f"Sending spot notification to [{subscription.id}] {remove_pii(subscription.email)}.")
         new_subscription_cities = {}
         for place in subscription.places:
             if place.free > 0 and place.online:

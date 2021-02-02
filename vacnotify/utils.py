@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime
 
 import requests
@@ -34,3 +35,13 @@ def hcaptcha_required(f):
                 abort(403)
         return f(*args, **kwargs)
     return wrapper
+
+
+def remove_pii(*args):
+    h = hashlib.blake2b(digest_size=20)
+    for arg in args:
+        if isinstance(arg, str):
+            h.update(arg.encode())
+        elif isinstance(arg, bytes):
+            h.update(arg)
+    return h.hexdigest()
