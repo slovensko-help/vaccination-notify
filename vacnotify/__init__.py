@@ -108,7 +108,7 @@ def set_sentry_user():
             user.append(str(k))
             user.append(str(v))
         user_hash = remove_pii(*user)
-        sentry_sdk.set_user({"user_hash": user_hash})
+        sentry_sdk.set_user({"id": user_hash})
     except Exception:
         pass
 

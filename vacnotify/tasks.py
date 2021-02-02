@@ -163,7 +163,7 @@ def run():
     total_free_online = 0
     for place in current_places:
         free_resp = s.post(QUERY_URL, json={"drivein_id": str(place.nczi_id)})
-        time.sleep(0.5)
+        time.sleep(1)
         if free_resp.status_code != 200:
             logging.error(f"Couldn't get free spots -> {free_resp.status_code}")
         else:

@@ -71,6 +71,7 @@ class VaccinationPlace(db.Model):
 class GroupSubscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(128))
+    created_at = db.Column(db.DateTime)
     secret = db.Column(db.LargeBinary(16))
     status = db.Column(db.Enum(Status))
     known_groups = db.relationship("EligibilityGroup", secondary=group_db)
@@ -86,6 +87,7 @@ class GroupSubscription(db.Model):
 class SpotSubscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(128))
+    created_at = db.Column(db.DateTime)
     secret = db.Column(db.LargeBinary(16))
     status = db.Column(db.Enum(Status))
     places = db.relationship("VaccinationPlace", secondary=place_db)

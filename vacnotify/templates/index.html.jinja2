@@ -18,7 +18,7 @@
                 zdravotníctva? Už nikdy viac!</b> 🔥</p>
             <p class="lead">Táto stránka poskytuje notifikácie na Váš email o voľných miestach na očkovanie proti ochoreniu COVID-19 a tiež
                 o momente otvorenia očkovacieho formulára pre nové skupiny obyvateľov. Stránka používa informácie od
-                NCZI avšak nie je s NCZI alebo Ministerstvom Zdravotníctva akokoľvek asociovaná. Pre registráciu na
+                NCZI, avšak nie je s NCZI alebo Ministerstvom Zdravotníctva akokoľvek asociovaná. Pre registráciu na
                 očkovanie použite <a href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" target="_blank"><i class="fas fa-external-link-alt"></i> formulár NCZI</a>.</p>
             {{ render_alerts(get_alerts()) }}
         </div>
@@ -31,7 +31,7 @@
                         <div class="card-body">
                             <h5 class="card-title">Voľné miesta</h5>
                             <!--<h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6> -->
-                            <p class="card-text">Chcem dostávať notifikácie na email o voľných termínoch na očkovanie vo
+                            <p class="card-text">Chcem dostávať notifikácie na email o voľných termínoch na&nbsp;očkovanie vo
                                 vybraných očkovacích miestach.</p>
                             <a href="{{ url_for('main.spot_subscribe') }}" class="btn btn-primary">Ďalej</a>
                             <a href="{{ url_for('main.spot_subscribe') + "#places-table" }}" class="btn btn-outline-secondary">Prehľad voľných termínov</a>
@@ -83,7 +83,7 @@
                     <p>
                         Dáta sa aktualizujú každých 5 minút.
                         Očkovací termín je dostupný, ak očkovacie miesto hlási v daný deň kapacitu a nie je v daný deň
-                        zatvorené. Očkovacie miesta bývajú nedostupné (a vtedy nie sú ani viditeľné a na výber vo formulári NCZI),
+                        zatvorené. Očkovacie miesta bývajú nedostupné (a vtedy nie sú ani viditeľné a nie sú na výber vo formulári NCZI),
                         keď sa aktualizuje ich kapacita, čo často býva v noci.
                     </p>
                 </div>
