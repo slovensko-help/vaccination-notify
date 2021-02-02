@@ -1,3 +1,4 @@
+import hashlib
 from binascii import unhexlify, hexlify
 from datetime import datetime, timedelta
 from operator import attrgetter
@@ -19,7 +20,7 @@ def index():
     stats = VaccinationStats.query.filter(VaccinationStats.datetime > (datetime.now() - timedelta(days=1))).order_by(VaccinationStats.id.desc()).all()
     current_stats = VaccinationStats.query.order_by(VaccinationStats.id.desc()).first()
 
-    return render_template("index.html.jinja2", stats=stats, current_stats=current_stats)  # groups=groups, places=places, dates=dates
+    return render_template("index.html.jinja2", stats=stats, current_stats=current_stats)
 
 
 @main.route("/privacy")
@@ -40,8 +41,11 @@ def group_subscribe():
             if email_exists:
                 return render_template("error.html.jinja2", error="Na daný email už je nastavená notifikácia.")
             else:
+                h = hashlib.blake2b(key=current_app.config["APP_SECRET"].encode(), digest_size=16)
+                h.update(frm.email.data.encode())
+                secret = h.digest()
                 with transaction() as t:
-                    subscription = GroupSubscription(frm.email.data, EligibilityGroup.query.all())
+                    subscription = GroupSubscription(frm.email.data, secret, EligibilityGroup.query.all())
                     t.add(subscription)
                 email_confirmation.delay(subscription.email, hexlify(subscription.secret).decode(), "group")
                 return render_template("confirmation_sent.jinja2", email=subscription.email)
@@ -97,8 +101,11 @@ def spot_subscribe():
                 selected_places = set()
                 for _, selected_city in selected_cities:
                     selected_places.update(filter(lambda place: place.city == selected_city, places))
+                h = hashlib.blake2b(key=current_app.config["APP_SECRET"].encode(), digest_size=16)
+                h.update(frm.email.data.encode())
+                secret = h.digest()
                 with transaction() as t:
-                    subscription = SpotSubscription(frm.email.data, list(selected_places))
+                    subscription = SpotSubscription(frm.email.data, secret, list(selected_places))
                     t.add(subscription)
                 email_confirmation.delay(subscription.email, hexlify(subscription.secret).decode(), "spot")
                 return render_template("confirmation_sent.jinja2", email=subscription.email)

@@ -1,5 +1,4 @@
 from enum import Enum, auto
-import secrets
 from vacnotify import db
 
 group_db = db.Table("group_map", db.metadata,
@@ -77,9 +76,9 @@ class GroupSubscription(db.Model):
     known_groups = db.relationship("EligibilityGroup", secondary=group_db)
     last_notification_at = db.Column(db.DateTime)
 
-    def __init__(self, email: str, known_groups):
+    def __init__(self, email: str, secret: secret, known_groups):
         self.email = email
-        self.secret = secrets.token_bytes(16)
+        self.secret = secret
         self.status = Status.UNCONFIRMED
         self.known_groups = known_groups
 
@@ -92,9 +91,9 @@ class SpotSubscription(db.Model):
     places = db.relationship("VaccinationPlace", secondary=place_db)
     last_notification_at = db.Column(db.DateTime)
 
-    def __init__(self, email: str, tracked_places):
+    def __init__(self, email: str, secret: bytes, tracked_places):
         self.email = email
-        self.secret = secrets.token_bytes(16)
+        self.secret = secret
         self.status = Status.UNCONFIRMED
         self.places = tracked_places
 
