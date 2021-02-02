@@ -245,3 +245,20 @@ def run():
         with transaction():
             email_notification_spot.delay(subscription.email, hexlify(subscription.secret).decode(), new_subscription_cities)
             subscription.last_notification_at = now
+
+
+@celery.task(ignore_result=True)
+def clear_db_unconfirmed():
+    now = datetime.now()
+    notification_clear_time = timedelta(seconds=current_app.config["NOTIFICATION_UNCONFIRMED_CLEAR"])
+    to_clear_group = GroupSubscription.query.filter(and_(GroupSubscription.status == Status.UNCONFIRMED,
+                                                         GroupSubscription.created_at < now - notification_clear_time)).all()
+    to_clear_spot = SpotSubscription.query.filter(and_(SpotSubscription.status == Status.UNCONFIRMED,
+                                                       SpotSubscription.created_at < now - notification_clear_time)).all()
+    logging.info(f"Clearing {len(to_clear_group)} group notification subscriptions and {len(to_clear_spot)} spot notification subscriptions.")
+    with transaction() as t:
+        for group_sub in to_clear_group:
+            t.delete(group_sub)
+        for spot_sub in to_clear_spot:
+            t.delete(spot_sub)
+    logging.info("Cleared")

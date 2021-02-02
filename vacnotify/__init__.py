@@ -88,12 +88,13 @@ migrate = Migrate(app, db, directory="vacnotify/migrations")
 # Email
 mail = Mail(app)
 
-from .tasks import run
+from .tasks import run, clear_db_unconfirmed
 
 
 @celery.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(app.config["QUERY_PERIOD"], run.s(), name="Query the state!")
+    sender.add_periodic_task(app.config["QUERY_PERIOD"], run.s(), name="Query the state.")
+    sender.add_periodic_task(24 * 3600, clear_db_unconfirmed.s(), name="Clear unconfirmed and old subscriptions.")
 
 
 from .views import main
