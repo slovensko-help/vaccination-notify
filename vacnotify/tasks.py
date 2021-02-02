@@ -1,4 +1,3 @@
-import http.client
 import random
 import time
 from binascii import hexlify
@@ -55,8 +54,9 @@ def email_notification_spot(email: str, secret: str, cities_free: Mapping[str, i
 
 
 class RetrySession(object):
-    def __init__(self, retries: int = 5):
+    def __init__(self, retries: int = 5, timeout: int = 5):
         self.retries = retries
+        self.timeout = timeout
         self.sess = None
         self.reset_session()
 
@@ -77,7 +77,7 @@ class RetrySession(object):
     def get(self, *args, **kwargs):
         for i in range(self.retries):
             try:
-                return self.sess.get(*args, **kwargs)
+                return self.sess.get(*args, **kwargs, timeout=self.timeout)
             except Exception as e:
                 logging.info(f"Got {e}")
                 if i != self.retries - 1:
@@ -88,7 +88,7 @@ class RetrySession(object):
     def post(self, *args, **kwargs):
         for i in range(self.retries):
             try:
-                return self.sess.post(*args, **kwargs)
+                return self.sess.post(*args, **kwargs, timeout=self.timeout)
             except Exception as e:
                 logging.info(f"Got {e}")
                 if i != self.retries - 1:

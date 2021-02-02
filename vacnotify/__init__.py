@@ -1,7 +1,9 @@
 import json
 import locale
-
+import hashlib
+from pprint import pprint
 import sentry_sdk
+
 from sentry_sdk.integrations.flask import FlaskIntegration
 from flask import Flask, render_template
 from celery import Celery, Task
@@ -18,11 +20,19 @@ app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile("config.py", silent=True)
 app.json_encoder = CustomEncoder
 
+
+def before_send(event, hint):
+    if "request" in event and "data" in event["request"] and "email" in event["request"]["data"]:
+        event["request"]["data"]["email"] = hashlib.blake2b(event["request"]["data"]["email"].encode(), digest_size=20).hexdigest()
+    return event
+
+
 sentry_sdk.init(
     dsn=app.config["SENTRY_INGEST"],
     integrations=[FlaskIntegration()],
     traces_sample_rate=app.config["SENTRY_SAMPLE_RATE"],
-    environment=app.env
+    environment=app.env,
+    before_send=before_send
 )
 
 try:
@@ -101,7 +111,7 @@ def errorhandler_hcaptcha(error):
 
 @app.errorhandler(Exception)
 def errorhandler_exc(error: Exception):
-    app.logger.error(f"Error: {error}")
+    app.logger.error(str(error))
     return render_template("error.html.jinja2", error="Chyba servera, pravdepodobne som niečo pokazil. Skúste znova.")
 
 
