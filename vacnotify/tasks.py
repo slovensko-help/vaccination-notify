@@ -125,6 +125,7 @@ def run():
                     t.add(group)
         else:
             logging.info("No new groups")
+    time.sleep(current_app.config["QUERY_DELAY"])
 
     # Update the vaccination places.
     places_resp = s.get(PLACES_URL)
@@ -163,6 +164,7 @@ def run():
                     off_place.online = False
         else:
             logging.info("All current places are online")
+    time.sleep(current_app.config["QUERY_DELAY"])
 
     # Update the free spots in vaccination places.
     current_places = VaccinationPlace.query.all()
