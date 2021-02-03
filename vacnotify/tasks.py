@@ -84,6 +84,7 @@ class RetrySession(object):
                     self.reset_session()
                 else:
                     raise e
+                time.sleep(current_app.config["QUERY_DELAY"])
 
     def post(self, *args, **kwargs):
         for i in range(self.retries):
@@ -95,6 +96,7 @@ class RetrySession(object):
                     self.reset_session()
                 else:
                     raise e
+                time.sleep(current_app.config["QUERY_DELAY"])
 
 
 @celery.task(ignore_result=True)
@@ -163,7 +165,7 @@ def run():
     total_free_online = 0
     for place in current_places:
         free_resp = s.post(QUERY_URL, json={"drivein_id": str(place.nczi_id)})
-        time.sleep(1)
+        time.sleep(current_app.config["QUERY_DELAY"])
         if free_resp.status_code != 200:
             logging.error(f"Couldn't get free spots -> {free_resp.status_code}")
         else:
@@ -256,9 +258,10 @@ def clear_db_unconfirmed():
     to_clear_spot = SpotSubscription.query.filter(and_(SpotSubscription.status == Status.UNCONFIRMED,
                                                        SpotSubscription.created_at < now - notification_clear_time)).all()
     logging.info(f"Clearing {len(to_clear_group)} group notification subscriptions and {len(to_clear_spot)} spot notification subscriptions.")
+    to_clear = set(map(lambda subscription: f"[{subscription.id}] {remove_pii(subscription.email)}", to_clear_spot + to_clear_group))
     with transaction() as t:
         for group_sub in to_clear_group:
             t.delete(group_sub)
         for spot_sub in to_clear_spot:
             t.delete(spot_sub)
-    logging.info("Cleared")
+    logging.info(f"Cleared {to_clear}")

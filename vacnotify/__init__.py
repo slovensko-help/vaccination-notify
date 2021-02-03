@@ -126,6 +126,7 @@ def errorhandler_hcaptcha(error):
 
 @app.errorhandler(Exception)
 def errorhandler_exc(error: Exception):
+    sentry_sdk.capture_exception(error)
     app.logger.error(str(error))
     return render_template("error.html.jinja2", error="Chyba servera, pravdepodobne som niečo pokazil. Skúste znova.")
 
