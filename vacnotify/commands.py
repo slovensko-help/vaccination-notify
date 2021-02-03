@@ -93,4 +93,4 @@ def resend_confirmation(sub_type, dry_run, older_than, emails):
 
 @app.cli.command("trigger-query", help="Manually trigger query of API server (also sends notifications).")
 def trigger_query():
-    run.s()
+    run.delay()
