@@ -23,9 +23,6 @@ from operator import attrgetter, itemgetter
 logging = get_task_logger(__name__)
 get_stem_logger().propagate = False
 
-GROUPS_URL = "https://mojeezdravie.nczisk.sk/api/v1/web/get_vaccination_groups"
-PLACES_URL = "https://mojeezdravie.nczisk.sk/api/v1/web/get_driveins_vacc"
-QUERY_URL = "https://mojeezdravie.nczisk.sk/api/v1/web/validate_drivein_times_vacc"
 
 
 @celery.task(ignore_result=True)
@@ -109,7 +106,7 @@ def run():
     s = RetrySession()
 
     # Get the new groups.
-    groups_resp = s.get(GROUPS_URL)
+    groups_resp = s.get(current_app.config["NCZI_GROUPS_URL"])
     if groups_resp.status_code != 200:
         logging.error(f"Couldn't get groups -> {groups_resp.status_code}")
     else:
@@ -128,7 +125,7 @@ def run():
     time.sleep(current_app.config["QUERY_DELAY"])
 
     # Update the vaccination places.
-    places_resp = s.get(PLACES_URL)
+    places_resp = s.get(current_app.config["NCZI_PLACES_URL"])
     if places_resp.status_code != 200:
         logging.error(f"Couldn't get places -> {places_resp.status_code}")
     else:
@@ -171,7 +168,7 @@ def run():
     total_free = 0
     total_free_online = 0
     for place in current_places:
-        free_resp = s.post(QUERY_URL, json={"drivein_id": str(place.nczi_id)})
+        free_resp = s.post(current_app.config["NCZI_QUERY_URL"], json={"drivein_id": str(place.nczi_id)})
         time.sleep(current_app.config["QUERY_DELAY"])
         if free_resp.status_code != 200:
             logging.error(f"Couldn't get free spots -> {free_resp.status_code}")
