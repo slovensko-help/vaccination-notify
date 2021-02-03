@@ -7,7 +7,7 @@ import re
 
 from vacnotify import app
 from vacnotify.models import SpotSubscription, GroupSubscription, Status
-from vacnotify.tasks import email_confirmation
+from vacnotify.tasks import email_confirmation, run
 
 
 @app.cli.command("count-subscriptions", help="Count the subscriptions and users in the DB.")
@@ -89,3 +89,8 @@ def resend_confirmation(sub_type, dry_run, older_than, emails):
         else:
             click.echo(f"Sending {send_type} confirmation email to {email}.")
             email_confirmation.delay(email, secret, send_type)
+
+
+@app.cli.command("trigger-query", help="Manually trigger query of API server (also sends notifications).")
+def trigger_query():
+    run.s()
