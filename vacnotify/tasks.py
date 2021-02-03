@@ -30,10 +30,15 @@ QUERY_URL = "https://mojeezdravie.nczisk.sk/api/v1/web/validate_drivein_times_va
 
 @celery.task(ignore_result=True)
 def email_confirmation(email: str, secret: str, subscription_type: str):
-    if subscription_type not in ("group", "spot"):
+    if subscription_type not in ("group", "spot", "both"):
         raise ValueError
+    title_suffix = {
+        "group": " - Nová skupina",
+        "spot": " - Voľné miesta",
+        "both": ""
+    }
     html = render_template("email/confirm.html.jinja2", secret=secret, type=subscription_type)
-    msg = Message("Potvrdenie odberu notifikácii", recipients=[email], html=html)
+    msg = Message("Potvrdenie odberu notifikácii" + title_suffix[subscription_type], recipients=[email], html=html)
     mail.send(msg)
 
 

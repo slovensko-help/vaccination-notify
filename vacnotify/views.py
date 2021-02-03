@@ -45,7 +45,7 @@ def group_subscribe():
                 h.update(frm.email.data.encode())
                 secret = h.digest()
                 with transaction() as t:
-                    subscription = GroupSubscription(frm.email.data, secret, EligibilityGroup.query.all())
+                    subscription = GroupSubscription(frm.email.data, secret, datetime.now(), EligibilityGroup.query.all())
                     t.add(subscription)
                 email_confirmation.delay(subscription.email, hexlify(subscription.secret).decode(), "group")
                 return render_template("confirmation_sent.jinja2", email=subscription.email)
@@ -105,7 +105,7 @@ def spot_subscribe():
                 h.update(frm.email.data.encode())
                 secret = h.digest()
                 with transaction() as t:
-                    subscription = SpotSubscription(frm.email.data, secret, list(selected_places))
+                    subscription = SpotSubscription(frm.email.data, secret,  datetime.now(), list(selected_places))
                     t.add(subscription)
                 email_confirmation.delay(subscription.email, hexlify(subscription.secret).decode(), "spot")
                 return render_template("confirmation_sent.jinja2", email=subscription.email)
@@ -135,3 +135,43 @@ def spot_confirm(secret):
     with transaction():
         subscription.status = Status.CONFIRMED
     return render_template("ok.html.jinja2", msg="Odber notifikácii bol potvrdený.")
+
+
+@main.route("/both/unsubscribe/<string(length=32):secret>", methods=["GET", "POST"])
+def both_unsubscribe(secret):
+    try:
+        secret_bytes = unhexlify(secret)
+    except Exception:
+        abort(404)
+    spot_subscription = SpotSubscription.query.filter_by(secret=secret_bytes).first()
+    group_subscription = GroupSubscription.query.filter_by(secret=secret_bytes).first()
+    if spot_subscription is not None or group_subscription is not None:
+        with transaction() as t:
+            if spot_subscription is not None:
+                t.delete(spot_subscription)
+            if group_subscription is not None:
+                t.delete(group_subscription)
+        return render_template("ok.html.jinja2",
+                               msg="Odber notifikácii bol úspešne zrušený a Váše osobné údaje (email) boli odstránené.")
+    else:
+        abort(404)
+
+
+@main.route("/both/confirm/<string(length=32):secret>")
+def both_confirm(secret):
+    try:
+        secret_bytes = unhexlify(secret)
+    except Exception:
+        abort(404)
+    spot_subscription = SpotSubscription.query.filter_by(secret=secret_bytes).first()
+    group_subscription = GroupSubscription.query.filter_by(secret=secret_bytes).first()
+    if spot_subscription is not None or group_subscription is not None:
+        with transaction():
+            if spot_subscription is not None:
+                spot_subscription.status = Status.CONFIRMED
+            if group_subscription is not None:
+                group_subscription.status = Status.CONFIRMED
+        return render_template("ok.html.jinja2", msg="Odber notifikácii bol potvrdený.")
+    else:
+        abort(404)
+

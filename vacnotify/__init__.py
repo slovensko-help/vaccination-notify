@@ -100,6 +100,8 @@ def setup_periodic_tasks(sender, **kwargs):
 from .views import main
 app.register_blueprint(main)
 
+from .commands import *
+
 
 @app.before_request
 def set_sentry_user():
@@ -116,19 +118,19 @@ def set_sentry_user():
 
 @app.errorhandler(404)
 def errorhandler_notfound(error):
-    return render_template("error.html.jinja2", error="Stránka neexistuje.")
+    return render_template("error.html.jinja2", error="Stránka neexistuje."), 404
 
 
 @app.errorhandler(403)
 def errorhandler_hcaptcha(error):
-    return render_template("error.html.jinja2", error="Prístup zamietnutý.")
+    return render_template("error.html.jinja2", error="Prístup zamietnutý."), 403
 
 
 @app.errorhandler(Exception)
 def errorhandler_exc(error: Exception):
     sentry_sdk.capture_exception(error)
     app.logger.error(str(error))
-    return render_template("error.html.jinja2", error="Chyba servera, pravdepodobne som niečo pokazil. Skúste znova.")
+    return render_template("error.html.jinja2", error="Chyba servera, pravdepodobne som niečo pokazil. Skúste znova."), 500
 
 
 @app.template_global()

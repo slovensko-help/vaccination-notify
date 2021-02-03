@@ -77,10 +77,11 @@ class GroupSubscription(db.Model):
     known_groups = db.relationship("EligibilityGroup", secondary=group_db)
     last_notification_at = db.Column(db.DateTime)
 
-    def __init__(self, email: str, secret: secret, known_groups):
+    def __init__(self, email: str, secret: secret, created_at,known_groups):
         self.email = email
         self.secret = secret
         self.status = Status.UNCONFIRMED
+        self.created_at = created_at
         self.known_groups = known_groups
 
 
@@ -93,10 +94,11 @@ class SpotSubscription(db.Model):
     places = db.relationship("VaccinationPlace", secondary=place_db)
     last_notification_at = db.Column(db.DateTime)
 
-    def __init__(self, email: str, secret: bytes, tracked_places):
+    def __init__(self, email: str, secret: bytes, created_at, tracked_places):
         self.email = email
         self.secret = secret
         self.status = Status.UNCONFIRMED
+        self.created_at = created_at
         self.places = tracked_places
 
 

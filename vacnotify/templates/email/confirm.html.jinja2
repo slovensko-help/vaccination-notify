@@ -18,6 +18,12 @@
     do svojho weboveho prehliadača.
     </p>
     <a href="{{ url_for('main.spot_confirm', secret=secret) }}" target="_blank">{{ url_for('main.spot_confirm', secret=secret) }}</a>
+{% elif type == "both" %}
+    <p>
+    Pre odber notifikácii o voľných miestach na očkovanie vo vami vybraných miestach aj o otvorení očkovania pre nové skupiny
+    kliknite na link nižšie alebo ho skopírujte do svojho weboveho prehliadača.
+    </p>
+    <a href="{{ url_for('main.both_confirm', secret=secret) }}" target="_blank">{{ url_for('main.both_confirm', secret=secret) }}</a>
 {% endif %}
 
 <p>
@@ -27,6 +33,8 @@
         <a href="{{ url_for('main.group_unsubscribe', secret=secret) }}" target="_blank">{{ url_for('main.group_unsubscribe', secret=secret) }}</a>
     {% elif type == "spot" %}
         <a href="{{ url_for('main.spot_unsubscribe', secret=secret) }}" target="_blank">{{ url_for('main.spot_unsubscribe', secret=secret) }}</a>
+    {% elif type == "both" %}
+        <a href="{{ url_for('main.both_unsubscribe', secret=secret) }}" target="_blank">{{ url_for('main.both_unsubscribe', secret=secret) }}</a>
     {% endif %}
 </p>
 
