@@ -1,58 +1,29 @@
 import random
 import time
-from binascii import hexlify
-
 import requests
 
+from binascii import hexlify
+from operator import attrgetter, itemgetter
 from datetime import date, datetime, timedelta
-from typing import Set, Mapping, List
+from typing import Set, List
+
 from celery.utils.log import get_task_logger
-from flask import render_template, current_app, url_for
-from flask_mail import Message
+from flask import current_app
 from sqlalchemy import and_, or_
+from sqlalchemy.orm import joinedload
 from stem import Signal
 from stem.control import Controller
 from stem.util.log import get_logger as get_stem_logger
 
-from vacnotify import celery, mail, useragents, remove_pii
+from vacnotify import celery, useragents
 from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, VaccinationDay, GroupSubscription, SpotSubscription, \
     Status, VaccinationStats
-from operator import attrgetter, itemgetter
+from vacnotify.tasks.email import email_notification_group, email_notification_spot
+from vacnotify.utils import remove_pii
 
 logging = get_task_logger(__name__)
 get_stem_logger().propagate = False
-
-
-
-@celery.task(ignore_result=True)
-def email_confirmation(email: str, secret: str, subscription_type: str):
-    if subscription_type not in ("group", "spot", "both"):
-        raise ValueError
-    title_suffix = {
-        "group": " - Nová skupina",
-        "spot": " - Voľné miesta",
-        "both": ""
-    }
-    html = render_template("email/confirm.html.jinja2", secret=secret, type=subscription_type)
-    msg = Message("Potvrdenie odberu notifikácii" + title_suffix[subscription_type], recipients=[email], html=html)
-    mail.send(msg)
-
-
-@celery.task(ignore_result=True)
-def email_notification_group(email: str, secret: str, new_groups: List[str]):
-    html = render_template("email/notification_group.html.jinja2", secret=secret, new_groups=new_groups)
-    msg = Message("Nová skupina na očkovanie", recipients=[email], html=html, extra_headers={"List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-                                                                                             "List-Unsubscribe": "<" + url_for("main.group_unsubscribe", secret=secret) + ">"})
-    mail.send(msg)
-
-
-@celery.task(ignore_result=True)
-def email_notification_spot(email: str, secret: str, cities_free: Mapping[str, int]):
-    html = render_template("email/notification_spot.html.jinja2", secret=secret, cities_free=cities_free)
-    msg = Message("Voľné miesta na očkovanie", recipients=[email], html=html, extra_headers={"List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-                                                                                             "List-Unsubscribe": "<" + url_for("main.spot_unsubscribe", secret=secret) + ">"})
-    mail.send(msg)
 
 
 class RetrySession(object):
@@ -71,10 +42,9 @@ class RetrySession(object):
                                       port=current_app.config["TOR_CONTROL_PORT"]) as controller:
                 controller.authenticate(password=current_app.config["TOR_CONTROL_PASSWORD"])
                 controller.signal(Signal.NEWNYM)
-        ip = self.sess.get("https://icanhazip.com").content.decode().strip()
         useragent = random.choice(useragents)
         self.sess.headers["User-Agent"] = useragent
-        logging.info(f"Now I am {ip} using {useragent}")
+        logging.info(f"Now I am {useragent}")
 
     def get(self, *args, **kwargs):
         for i in range(self.retries):
@@ -101,12 +71,46 @@ class RetrySession(object):
                 time.sleep(current_app.config["QUERY_DELAY"])
 
 
-@celery.task(ignore_result=True)
-def run():
-    s = RetrySession()
+class NCZI(object):
+    def __init__(self, session):
+        self.session = session
+        self._urls = {
+            "nczi": {
+                "groups": (current_app.config["NCZI_GROUPS_URL"], "GET"),
+                "places": (current_app.config["NCZI_PLACES_URL"], "GET"),
+                "place": (current_app.config["NCZI_QUERY_URL"], "POST"),
+                "places_all": (current_app.config["NCZI_PLACES_ALL_URL"], "GET")
+            },
+            "proxy": {
+                "groups": (current_app.config["PROXY_GROUPS_URL"], "GET"),
+                "places": (current_app.config["PROXY_PLACES_URL"], "GET"),
+                "place": (current_app.config["PROXY_QUERY_URL"], "GET"),
+                "places_all": (current_app.config["PROXY_PLACES_ALL_URL"], "GET")
+            }
+        }[current_app.config["API_USE"]]
 
+    def request(self, url, method, **kwargs) -> requests.Response:
+        if method == "GET":
+            return self.session.get(url, params=kwargs)
+        if method == "POST":
+            return self.session.post(url, json=kwargs)
+
+    def get_groups(self) -> requests.Response:
+        return self.request(*self._urls["groups"])
+
+    def get_places(self) -> requests.Response:
+        return self.request(*self._urls["places"])
+
+    def get_place(self, nczi_id: int) -> requests.Response:
+        return self.request(*self._urls["place"], drivein_id=str(nczi_id))
+
+    def get_places_full(self) -> requests.Response:
+        return self.request(*self._urls["places_all"])
+
+
+def query_groups(s):
     # Get the new groups.
-    groups_resp = s.get(current_app.config["NCZI_GROUPS_URL"])
+    groups_resp = s.get_groups()
     if groups_resp.status_code != 200:
         logging.error(f"Couldn't get groups -> {groups_resp.status_code}")
     else:
@@ -122,21 +126,30 @@ def run():
                     t.add(group)
         else:
             logging.info("No new groups")
-    time.sleep(current_app.config["QUERY_DELAY"])
 
+
+def query_places(s):
     # Update the vaccination places.
-    places_resp = s.get(current_app.config["NCZI_PLACES_URL"])
+    places_resp = s.get_places()
     if places_resp.status_code != 200:
         logging.error(f"Couldn't get places -> {places_resp.status_code}")
     else:
         places_payload = places_resp.json()["payload"]
         current_places = VaccinationPlace.query.all()
         place_ids: Set[str] = set(map(itemgetter("id"), places_payload))
+        place_map = {int(place["id"]): place for place in places_payload}
         current_place_nczi_ids: Set[int] = set(map(attrgetter("nczi_id"), current_places))
         # Update places to online.
-        online_places = list(filter(lambda place: str(place.nczi_id) in place_ids, current_places))
+        online_places: List[VaccinationPlace] = list(filter(lambda place: str(place.nczi_id) in place_ids, current_places))
         with transaction():
             for online_place in online_places:
+                nczi_place = place_map[online_place.nczi_id]
+                online_place.title = nczi_place["title"]
+                online_place.longitude = float(nczi_place["longitude"])
+                online_place.latitude = float(nczi_place["latitude"])
+                online_place.city = nczi_place["city"]
+                online_place.street_name = nczi_place["street_name"]
+                online_place.street_number = nczi_place["street_number"]
                 online_place.online = True
 
         # Add new places.
@@ -161,14 +174,15 @@ def run():
                     off_place.online = False
         else:
             logging.info("All current places are online")
-    time.sleep(current_app.config["QUERY_DELAY"])
 
+
+def query_places_all(s):
     # Update the free spots in vaccination places.
-    current_places = VaccinationPlace.query.all()
+    current_places = VaccinationPlace.query.options(joinedload(VaccinationPlace.days)).all()
     total_free = 0
     total_free_online = 0
     for place in current_places:
-        free_resp = s.post(current_app.config["NCZI_QUERY_URL"], json={"drivein_id": str(place.nczi_id)})
+        free_resp = s.get_place(place.nczi_id)
         time.sleep(current_app.config["QUERY_DELAY"])
         if free_resp.status_code != 200:
             logging.error(f"Couldn't get free spots -> {free_resp.status_code}")
@@ -176,7 +190,7 @@ def run():
             free_payload = free_resp.json()["payload"]
             free = 0
             days = []
-            previous_days = set(place.days)
+            previous_days = {day.date: day for day in place.days}
             for line in free_payload:
                 day_date = date.fromisoformat(line["c_date"])
                 open = line["is_closed"] != "1"
@@ -184,7 +198,7 @@ def run():
                     capacity = int(line["free_capacity"])
                 except Exception:
                     capacity = 0
-                day = VaccinationDay.query.filter_by(date=day_date, place=place).first()
+                day = previous_days.get(day_date)
                 if day is None:
                     day = VaccinationDay(day_date, open, capacity, place)
                 day.open = open
@@ -196,7 +210,7 @@ def run():
                 total_free += free
                 total_free_online += free if place.online else 0
                 logging.info(f"Found free spots: {free} at {place.title} and they are {'online' if place.online else 'offline'}")
-            deleted_days = previous_days - set(days)
+            deleted_days = set(previous_days.values()) - set(days)
             with transaction() as t:
                 if deleted_days:
                     for deleted_day in deleted_days:
@@ -207,14 +221,112 @@ def run():
     total_places = len(current_places)
     online_places = len(list(filter(attrgetter("online"), current_places)))
     logging.info(f"Total places (online): {total_places} ({online_places})")
+    return {
+        "total_free_spots": total_free,
+        "total_free_online_spots": total_free_online,
+        "total_places": total_places,
+        "online_places": online_places
+    }
 
-    # Add stats
-    now = datetime.now()
-    with transaction() as t:
-        stats = VaccinationStats(now, total_free_spots=total_free, total_free_online_spots=total_free_online,
-                                 total_places=total_places, online_places=online_places)
-        t.add(stats)
 
+def query_places_aggregate(s):
+    # Update the places and free spots using the aggregate API
+    current_places = VaccinationPlace.query.all()
+    total_free = 0
+    total_free_online = 0
+    places_resp = s.get_places_full()
+    if places_resp.status_code != 200:
+        logging.error(f"Couldn't get full places -> {places_resp.status_code}")
+    else:
+        places_payload = places_resp.json()["payload"]
+        place_ids: Set[str] = set(map(itemgetter("id"), places_payload))
+        place_map = {int(place["id"]): place for place in places_payload}
+        current_place_nczi_ids: Set[int] = set(map(attrgetter("nczi_id"), current_places))
+        # Update places to online.
+        online_places: List[VaccinationPlace] = list(
+            filter(lambda place: str(place.nczi_id) in place_ids, current_places))
+        with transaction():
+            for online_place in online_places:
+                nczi_place = place_map[online_place.nczi_id]
+                online_place.title = nczi_place["title"]
+                online_place.longitude = float(nczi_place["longitude"])
+                online_place.latitude = float(nczi_place["latitude"])
+                online_place.city = nczi_place["city"]
+                online_place.street_name = nczi_place["street_name"]
+                online_place.street_number = nczi_place["street_number"]
+                online_place.online = True
+
+        # Add new places.
+        new_places = list(filter(lambda place: int(place["id"]) not in current_place_nczi_ids, places_payload))
+        if new_places:
+            logging.info(f"Found new places: {len(new_places)}")
+            with transaction() as t:
+                for new_place in new_places:
+                    place = VaccinationPlace(int(new_place["id"]), new_place["title"], float(new_place["longitude"]),
+                                             float(new_place["latitude"]), new_place["city"], new_place["street_name"],
+                                             new_place["street_number"], True, 0)
+                    t.add(place)
+        else:
+            logging.info("No new places")
+
+        # Set places to offline.
+        offline_places = list(
+            filter(lambda place: str(place.nczi_id) not in place_ids and place.online, current_places))
+        if offline_places:
+            logging.info(f"Found some places that are now offline: {len(offline_places)}")
+            with transaction():
+                for off_place in offline_places:
+                    off_place.online = False
+        else:
+            logging.info("All current places are online")
+
+        current_places = VaccinationPlace.query.options(joinedload(VaccinationPlace.days)).all()
+        for place in current_places:
+            if place.nczi_id not in place_map:
+                continue
+            free_payload = place_map[place.nczi_id]["calendar_data"]
+            free = 0
+            days = []
+            previous_days = {day.date: day for day in place.days}
+            for line in free_payload:
+                day_date = date.fromisoformat(line["c_date"])
+                open = line["is_closed"] != "1"
+                try:
+                    capacity = int(line["free_capacity"])
+                except Exception:
+                    capacity = 0
+                day = previous_days.get(day_date)
+                if day is None:
+                    day = VaccinationDay(day_date, open, capacity, place)
+                day.open = open
+                day.capacity = capacity
+                days.append(day)
+                if capacity > 0 and open:
+                    free += capacity
+            if free:
+                total_free += free
+                total_free_online += free if place.online else 0
+                logging.info(f"Found free spots: {free} at {place.title} and they are {'online' if place.online else 'offline'}")
+            deleted_days = set(previous_days.values()) - set(days)
+            with transaction() as t:
+                if deleted_days:
+                    for deleted_day in deleted_days:
+                        t.delete(deleted_day)
+                place.days = days
+                place.free = free
+    logging.info(f"Total free spots (online): {total_free} ({total_free_online})")
+    total_places = len(current_places)
+    online_places = len(list(filter(attrgetter("online"), current_places)))
+    logging.info(f"Total places (online): {total_places} ({online_places})")
+    return {
+        "total_free_spots": total_free,
+        "total_free_online_spots": total_free_online,
+        "total_places": total_places,
+        "online_places": online_places
+    }
+
+
+def notify_groups():
     # Send out the group notifications.
     all_groups = EligibilityGroup.query.all()
     now = datetime.now()
@@ -232,6 +344,8 @@ def run():
                 subscription.last_notification_at = now
                 subscription.known_groups = all_groups
 
+
+def notify_spots():
     # Send out the spot notifications.
     now = datetime.now()
     spot_backoff_time = timedelta(seconds=current_app.config["SPOT_NOTIFICATION_BACKOFF"])
@@ -254,37 +368,25 @@ def run():
 
 
 @celery.task(ignore_result=True)
-def clear_db_unconfirmed():
+def run():
+    s = NCZI(RetrySession())
+
+    query_groups(s)
+    time.sleep(current_app.config["QUERY_DELAY"])
+
+    if current_app.config["API_USE_AGGREGATE"]:
+        stats = query_places_aggregate(s)
+    else:
+        query_places(s)
+        time.sleep(current_app.config["QUERY_DELAY"])
+        stats = query_places_all(s)
+
+    # Add stats
     now = datetime.now()
-    notification_clear_time = timedelta(seconds=current_app.config["NOTIFICATION_UNCONFIRMED_CLEAR"])
-    to_clear_group = GroupSubscription.query.filter(and_(GroupSubscription.status == Status.UNCONFIRMED,
-                                                         GroupSubscription.created_at < now - notification_clear_time)).all()
-    to_clear_spot = SpotSubscription.query.filter(and_(SpotSubscription.status == Status.UNCONFIRMED,
-                                                       SpotSubscription.created_at < now - notification_clear_time)).all()
-    logging.info(f"Clearing {len(to_clear_group)} group notification subscriptions and {len(to_clear_spot)} spot notification subscriptions.")
-    to_clear = set(map(lambda subscription: f"[{subscription.id}] {remove_pii(subscription.email)}", to_clear_spot + to_clear_group))
     with transaction() as t:
-        for group_sub in to_clear_group:
-            t.delete(group_sub)
-        for spot_sub in to_clear_spot:
-            t.delete(spot_sub)
-    logging.info(f"Cleared {to_clear}")
+        stats = VaccinationStats(now, **stats)
+        t.add(stats)
 
+    notify_groups()
+    notify_spots()
 
-@celery.task(ignore_result=True)
-def add_new_places():
-    spot_subs = SpotSubscription.query.join(SpotSubscription.places).all()
-    places = VaccinationPlace.query.all()
-    cities = {}
-    for place in places:
-        ls = cities.setdefault(place.city, [])
-        ls.append(place)
-    for spot_sub in spot_subs:
-        spot_cities = set()
-        for place in spot_sub.places:
-            spot_cities.add(place.city)
-        spot_new_places = sum(map(lambda city: cities[city], spot_cities), [])
-        logging.info(f"Updating places of [{spot_sub.id}]: {len(spot_sub.places)} -> {len(spot_new_places)}")
-        with transaction():
-            spot_sub.places = spot_new_places
-    logging.info("Done updating places.")

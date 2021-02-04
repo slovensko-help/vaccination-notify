@@ -77,7 +77,7 @@ class GroupSubscription(db.Model):
     known_groups = db.relationship("EligibilityGroup", secondary=group_db)
     last_notification_at = db.Column(db.DateTime)
 
-    def __init__(self, email: str, secret: secret, created_at,known_groups):
+    def __init__(self, email: str, secret: secret, created_at, known_groups):
         self.email = email
         self.secret = secret
         self.status = Status.UNCONFIRMED

@@ -88,7 +88,8 @@ migrate = Migrate(app, db, directory="vacnotify/migrations")
 # Email
 mail = Mail(app)
 
-from .tasks import run, clear_db_unconfirmed
+from .tasks.query import run
+from .tasks.maintenance import clear_db_unconfirmed
 
 
 @celery.on_after_configure.connect
@@ -110,7 +111,7 @@ def set_sentry_user():
         for k, v in session.items():
             user.append(str(k))
             user.append(str(v))
-        user_hash = remove_pii(*user)
+        user_hash = remove_pii(*user)[:10]
         sentry_sdk.set_user({"id": user_hash})
     except Exception:
         pass

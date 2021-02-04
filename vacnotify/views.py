@@ -11,7 +11,7 @@ from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, GroupSubscription, Status, SpotSubscription, \
     VaccinationStats
 from vacnotify.forms import GroupSubscriptionForm, SpotSubscriptionForm
-from vacnotify.tasks import email_confirmation
+from vacnotify.tasks.email import email_confirmation
 from vacnotify.utils import hcaptcha_required
 
 
@@ -81,7 +81,7 @@ def group_confirm(secret):
 @hcaptcha_required
 def spot_subscribe():
     frm = SpotSubscriptionForm()
-    places = VaccinationPlace.query.options(joinedload(VaccinationPlace.days)).order_by(VaccinationPlace.city).all()
+    places = VaccinationPlace.query.options(joinedload(VaccinationPlace.days)).filter_by(online=True).order_by(VaccinationPlace.city).all()
     dates = list(map(attrgetter("date"), places[0].days))
     dates.sort()
 

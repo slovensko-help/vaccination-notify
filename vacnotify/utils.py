@@ -25,15 +25,16 @@ def hcaptcha_required(f):
             if "h-captcha-response" not in request.form:
                 abort(403)
             captcha = request.form["h-captcha-response"]
-            captcha_resp = requests.post("https://hcaptcha.com/siteverify", data={"response": captcha,
-                                                                                  "secret": current_app.config[
-                                                                                      "HCAPTCHA_SECRET_KEY"],
-                                                                                  "ip": request.remote_addr,
-                                                                                  "sitekey": current_app.config["HCAPTCHA_SITEKEY"]})
+            captcha_resp = requests.post("https://hcaptcha.com/siteverify",
+                                         data={"response": captcha,
+                                               "secret": current_app.config["HCAPTCHA_SECRET_KEY"],
+                                               "ip": request.remote_addr,
+                                               "sitekey": current_app.config["HCAPTCHA_SITEKEY"]})
             captcha_result = captcha_resp.json()
             if not captcha_result["success"]:
                 abort(403)
         return f(*args, **kwargs)
+
     return wrapper
 
 

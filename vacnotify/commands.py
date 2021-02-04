@@ -7,7 +7,9 @@ import re
 
 from vacnotify import app
 from vacnotify.models import SpotSubscription, GroupSubscription, Status
-from vacnotify.tasks import email_confirmation, run, add_new_places
+from vacnotify.tasks.maintenance import add_new_places
+from vacnotify.tasks.email import email_confirmation
+from vacnotify.tasks.query import run
 
 
 @app.cli.command("count-subscriptions", help="Count the subscriptions and users in the DB.")
@@ -15,21 +17,21 @@ def count_users():
     confirmed_spot_subs = SpotSubscription.query.filter(SpotSubscription.status == Status.CONFIRMED).count()
     unconfirmed_spot_subs = SpotSubscription.query.filter(SpotSubscription.status == Status.UNCONFIRMED).count()
     total_spot_subs = confirmed_spot_subs + unconfirmed_spot_subs
-    spot_subs_top = SpotSubscription.query.order_by(SpotSubscription.id.asc()).with_entities(SpotSubscription.id).first()
+    spot_subs_top = SpotSubscription.query.order_by(SpotSubscription.id.desc()).with_entities(SpotSubscription.id).first()
     confirmed_group_subs = GroupSubscription.query.filter(GroupSubscription.status == Status.CONFIRMED).count()
     unconfirmed_group_subs = GroupSubscription.query.filter(GroupSubscription.status == Status.UNCONFIRMED).count()
     total_group_subs = confirmed_group_subs + unconfirmed_group_subs
-    group_subs_top = GroupSubscription.query.order_by(GroupSubscription.id.asc()).with_entities(GroupSubscription.id).first()
+    group_subs_top = GroupSubscription.query.order_by(GroupSubscription.id.desc()).with_entities(GroupSubscription.id).first()
     spot_emails = set(SpotSubscription.query.with_entities(SpotSubscription.email).all())
     group_emails = set(GroupSubscription.query.with_entities(GroupSubscription.email).all())
     click.echo(f"Unique emails: {len(spot_emails | group_emails)}")
     click.echo(f"Shared emails: {len(spot_emails & group_emails)}")
-    click.echo(f"Spot subscriptions: {spot_subs_top}")
+    click.echo(f"Spot subscriptions: top(id) = {spot_subs_top}, total = {total_spot_subs}")
     click.echo(f" - Confirmed: {confirmed_spot_subs}")
     click.echo(f" - Unconfirmed: {unconfirmed_spot_subs}")
     if total_spot_subs != 0:
         click.echo(f" - Ratio: {confirmed_spot_subs / total_spot_subs}")
-    click.echo(f"Group subscriptions: {group_subs_top}")
+    click.echo(f"Group subscriptions: top(id) = {group_subs_top}, total = {total_group_subs}")
     click.echo(f" - Confirmed: {confirmed_group_subs}")
     click.echo(f" - Unconfirmed: {unconfirmed_group_subs}")
     if total_group_subs != 0:
