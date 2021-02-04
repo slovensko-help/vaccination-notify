@@ -17,7 +17,7 @@ from vacnotify.utils import hcaptcha_required
 
 @main.route("/")
 def index():
-    stats = VaccinationStats.query.filter(VaccinationStats.datetime > (datetime.now() - timedelta(days=1))).order_by(VaccinationStats.id.desc()).all()
+    stats = VaccinationStats.query.filter(VaccinationStats.datetime > (datetime.now() - timedelta(days=7))).order_by(VaccinationStats.id.desc()).all()
     current_stats = VaccinationStats.query.order_by(VaccinationStats.id.desc()).first()
 
     return render_template("index.html.jinja2", stats=stats, current_stats=current_stats)

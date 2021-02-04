@@ -70,8 +70,8 @@
                         <div class="col-sm">
                             <b>Dostupné očkovacie termíny</b>: {{ current_stats.total_free_online_spots }}
                             <i class="fas fa-syringe"></i><br/>
-                            <b>Dostupné + pripravované očkovacie termíny</b>: {{ current_stats.total_free_spots }} <i
-                                class="fas fa-syringe"></i><br/>
+{#                            <b>Dostupné + pripravované očkovacie termíny</b>: {{ current_stats.total_free_spots }} <i#}
+{#                                class="fas fa-syringe"></i><br/>#}
                             <b>Posledná aktualizácia</b>: {{ current_stats.datetime.strftime("%d.%m.%Y %H:%M") }}
                         </div>
                         <div class="col-sm">
@@ -88,8 +88,7 @@
                         Dáta sa aktualizujú každých 5 minút.
                         Očkovací termín je dostupný, ak očkovacie miesto hlási v daný deň kapacitu a nie je v daný deň
                         zatvorené. Očkovacie miesta bývajú nedostupné (a vtedy nie sú ani viditeľné a nie sú na výber vo
-                        formulári NCZI),
-                        keď sa aktualizuje ich kapacita, čo často býva v noci.
+                        formulári NCZI), keď sa aktualizuje ich kapacita, čo často býva v noci.
                     </p>
                 </div>
             </div>
@@ -170,20 +169,20 @@
                         .call(g => g.selectAll(".tick line").clone()
                             .attr("x2", width - (margin.right + margin.left))
                             .attr("stroke-opacity", 0.1))
+                        {#.call(g => g.select(".tick:nth-of-type(3)").insert("circle")#}
+                        {#    .attr("fill", "grey")#}
+                        {#    .attr("cx", 10)#}
+                        {#    .attr("r", 4))#}
+                        {#.call(g => g.select(".tick:nth-of-type(3) text").clone()#}
+                        {#    .attr("x", 15)#}
+                        {#    .attr("text-anchor", "start")#}
+                        {#    .attr("font-weight", "bold")#}
+                        {#    .text("Dostupné + pripravované očkovacie termíny"))#}
                         .call(g => g.select(".tick:nth-of-type(2)").insert("circle")
-                            .attr("fill", "grey")
-                            .attr("cx", 10)
-                            .attr("r", 4))
-                        .call(g => g.select(".tick:nth-of-type(2) text").clone()
-                            .attr("x", 15)
-                            .attr("text-anchor", "start")
-                            .attr("font-weight", "bold")
-                            .text("Dostupné + pripravované očkovacie termíny"))
-                        .call(g => g.select(".tick:nth-of-type(3)").insert("circle")
                             .attr("fill", "#0d6efd")
                             .attr("cx", 10)
                             .attr("r", 4))
-                        .call(g => g.select(".tick:nth-of-type(3) text").clone()
+                        .call(g => g.select(".tick:nth-of-type(2) text").clone()
                             .attr("x", 15)
                             .attr("text-anchor", "start")
                             .attr("font-weight", "bold")
@@ -197,10 +196,10 @@
                         .call(g => g.selectAll(".tick line").clone()
                             .attr("y2", -height + margin.top + margin.bottom)
                             .attr("stroke-opacity", 0.1));
-                    let lineTotal = d3.line()
-                        .defined(d => !isNaN(d.total_free_spots))
-                        .x(d => x(d.datetime))
-                        .y(d => y(d.total_free_spots));
+                    {#let lineTotal = d3.line()#}
+                    {#    .defined(d => !isNaN(d.total_free_spots))#}
+                    {#    .x(d => x(d.datetime))#}
+                    {#    .y(d => y(d.total_free_spots));#}
                     let lineOnline = d3.line()
                         .defined(d => !isNaN(d.total_free_online_spots))
                         .x(d => x(d.datetime))
@@ -210,16 +209,16 @@
                     const svg = d3.create("svg")
                         .attr("viewBox", [0, 0, width, height]);
 
-                    svg.append("path")
-                        .datum(stats)
-                        .attr("fill", "none")
-                        .attr("stroke", "grey")
-                        .attr("fill-opacity", 0.8)
-                        .attr("stroke-width", 1.5)
-                        .attr("stroke-dasharray", ("3, 3"))
-                        .attr("stroke-linejoin", "round")
-                        .attr("stroke-linecap", "round")
-                        .attr("d", lineTotal);
+                    {#svg.append("path")#}
+                    {#    .datum(stats)#}
+                    {#    .attr("fill", "none")#}
+                    {#    .attr("stroke", "grey")#}
+                    {#    .attr("fill-opacity", 0.8)#}
+                    {#    .attr("stroke-width", 1.5)#}
+                    {#    .attr("stroke-dasharray", ("3, 3"))#}
+                    {#    .attr("stroke-linejoin", "round")#}
+                    {#    .attr("stroke-linecap", "round")#}
+                    {#    .attr("d", lineTotal);#}
 
                     svg.append("path")
                         .datum(stats)
@@ -251,20 +250,20 @@
                         .call(g => g.selectAll(".tick line").clone()
                             .attr("x2", width - (margin.right + margin.left))
                             .attr("stroke-opacity", 0.1))
+                        {#.call(g => g.select(".tick:nth-of-type(2)").insert("circle")#}
+                        {#    .attr("fill", "grey")#}
+                        {#    .attr("cx", 10)#}
+                        {#    .attr("r", 4))#}
+                        {#.call(g => g.select(".tick:nth-of-type(2) text").clone()#}
+                        {#    .attr("x", 15)#}
+                        {#    .attr("text-anchor", "start")#}
+                        {#    .attr("font-weight", "bold")#}
+                        {#    .text("Očkovacie miesta"))#}
                         .call(g => g.select(".tick:nth-of-type(2)").insert("circle")
-                            .attr("fill", "grey")
-                            .attr("cx", 10)
-                            .attr("r", 4))
-                        .call(g => g.select(".tick:nth-of-type(2) text").clone()
-                            .attr("x", 15)
-                            .attr("text-anchor", "start")
-                            .attr("font-weight", "bold")
-                            .text("Očkovacie miesta"))
-                        .call(g => g.select(".tick:nth-of-type(3)").insert("circle")
                             .attr("fill", "#0d6efd")
                             .attr("cx", 10)
                             .attr("r", 4))
-                        .call(g => g.select(".tick:nth-of-type(3) text").clone()
+                        .call(g => g.select(".tick:nth-of-type(2) text").clone()
                             .attr("x", 15)
                             .attr("text-anchor", "start")
                             .attr("font-weight", "bold")
@@ -278,10 +277,10 @@
                         .call(g => g.selectAll(".tick line").clone()
                             .attr("y2", -height + margin.top + margin.bottom)
                             .attr("stroke-opacity", 0.1));
-                    let lineTotal = d3.line()
-                        .defined(d => !isNaN(d.total_places))
-                        .x(d => x(d.datetime))
-                        .y(d => y(d.total_places));
+                    {#let lineTotal = d3.line()#}
+                    {#    .defined(d => !isNaN(d.total_places))#}
+                    {#    .x(d => x(d.datetime))#}
+                    {#    .y(d => y(d.total_places));#}
                     let lineOnline = d3.line()
                         .defined(d => !isNaN(d.online_places))
                         .x(d => x(d.datetime))
@@ -291,15 +290,15 @@
                     const svg = d3.create("svg")
                         .attr("viewBox", [0, 0, width, height]);
 
-                    svg.append("path")
-                        .datum(stats)
-                        .attr("fill", "none")
-                        .attr("stroke", "grey")
-                        .attr("stroke-width", 1.5)
-                        .attr("stroke-dasharray", ("3, 3"))
-                        .attr("stroke-linejoin", "round")
-                        .attr("stroke-linecap", "round")
-                        .attr("d", lineTotal);
+                    {#svg.append("path")#}
+                    {#    .datum(stats)#}
+                    {#    .attr("fill", "none")#}
+                    {#    .attr("stroke", "grey")#}
+                    {#    .attr("stroke-width", 1.5)#}
+                    {#    .attr("stroke-dasharray", ("3, 3"))#}
+                    {#    .attr("stroke-linejoin", "round")#}
+                    {#    .attr("stroke-linecap", "round")#}
+                    {#    .attr("d", lineTotal);#}
 
                     svg.append("path")
                         .datum(stats)
