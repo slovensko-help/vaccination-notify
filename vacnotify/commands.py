@@ -7,25 +7,33 @@ import re
 
 from vacnotify import app
 from vacnotify.models import SpotSubscription, GroupSubscription, Status
-from vacnotify.tasks import email_confirmation, run
+from vacnotify.tasks import email_confirmation, run, add_new_places
 
 
 @app.cli.command("count-subscriptions", help="Count the subscriptions and users in the DB.")
 def count_users():
     confirmed_spot_subs = SpotSubscription.query.filter(SpotSubscription.status == Status.CONFIRMED).count()
     unconfirmed_spot_subs = SpotSubscription.query.filter(SpotSubscription.status == Status.UNCONFIRMED).count()
+    total_spot_subs = confirmed_spot_subs + unconfirmed_spot_subs
+    spot_subs_top = SpotSubscription.query.order_by(SpotSubscription.id.asc()).with_entities(SpotSubscription.id).first()
     confirmed_group_subs = GroupSubscription.query.filter(GroupSubscription.status == Status.CONFIRMED).count()
     unconfirmed_group_subs = GroupSubscription.query.filter(GroupSubscription.status == Status.UNCONFIRMED).count()
-    emails = set()
-    emails.update(SpotSubscription.query.with_entities(SpotSubscription.email).all())
-    emails.update(GroupSubscription.query.with_entities(GroupSubscription.email).all())
-    click.echo(f"Unique emails: {len(emails)}")
-    click.echo(f"Spot subscriptions:")
+    total_group_subs = confirmed_group_subs + unconfirmed_group_subs
+    group_subs_top = GroupSubscription.query.order_by(GroupSubscription.id.asc()).with_entities(GroupSubscription.id).first()
+    spot_emails = set(SpotSubscription.query.with_entities(SpotSubscription.email).all())
+    group_emails = set(GroupSubscription.query.with_entities(GroupSubscription.email).all())
+    click.echo(f"Unique emails: {len(spot_emails | group_emails)}")
+    click.echo(f"Shared emails: {len(spot_emails & group_emails)}")
+    click.echo(f"Spot subscriptions: {spot_subs_top}")
     click.echo(f" - Confirmed: {confirmed_spot_subs}")
     click.echo(f" - Unconfirmed: {unconfirmed_spot_subs}")
-    click.echo(f"Group subscriptions:")
+    if total_spot_subs != 0:
+        click.echo(f" - Ratio: {confirmed_spot_subs / total_spot_subs}")
+    click.echo(f"Group subscriptions: {group_subs_top}")
     click.echo(f" - Confirmed: {confirmed_group_subs}")
     click.echo(f" - Unconfirmed: {unconfirmed_group_subs}")
+    if total_group_subs != 0:
+        click.echo(f" - Ratio: {confirmed_group_subs / total_group_subs}")
 
 
 timedelta_re = re.compile(r'((?P<days>\d+?)d)?((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?')
@@ -94,3 +102,8 @@ def resend_confirmation(sub_type, dry_run, older_than, emails):
 @app.cli.command("trigger-query", help="Manually trigger query of API server (also sends notifications).")
 def trigger_query():
     run.delay()
+
+
+@app.cli.command("trigger-places-add", help="Manually trigfer the addition of new places to spot subscription based on cities.")
+def trigger_places_add():
+    add_new_places.delay()
