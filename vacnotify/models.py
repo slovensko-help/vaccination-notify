@@ -1,4 +1,6 @@
 from enum import Enum, auto
+from operator import attrgetter
+
 from vacnotify import db
 
 group_db = db.Table("group_map", db.metadata,
@@ -6,10 +8,10 @@ group_db = db.Table("group_map", db.metadata,
                     db.Column("group_id", db.Integer, db.ForeignKey("eligibility_group.id"), primary_key=True)
                     )
 
-place_db = db.Table("places_map", db.metadata,
-                    db.Column("subscription_id", db.Integer, db.ForeignKey("spot_subscription.id"), primary_key=True),
-                    db.Column("place_id", db.Integer, db.ForeignKey("vaccination_place.id"), primary_key=True)
-                    )
+city_db = db.Table("city_map", db.metadata,
+                   db.Column("subscription_id", db.Integer, db.ForeignKey("spot_subscription.id"), primary_key=True),
+                   db.Column("city_id", db.Integer, db.ForeignKey("vaccination_city.id"), primary_key=True)
+                   )
 
 
 class Status(Enum):
@@ -48,7 +50,8 @@ class VaccinationPlace(db.Model):
     title = db.Column(db.String(128))
     longitude = db.Column(db.Float)
     latitude = db.Column(db.Float)
-    city = db.Column(db.String(64))
+    # city <- backref
+    city_id = db.Column(db.Integer, db.ForeignKey("vaccination_city.id"), nullable=False)
     street_name = db.Column(db.String(64))
     street_number = db.Column(db.String(64))
     online = db.Column(db.Boolean)
@@ -56,7 +59,7 @@ class VaccinationPlace(db.Model):
     days = db.relationship("VaccinationDay", backref="place", lazy=True)
 
     def __init__(self, nczi_id: int, title: str, longitude: float, latitude: float,
-                 city: str, street_name: str, street_number: str, online: bool, free: int):
+                 city, street_name: str, street_number: str, online: bool, free: int):
         self.nczi_id = nczi_id
         self.title = title
         self.longitude = longitude
@@ -66,6 +69,29 @@ class VaccinationPlace(db.Model):
         self.street_number = street_number
         self.online = online
         self.free = free
+
+
+class VaccinationCity(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64))
+    places = db.relationship("VaccinationPlace", backref="city", lazy="joined")
+
+    def __init__(self, name: str):
+        self.name = name
+
+    @property
+    def free(self):
+        return sum(map(attrgetter("free"), self.places))
+
+    @property
+    def free_online(self):
+        return sum(map(lambda place: place.free if place.online else 0, self.places))
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return f"VaccinationCity({self.name})"
 
 
 class GroupSubscription(db.Model):
@@ -91,15 +117,15 @@ class SpotSubscription(db.Model):
     created_at = db.Column(db.DateTime)
     secret = db.Column(db.LargeBinary(16))
     status = db.Column(db.Enum(Status))
-    places = db.relationship("VaccinationPlace", secondary=place_db)
+    cities = db.relationship("VaccinationCity", secondary=city_db)
     last_notification_at = db.Column(db.DateTime)
 
-    def __init__(self, email: str, secret: bytes, created_at, tracked_places):
+    def __init__(self, email: str, secret: bytes, created_at, tracked_cities):
         self.email = email
         self.secret = secret
         self.status = Status.UNCONFIRMED
         self.created_at = created_at
-        self.places = tracked_places
+        self.cities = tracked_cities
 
 
 class VaccinationStats(db.Model):

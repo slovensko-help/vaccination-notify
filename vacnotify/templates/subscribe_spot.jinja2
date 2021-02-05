@@ -34,7 +34,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Mestá</label>
-                            {{ form.places(size=3, field_kwargs={"class_": "form-check-input"}) }}
+                            {{ form.cities(size=3, field_kwargs={"class_": "form-check-input"}) }}
                             <div class="form-text">Notifikácie budete dostávať len o nových voľných termínoch vo vyznačených mestách.</div>
                         </div>
                         <input type="submit" class="btn btn-primary h-captcha" value="Odoslať" data-sitekey="{{ config["HCAPTCHA_SITEKEY"] }}" data-callback="submitForm"/>

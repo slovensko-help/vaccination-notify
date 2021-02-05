@@ -18,7 +18,7 @@ from stem.util.log import get_logger as get_stem_logger
 from vacnotify import celery, useragents
 from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, VaccinationDay, GroupSubscription, SpotSubscription, \
-    Status, VaccinationStats
+    Status, VaccinationStats, VaccinationCity
 from vacnotify.tasks.email import email_notification_group, email_notification_spot
 from vacnotify.utils import remove_pii
 
@@ -135,6 +135,22 @@ def query_places(s):
         logging.error(f"Couldn't get places -> {places_resp.status_code}")
     else:
         places_payload = places_resp.json()["payload"]
+        # Add new cities if any.
+        current_cities = VaccinationCity.query.all()
+        city_map = {city.name: city for city in current_cities}
+        current_city_names: Set[str] = set(map(attrgetter("name"), current_cities))
+        city_names: Set[str] = set(map(itemgetter("city"), places_payload))
+        new_city_names = city_names - current_city_names
+        if new_city_names:
+            logging.info(f"Found some new cities: {new_city_names}")
+            with transaction() as t:
+                for city_name in new_city_names:
+                    city = VaccinationCity(city_name)
+                    t.add(city)
+                    city_map[city_name] = city
+        else:
+            logging.info("No new cities")
+
         current_places = VaccinationPlace.query.all()
         place_ids: Set[str] = set(map(itemgetter("id"), places_payload))
         place_map = {int(place["id"]): place for place in places_payload}
@@ -147,7 +163,7 @@ def query_places(s):
                 online_place.title = nczi_place["title"]
                 online_place.longitude = float(nczi_place["longitude"])
                 online_place.latitude = float(nczi_place["latitude"])
-                online_place.city = nczi_place["city"]
+                online_place.city = city_map[nczi_place["city"]]
                 online_place.street_name = nczi_place["street_name"]
                 online_place.street_number = nczi_place["street_number"]
                 online_place.online = True
@@ -159,7 +175,7 @@ def query_places(s):
             with transaction() as t:
                 for new_place in new_places:
                     place = VaccinationPlace(int(new_place["id"]), new_place["title"], float(new_place["longitude"]),
-                                             float(new_place["latitude"]), new_place["city"], new_place["street_name"],
+                                             float(new_place["latitude"]), city_map[new_place["city"]], new_place["street_name"],
                                              new_place["street_number"], True, 0)
                     t.add(place)
         else:
@@ -239,19 +255,34 @@ def query_places_aggregate(s):
         logging.error(f"Couldn't get full places -> {places_resp.status_code}")
     else:
         places_payload = places_resp.json()["payload"]
+        # Add new cities if any.
+        current_cities = VaccinationCity.query.all()
+        city_map = {city.name: city for city in current_cities}
+        current_city_names: Set[str] = set(map(attrgetter("name"), current_cities))
+        city_names: Set[str] = set(map(itemgetter("city"), places_payload))
+        new_city_names = city_names - current_city_names
+        if new_city_names:
+            logging.info(f"Found some new cities: {new_city_names}")
+            with transaction() as t:
+                for city_name in new_city_names:
+                    city = VaccinationCity(city_name)
+                    t.add(city)
+                    city_map[city_name] = city
+        else:
+            logging.info("No new cities")
+
         place_ids: Set[str] = set(map(itemgetter("id"), places_payload))
         place_map = {int(place["id"]): place for place in places_payload}
         current_place_nczi_ids: Set[int] = set(map(attrgetter("nczi_id"), current_places))
         # Update places to online.
-        online_places: List[VaccinationPlace] = list(
-            filter(lambda place: str(place.nczi_id) in place_ids, current_places))
+        online_places: List[VaccinationPlace] = list(filter(lambda place: str(place.nczi_id) in place_ids, current_places))
         with transaction():
             for online_place in online_places:
                 nczi_place = place_map[online_place.nczi_id]
                 online_place.title = nczi_place["title"]
                 online_place.longitude = float(nczi_place["longitude"])
                 online_place.latitude = float(nczi_place["latitude"])
-                online_place.city = nczi_place["city"]
+                online_place.city = city_map[nczi_place["city"]]
                 online_place.street_name = nczi_place["street_name"]
                 online_place.street_number = nczi_place["street_number"]
                 online_place.online = True
@@ -263,7 +294,7 @@ def query_places_aggregate(s):
             with transaction() as t:
                 for new_place in new_places:
                     place = VaccinationPlace(int(new_place["id"]), new_place["title"], float(new_place["longitude"]),
-                                             float(new_place["latitude"]), new_place["city"], new_place["street_name"],
+                                             float(new_place["latitude"]), city_map[new_place["city"]], new_place["street_name"],
                                              new_place["street_number"], True, 0)
                     t.add(place)
         else:
@@ -349,19 +380,16 @@ def notify_spots():
     # Send out the spot notifications.
     now = datetime.now()
     spot_backoff_time = timedelta(seconds=current_app.config["SPOT_NOTIFICATION_BACKOFF"])
-    to_notify_spots = SpotSubscription.query.join(SpotSubscription.places).filter(
+    to_notify_spots = SpotSubscription.query.join(SpotSubscription.cities).join(VaccinationCity.places).filter(
         and_(VaccinationPlace.free > 0,
              VaccinationPlace.online,
              SpotSubscription.status == Status.CONFIRMED,
              or_(SpotSubscription.last_notification_at.is_(None),
                  SpotSubscription.last_notification_at < now - spot_backoff_time))).all()
+
     for subscription in to_notify_spots:
         logging.info(f"Sending spot notification to [{subscription.id}] {remove_pii(subscription.email)}.")
-        new_subscription_cities = {}
-        for place in subscription.places:
-            if place.free > 0 and place.online:
-                new_subscription_cities.setdefault(place.city, 0)
-                new_subscription_cities[place.city] += place.free
+        new_subscription_cities = {city.name: city.free_online for city in subscription.cities}
         with transaction():
             email_notification_spot.delay(subscription.email, hexlify(subscription.secret).decode(), new_subscription_cities)
             subscription.last_notification_at = now

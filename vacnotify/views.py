@@ -9,7 +9,7 @@ from sqlalchemy.orm import joinedload
 from vacnotify.blueprint import main
 from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, GroupSubscription, Status, SpotSubscription, \
-    VaccinationStats
+    VaccinationStats, VaccinationCity
 from vacnotify.forms import GroupSubscriptionForm, SpotSubscriptionForm
 from vacnotify.tasks.email import email_confirmation
 from vacnotify.utils import hcaptcha_required
@@ -81,13 +81,14 @@ def group_confirm(secret):
 @hcaptcha_required
 def spot_subscribe():
     frm = SpotSubscriptionForm()
-    places = VaccinationPlace.query.options(joinedload(VaccinationPlace.days)).filter_by(online=True).order_by(VaccinationPlace.city).all()
+    places = VaccinationPlace.query.options(joinedload(VaccinationPlace.days)).filter_by(online=True).all()
+    places.sort(key=attrgetter("city.name"))
     dates = list(map(attrgetter("date"), places[0].days))
     dates.sort()
 
-    cities = set(map(attrgetter("city"), places))
-    cities_id = list(map(lambda city: (hash(city), city), sorted(cities)))
-    frm.places.choices = cities_id
+    cities = VaccinationCity.query.options(joinedload(VaccinationCity.places)).order_by(VaccinationCity.name).all()
+    cities_id = list(map(lambda city: (city.id, city), cities))
+    frm.cities.choices = cities_id
     if request.method == "GET" or not frm.validate_on_submit():
         last_stats = VaccinationStats.query.order_by(VaccinationStats.id.desc()).first()
         return render_template("subscribe_spot.jinja2", form=frm, places=places, dates=dates, last_stats=last_stats)
@@ -97,15 +98,12 @@ def spot_subscribe():
             if email_exists:
                 return render_template("error.html.jinja2", error="Na daný email už je nastavená notifikácia.")
             else:
-                selected_cities = filter(lambda x: x[0] in frm.places.data, cities_id)
-                selected_places = set()
-                for _, selected_city in selected_cities:
-                    selected_places.update(filter(lambda place: place.city == selected_city, places))
+                selected_cities = VaccinationCity.query.filter(VaccinationCity.id.in_(frm.cities.data))
                 h = hashlib.blake2b(key=current_app.config["APP_SECRET"].encode(), digest_size=16)
                 h.update(frm.email.data.encode())
                 secret = h.digest()
                 with transaction() as t:
-                    subscription = SpotSubscription(frm.email.data, secret,  datetime.now(), list(selected_places))
+                    subscription = SpotSubscription(frm.email.data, secret,  datetime.now(), list(selected_cities))
                     t.add(subscription)
                 email_confirmation.delay(subscription.email, hexlify(subscription.secret).decode(), "spot")
                 return render_template("confirmation_sent.jinja2", email=subscription.email)
