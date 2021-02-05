@@ -6,6 +6,15 @@
     margin-left: 4%;
 }
 
+#reg-button {
+    font-size: 0.9rem;
+    font-weight: bolder;
+    position: fixed;
+    bottom: 3.7%;
+    right: 3%;
+    padding: 0.45rem 0.75rem;
+}
+
 #sidebar-wrapper {
     margin-top: 57px;
     min-height: 100vh;
