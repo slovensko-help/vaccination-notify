@@ -103,7 +103,7 @@ def spot_subscribe():
                 h.update(frm.email.data.encode())
                 secret = h.digest()
                 with transaction() as t:
-                    subscription = SpotSubscription(frm.email.data, secret,  datetime.now(), list(selected_cities))
+                    subscription = SpotSubscription(frm.email.data, secret,  datetime.now(), list(selected_cities), [])
                     t.add(subscription)
                 email_confirmation.delay(subscription.email, hexlify(subscription.secret).decode(), "spot")
                 return render_template("confirmation_sent.jinja2", email=subscription.email)

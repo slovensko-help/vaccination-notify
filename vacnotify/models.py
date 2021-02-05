@@ -13,6 +13,11 @@ city_db = db.Table("city_map", db.metadata,
                    db.Column("city_id", db.Integer, db.ForeignKey("vaccination_city.id"), primary_key=True)
                    )
 
+known_city_db = db.Table("known_city_map", db.metadata,
+                         db.Column("subscription_id", db.Integer, db.ForeignKey("spot_subscription.id"), primary_key=True),
+                         db.Column("city_id", db.Integer, db.ForeignKey("vaccination_city.id"), primary_key=True)
+                         )
+
 
 class Status(Enum):
     UNCONFIRMED = auto()
@@ -118,14 +123,16 @@ class SpotSubscription(db.Model):
     secret = db.Column(db.LargeBinary(16))
     status = db.Column(db.Enum(Status))
     cities = db.relationship("VaccinationCity", secondary=city_db)
+    known_cities = db.relationship("VaccinationCity", secondary=known_city_db)
     last_notification_at = db.Column(db.DateTime)
 
-    def __init__(self, email: str, secret: bytes, created_at, tracked_cities):
+    def __init__(self, email: str, secret: bytes, created_at, tracked_cities, known_cities):
         self.email = email
         self.secret = secret
         self.status = Status.UNCONFIRMED
         self.created_at = created_at
         self.cities = tracked_cities
+        self.known_cities = known_cities
 
 
 class VaccinationStats(db.Model):

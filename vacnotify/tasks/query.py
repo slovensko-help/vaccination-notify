@@ -362,7 +362,6 @@ def notify_groups():
     all_groups = EligibilityGroup.query.all()
     now = datetime.now()
     group_backoff_time = timedelta(seconds=current_app.config["GROUP_NOTIFICATION_BACKOFF"])
-    # XXX: This is lame but will work...
     all_group_subscriptions = GroupSubscription.query.filter(and_(GroupSubscription.status == Status.CONFIRMED,
                                                                   or_(GroupSubscription.last_notification_at.is_(None),
                                                                       GroupSubscription.last_notification_at < now - group_backoff_time))).all()
@@ -380,19 +379,22 @@ def notify_spots():
     # Send out the spot notifications.
     now = datetime.now()
     spot_backoff_time = timedelta(seconds=current_app.config["SPOT_NOTIFICATION_BACKOFF"])
-    to_notify_spots = SpotSubscription.query.join(SpotSubscription.cities).join(VaccinationCity.places).filter(
+    spot_subs_free = SpotSubscription.query.options(joinedload(SpotSubscription.known_cities), joinedload(SpotSubscription.cities)).join(SpotSubscription.cities).join(VaccinationCity.places).filter(
         and_(VaccinationPlace.free > 0,
              VaccinationPlace.online,
              SpotSubscription.status == Status.CONFIRMED,
              or_(SpotSubscription.last_notification_at.is_(None),
                  SpotSubscription.last_notification_at < now - spot_backoff_time))).all()
 
-    for subscription in to_notify_spots:
-        logging.info(f"Sending spot notification to [{subscription.id}] {remove_pii(subscription.email)}.")
-        new_subscription_cities = {city.name: city.free_online for city in subscription.cities}
-        with transaction():
-            email_notification_spot.delay(subscription.email, hexlify(subscription.secret).decode(), new_subscription_cities)
-            subscription.last_notification_at = now
+    for subscription in spot_subs_free:
+        free_cities = set(city for city in subscription.cities if city.free_online)
+        if free_cities != set(subscription.known_cities) and free_cities:
+            logging.info(f"Sending spot notification to [{subscription.id}] {remove_pii(subscription.email)}.")
+            new_subscription_cities = {city.name: city.free_online for city in free_cities}
+            with transaction():
+                email_notification_spot.delay(subscription.email, hexlify(subscription.secret).decode(), new_subscription_cities)
+                subscription.last_notification_at = now
+                subscription.known_cities = list(free_cities)
 
 
 @celery.task(ignore_result=True)
