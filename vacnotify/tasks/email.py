@@ -16,7 +16,9 @@ def email_confirmation(email: str, secret: str, subscription_type: str):
         "both": ""
     }
     html = render_template("email/confirm.html.jinja2", secret=secret, type=subscription_type)
-    msg = Message("Potvrdenie odberu notifikácii" + title_suffix[subscription_type], recipients=[email], html=html)
+    msg = Message("Potvrdenie odberu notifikácii" + title_suffix[subscription_type], recipients=[email], html=html,
+                  extra_headers={"List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+                                 "List-Unsubscribe": "<" + url_for(f"main.{subscription_type}_unsubscribe", secret=secret) + ">"})
     mail.send(msg)
 
 
