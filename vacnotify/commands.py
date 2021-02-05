@@ -6,35 +6,29 @@ import click
 import re
 
 from vacnotify import app
-from vacnotify.models import SpotSubscription, GroupSubscription, Status
 from vacnotify.tasks.email import email_confirmation
-from vacnotify.tasks.query import run
+from vacnotify.tasks.query import run, compute_subscription_stats
+from vacnotify.models import SpotSubscription, GroupSubscription, Status
 
 
 @app.cli.command("count-subscriptions", help="Count the subscriptions and users in the DB.")
 def count_users():
-    confirmed_spot_subs = SpotSubscription.query.filter(SpotSubscription.status == Status.CONFIRMED).count()
-    unconfirmed_spot_subs = SpotSubscription.query.filter(SpotSubscription.status == Status.UNCONFIRMED).count()
-    total_spot_subs = confirmed_spot_subs + unconfirmed_spot_subs
-    spot_subs_top = SpotSubscription.query.order_by(SpotSubscription.id.desc()).with_entities(SpotSubscription.id).first()
-    confirmed_group_subs = GroupSubscription.query.filter(GroupSubscription.status == Status.CONFIRMED).count()
-    unconfirmed_group_subs = GroupSubscription.query.filter(GroupSubscription.status == Status.UNCONFIRMED).count()
-    total_group_subs = confirmed_group_subs + unconfirmed_group_subs
-    group_subs_top = GroupSubscription.query.order_by(GroupSubscription.id.desc()).with_entities(GroupSubscription.id).first()
-    spot_emails = set(SpotSubscription.query.with_entities(SpotSubscription.email).all())
-    group_emails = set(GroupSubscription.query.with_entities(GroupSubscription.email).all())
-    click.echo(f"Unique emails: {len(spot_emails | group_emails)}")
-    click.echo(f"Shared emails: {len(spot_emails & group_emails)}")
-    click.echo(f"Spot subscriptions: top(id) = {spot_subs_top}, total = {total_spot_subs}")
-    click.echo(f" - Confirmed: {confirmed_spot_subs}")
-    click.echo(f" - Unconfirmed: {unconfirmed_spot_subs}")
+    stats = compute_subscription_stats()
+    total_spot_subs = stats["spot_subs_confirmed"] + stats["spot_subs_unconfirmed"]
+    click.echo(f"Unique emails: {stats['unique_emails']}")
+    click.echo(f"Shared emails: {stats['shared_emails']}")
+    click.echo(f"Spot subscriptions: top(id) = {stats['spot_subs_top_id']}, total = {total_spot_subs}")
+    click.echo(f" - Confirmed: {stats['spot_subs_confirmed']}")
+    click.echo(f" - Unconfirmed: {stats['spot_subs_unconfirmed']}")
     if total_spot_subs != 0:
-        click.echo(f" - Ratio: {confirmed_spot_subs / total_spot_subs}")
-    click.echo(f"Group subscriptions: top(id) = {group_subs_top}, total = {total_group_subs}")
-    click.echo(f" - Confirmed: {confirmed_group_subs}")
-    click.echo(f" - Unconfirmed: {unconfirmed_group_subs}")
+        click.echo(f" - Ratio: {stats['spot_subs_confirmed'] / total_spot_subs}")
+    total_group_subs = stats["group_subs_confirmed"] + stats["group_subs_unconfirmed"]
+    click.echo(f"Group subscriptions: top(id) = {stats['group_subs_top_id']}, total = {total_group_subs}")
+    click.echo(f" - Confirmed: {stats['group_subs_confirmed']}")
+    click.echo(f" - Unconfirmed: {stats['group_subs_unconfirmed']}")
+
     if total_group_subs != 0:
-        click.echo(f" - Ratio: {confirmed_group_subs / total_group_subs}")
+        click.echo(f" - Ratio: {stats['group_subs_confirmed'] / total_group_subs}")
 
 
 timedelta_re = re.compile(r'((?P<days>\d+?)d)?((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?')

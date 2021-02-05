@@ -135,7 +135,13 @@ class SpotSubscription(db.Model):
         self.known_cities = known_cities
 
 
-class VaccinationStats(db.Model):
+class JSONable(object):
+
+    def __json__(self):
+        return {key: getattr(self, key) for key in dir(self) if not key.startswith("_") and key not in ("metadata", "query", "query_class")}
+
+
+class VaccinationStats(db.Model, JSONable):
     id = db.Column(db.Integer, primary_key=True)
     datetime = db.Column(db.DateTime)
     total_free_spots = db.Column(db.Integer)
@@ -150,5 +156,28 @@ class VaccinationStats(db.Model):
         self.online_places = online_places
         self.total_places = total_places
 
-    def __json__(self):
-        return {key: getattr(self, key) for key in dir(self) if not key.startswith("_") and key not in ("metadata", "query", "query_class")}
+
+class SubscriptionStats(db.Model, JSONable):
+    id = db.Column(db.Integer, primary_key=True)
+    datetime = db.Column(db.DateTime)
+    unique_emails = db.Column(db.Integer)
+    shared_emails = db.Column(db.Integer)
+    spot_subs_top_id = db.Column(db.Integer)
+    spot_subs_confirmed = db.Column(db.Integer)
+    spot_subs_unconfirmed = db.Column(db.Integer)
+    group_subs_top_id = db.Column(db.Integer)
+    group_subs_confirmed = db.Column(db.Integer)
+    group_subs_unconfirmed = db.Column(db.Integer)
+
+    def __init__(self, datetime, unique_emails: int, shared_emails: int,
+                 spot_subs_top_id: int, spot_subs_confirmed: int, spot_subs_unconfirmed: int,
+                 group_subs_top_id: int, group_subs_confirmed: int, group_subs_unconfirmed: int):
+        self.datetime = datetime
+        self.unique_emails = unique_emails
+        self.shared_emails = shared_emails
+        self.spot_subs_top_id = spot_subs_top_id
+        self.spot_subs_confirmed = spot_subs_confirmed
+        self.spot_subs_unconfirmed = spot_subs_unconfirmed
+        self.group_subs_top_id = group_subs_top_id
+        self.group_subs_confirmed = group_subs_confirmed
+        self.group_subs_unconfirmed = group_subs_unconfirmed

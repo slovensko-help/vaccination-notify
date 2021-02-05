@@ -18,7 +18,7 @@ from stem.util.log import get_logger as get_stem_logger
 from vacnotify import celery, useragents
 from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, VaccinationDay, GroupSubscription, SpotSubscription, \
-    Status, VaccinationStats, VaccinationCity
+    Status, VaccinationStats, VaccinationCity, SubscriptionStats
 from vacnotify.tasks.email import email_notification_group, email_notification_spot
 from vacnotify.utils import remove_pii
 
@@ -397,6 +397,23 @@ def notify_spots():
                 subscription.known_cities = list(free_cities)
 
 
+def compute_subscription_stats():
+    spot_emails = set(SpotSubscription.query.with_entities(SpotSubscription.email).all())
+    spot_top_id = SpotSubscription.query.order_by(SpotSubscription.id.desc()).with_entities(SpotSubscription.id).limit(1).scalar()
+    group_emails = set(GroupSubscription.query.with_entities(GroupSubscription.email).all())
+    group_top_id = GroupSubscription.query.order_by(GroupSubscription.id.desc()).with_entities(GroupSubscription.id).limit(1).scalar()
+    return {
+        "unique_emails": len(spot_emails | group_emails),
+        "shared_emails": len(spot_emails & group_emails),
+        "spot_subs_top_id": spot_top_id if spot_top_id is not None else 0,
+        "spot_subs_confirmed": SpotSubscription.query.filter(SpotSubscription.status == Status.CONFIRMED).count(),
+        "spot_subs_unconfirmed": SpotSubscription.query.filter(SpotSubscription.status == Status.UNCONFIRMED).count(),
+        "group_subs_top_id": group_top_id if group_top_id is not None else 0,
+        "group_subs_confirmed": GroupSubscription.query.filter(GroupSubscription.status == Status.CONFIRMED).count(),
+        "group_subs_unconfirmed": GroupSubscription.query.filter(GroupSubscription.status == Status.UNCONFIRMED).count()
+    }
+
+
 @celery.task(ignore_result=True)
 def run():
     s = NCZI(RetrySession())
@@ -405,17 +422,19 @@ def run():
     time.sleep(current_app.config["QUERY_DELAY"])
 
     if current_app.config["API_USE_AGGREGATE"]:
-        stats = query_places_aggregate(s)
+        place_stats = query_places_aggregate(s)
     else:
         query_places(s)
         time.sleep(current_app.config["QUERY_DELAY"])
-        stats = query_places_all(s)
+        place_stats = query_places_all(s)
+
+    sub_stats = compute_subscription_stats()
 
     # Add stats
     now = datetime.now()
     with transaction() as t:
-        stats = VaccinationStats(now, **stats)
-        t.add(stats)
+        t.add(VaccinationStats(now, **place_stats))
+        t.add(SubscriptionStats(now, **sub_stats))
 
     notify_groups()
     notify_spots()
