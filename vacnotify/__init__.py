@@ -3,7 +3,7 @@ import locale
 import sentry_sdk
 
 from sentry_sdk.integrations.flask import FlaskIntegration
-from flask import Flask, render_template, session
+from flask import Flask, render_template, session, request
 from celery import Celery, Task
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -108,12 +108,7 @@ from .commands import *
 @app.before_request
 def set_sentry_user():
     try:
-        user = []
-        for k, v in session.items():
-            user.append(str(k))
-            user.append(str(v))
-        user_hash = remove_pii(*user)[:10]
-        sentry_sdk.set_user({"id": user_hash})
+        sentry_sdk.set_user({"ip_address": request.remote_addr})
     except Exception:
         pass
 
