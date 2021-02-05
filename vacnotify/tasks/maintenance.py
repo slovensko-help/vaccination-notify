@@ -6,7 +6,7 @@ from sqlalchemy import and_
 
 from vacnotify import celery
 from vacnotify.database import transaction
-from vacnotify.models import GroupSubscription, Status, SpotSubscription, VaccinationPlace
+from vacnotify.models import GroupSubscription, Status, SpotSubscription
 from vacnotify.utils import remove_pii
 
 logging = get_task_logger(__name__)
@@ -29,22 +29,3 @@ def clear_db_unconfirmed():
         for spot_sub in to_clear_spot:
             t.delete(spot_sub)
     logging.info(f"Cleared {to_clear}")
-
-
-@celery.task(ignore_result=True)
-def add_new_places():
-    spot_subs = SpotSubscription.query.join(SpotSubscription.places).all()
-    places = VaccinationPlace.query.all()
-    cities = {}
-    for place in places:
-        ls = cities.setdefault(place.city, [])
-        ls.append(place)
-    for spot_sub in spot_subs:
-        spot_cities = set()
-        for place in spot_sub.places:
-            spot_cities.add(place.city)
-        spot_new_places = sum(map(lambda city: cities[city], spot_cities), [])
-        logging.info(f"Updating places of [{spot_sub.id}]: {len(spot_sub.places)} -> {len(spot_new_places)}")
-        with transaction():
-            spot_sub.places = spot_new_places
-    logging.info("Done updating places.")

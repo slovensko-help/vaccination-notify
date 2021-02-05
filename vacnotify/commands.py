@@ -7,7 +7,6 @@ import re
 
 from vacnotify import app
 from vacnotify.models import SpotSubscription, GroupSubscription, Status
-from vacnotify.tasks.maintenance import add_new_places
 from vacnotify.tasks.email import email_confirmation
 from vacnotify.tasks.query import run
 
@@ -104,8 +103,3 @@ def resend_confirmation(sub_type, dry_run, older_than, emails):
 @app.cli.command("trigger-query", help="Manually trigger query of API server (also sends notifications).")
 def trigger_query():
     run.delay()
-
-
-@app.cli.command("trigger-places-add", help="Manually trigfer the addition of new places to spot subscription based on cities.")
-def trigger_places_add():
-    add_new_places.delay()
