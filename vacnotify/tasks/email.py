@@ -1,13 +1,16 @@
 from typing import List, Mapping
 
+import sentry_sdk
 from flask import render_template, url_for
 from flask_mail import Message
 
 from vacnotify import celery, mail
+from vacnotify.utils import remove_pii
 
 
 @celery.task(ignore_result=True)
 def email_confirmation(email: str, secret: str, subscription_type: str):
+    sentry_sdk.set_user({"id": remove_pii(email)})
     if subscription_type not in ("group", "spot", "both"):
         raise ValueError
     title_suffix = {
@@ -24,6 +27,7 @@ def email_confirmation(email: str, secret: str, subscription_type: str):
 
 @celery.task(ignore_result=True)
 def email_notification_group(email: str, secret: str, new_groups: List[str]):
+    sentry_sdk.set_user({"id": remove_pii(email)})
     html = render_template("email/notification_group.html.jinja2", secret=secret, new_groups=new_groups)
     msg = Message("Nová skupina na očkovanie", recipients=[email], html=html,
                   extra_headers={"List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
@@ -33,6 +37,7 @@ def email_notification_group(email: str, secret: str, new_groups: List[str]):
 
 @celery.task(ignore_result=True)
 def email_notification_spot(email: str, secret: str, cities_free: Mapping[str, int]):
+    sentry_sdk.set_user({"id": remove_pii(email)})
     html = render_template("email/notification_spot.html.jinja2", secret=secret, cities_free=cities_free)
     msg = Message("Voľné miesta na očkovanie", recipients=[email], html=html,
                   extra_headers={"List-Unsubscribe-Post": "List-Unsubscribe=One-Click",

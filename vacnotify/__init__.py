@@ -3,7 +3,9 @@ import locale
 import sentry_sdk
 
 from sentry_sdk.integrations.flask import FlaskIntegration
-from flask import Flask, render_template, session, request
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+from sentry_sdk.integrations.celery import CeleryIntegration
+from flask import Flask, render_template, request
 from celery import Celery, Task
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -30,7 +32,7 @@ def before_send(event, hint):
 
 sentry_sdk.init(
     dsn=app.config["SENTRY_INGEST"],
-    integrations=[FlaskIntegration()],
+    integrations=[FlaskIntegration(), SqlalchemyIntegration(), CeleryIntegration()],
     traces_sample_rate=app.config["SENTRY_SAMPLE_RATE"],
     environment=app.env,
     debug=app.debug,
@@ -126,7 +128,6 @@ def errorhandler_hcaptcha(error):
 @app.errorhandler(Exception)
 def errorhandler_exc(error: Exception):
     sentry_sdk.capture_exception(error)
-    app.logger.error(str(error))
     return render_template("error.html.jinja2", error="Chyba servera, pravdepodobne som niečo pokazil. Skúste znova."), 500
 
 

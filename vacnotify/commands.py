@@ -1,6 +1,9 @@
 from binascii import hexlify
 from datetime import timedelta, datetime
+
+import sentry_sdk
 from sqlalchemy import and_
+from functools import wraps
 
 import click
 import re
@@ -11,7 +14,16 @@ from vacnotify.tasks.query import run, compute_subscription_stats
 from vacnotify.models import SpotSubscription, GroupSubscription, Status
 
 
+def command_transaction(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with sentry_sdk.start_transaction(op="command", name=".".join((__name__, func.__name__))):
+            return func(*args, **kwargs)
+    return wrapper
+
+
 @app.cli.command("count-subscriptions", help="Count the subscriptions and users in the DB.")
+@command_transaction
 def count_users():
     stats = compute_subscription_stats()
     total_spot_subs = stats["spot_subs_confirmed"] + stats["spot_subs_unconfirmed"]
@@ -49,6 +61,7 @@ def parse_time(time_str):
 
 
 @app.cli.command("resend-confirmation", help="Resend confirmation emails to unconfirmed addresses.")
+@command_transaction
 @click.option("-t", "--type", "sub_type", type=click.Choice(("spot", "group", "both")), help="Which subscription type to send confirmation to.", default="both")
 @click.option("-n", "--dry-run", "dry_run", is_flag=True, help="Do not actually send anything.")
 @click.option("-o", "--older", "older_than", type=str, metavar="<timedelta>", help="Only send to subscription created more than <older_than> time units ago.")
@@ -95,5 +108,6 @@ def resend_confirmation(sub_type, dry_run, older_than, emails):
 
 
 @app.cli.command("trigger-query", help="Manually trigger query of API server (also sends notifications).")
+@command_transaction
 def trigger_query():
     run.delay()
