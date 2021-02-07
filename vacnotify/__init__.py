@@ -24,7 +24,9 @@ app.json_encoder = CustomEncoder
 def before_send(event, hint):
     if "request" in event and "data" in event["request"] and "email" in event["request"]["data"]:
         event["request"]["data"]["email"] = remove_pii(event["request"]["data"]["email"])
-    if "location" in event and event["location"] in ("vacnotify.tasts.email_confirmation", "vacnotify.tasts.email_notification_spot", "vacnotify.tasts.email_notification_group"):
+    if "location" in event and event["location"] in ("vacnotify.tasts.email_confirmation",
+                                                     "vacnotify.tasts.email_notification_spot",
+                                                     "vacnotify.tasts.email_notification_group"):
         celery_args = event["extra"]["celery-job"]["args"]
         celery_args[0] = remove_pii(celery_args[0])
     return event
@@ -49,6 +51,15 @@ try:
         alerts = json.load(f)
 except FileNotFoundError:
     alerts = []
+
+with app.open_instance_resource("claims.json") as f:
+    vapid_claims = json.load(f)
+with app.open_instance_resource("vapid_privkey.der") as f:
+    vapid_privkey = f.read().decode()
+with app.open_instance_resource("vapid_pubkey.der") as f:
+    vapid_pubkey = f.read().decode()
+
+
 # DB
 db = SQLAlchemy(app)
 

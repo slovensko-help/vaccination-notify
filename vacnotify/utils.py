@@ -2,6 +2,7 @@ import hashlib
 from datetime import datetime
 
 import requests
+import sentry_sdk
 from flask.json import JSONEncoder
 from typing import Any
 from functools import wraps
@@ -35,6 +36,16 @@ def hcaptcha_required(f):
                 abort(403)
         return f(*args, **kwargs)
 
+    return wrapper
+
+
+def sentry_untraced(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        with sentry_sdk.configure_scope() as scope:
+            if scope.transaction:
+                scope.transaction.sampled = False
+            return f(*args, **kwargs)
     return wrapper
 
 

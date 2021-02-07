@@ -3,16 +3,17 @@ from binascii import unhexlify, hexlify
 from datetime import datetime, timedelta
 from operator import attrgetter
 
-from flask import render_template, request, abort, current_app
+from flask import render_template, request, abort, current_app, jsonify
 from sqlalchemy.orm import joinedload
 
+from vacnotify import vapid_pubkey as pubkey
 from vacnotify.blueprint import main
 from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, GroupSubscription, Status, SpotSubscription, \
     VaccinationStats, VaccinationCity
 from vacnotify.forms import GroupSubscriptionForm, SpotSubscriptionForm
 from vacnotify.tasks.email import email_confirmation
-from vacnotify.utils import hcaptcha_required
+from vacnotify.utils import hcaptcha_required, sentry_untraced
 
 
 @main.route("/")
@@ -173,3 +174,14 @@ def both_confirm(secret):
     else:
         abort(404)
 
+
+@main.route("/sw.js")
+@sentry_untraced
+def service_worker():
+    return main.send_static_file("sw.js")
+
+
+@main.route("/pubkey")
+@sentry_untraced
+def vapid_pubkey():
+    return pubkey
