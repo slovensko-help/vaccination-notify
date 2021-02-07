@@ -1,3 +1,4 @@
+from binascii import hexlify
 from enum import Enum, auto
 from operator import attrgetter
 
@@ -96,7 +97,7 @@ class VaccinationCity(db.Model):
         return self.name
 
     def __repr__(self):
-        return f"VaccinationCity({self.name})"
+        return f"VaccinationCity([{self.id}], {self.name})"
 
 
 class GroupSubscription(db.Model):
@@ -114,6 +115,9 @@ class GroupSubscription(db.Model):
         self.status = Status.UNCONFIRMED
         self.created_at = created_at
         self.known_groups = known_groups
+
+    def __str__(self):
+        return f"GroupSubscription([{self.id}], {self.email}, {hexlify(self.secret).decode()}, {self.status}, created_at={self.created_at}, notif_at={self.last_notification_at})"
 
 
 class SpotSubscription(db.Model):
@@ -133,6 +137,9 @@ class SpotSubscription(db.Model):
         self.created_at = created_at
         self.cities = tracked_cities
         self.known_cities = known_cities
+
+    def __str__(self):
+        return f"SpotSubscription([{self.id}], {self.email}, {hexlify(self.secret).decode()}, {self.status}, created_at={self.created_at}, notif_at={self.last_notification_at})"
 
 
 class JSONable(object):

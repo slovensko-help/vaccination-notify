@@ -2,13 +2,14 @@ from binascii import hexlify
 from datetime import timedelta, datetime
 
 import sentry_sdk
+from flask_mail import Message
 from sqlalchemy import and_
 from functools import wraps
 
 import click
 import re
 
-from vacnotify import app
+from vacnotify import app, mail
 from vacnotify.tasks.email import email_confirmation
 from vacnotify.tasks.query import run, compute_subscription_stats
 from vacnotify.models import SpotSubscription, GroupSubscription, Status
@@ -38,7 +39,6 @@ def count_users():
     click.echo(f"Group subscriptions: top(id) = {stats['group_subs_top_id']}, total = {total_group_subs}")
     click.echo(f" - Confirmed: {stats['group_subs_confirmed']}")
     click.echo(f" - Unconfirmed: {stats['group_subs_unconfirmed']}")
-
     if total_group_subs != 0:
         click.echo(f" - Ratio: {stats['group_subs_confirmed'] / total_group_subs}")
 
@@ -111,3 +111,30 @@ def resend_confirmation(sub_type, dry_run, older_than, emails):
 @command_transaction
 def trigger_query():
     run.delay()
+
+
+@app.cli.command("find")
+@command_transaction
+@click.argument("email")
+def find_email(email):
+    spot_subs = SpotSubscription.query.filter_by(email=email).all()
+    group_subs = GroupSubscription.query.filter_by(email=email).all()
+    for sub in spot_subs:
+        print(sub)
+    for sub in group_subs:
+        print(sub)
+
+
+@app.cli.command("send-email")
+@command_transaction
+@click.option("-s", "--subject", required=True, help="The subject of the email.")
+@click.option("-b", "--body", help="The content of the email body.")
+@click.option("-t", "--type", "content_type", help="The type of the body.", type=click.Choice(("html", "text")), default="text")
+@click.argument("recipients", nargs=-1)
+def send_email(subject, body, content_type, recipients):
+    msg = Message(subject, recipients=list(recipients))
+    if content_type == "html":
+        msg.html = body
+    if content_type == "text":
+        msg.body = body
+    mail.send(msg)
