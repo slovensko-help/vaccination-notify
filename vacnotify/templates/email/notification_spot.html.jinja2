@@ -7,11 +7,18 @@
 <body>
 
 <p>
-    Vo formulári na registráciu na očkovanie sa zmenili voľné termíny na očkovanie v nasledujúcich mestách a počtoch:
+    Vo formulári na registráciu na očkovanie sa zmenili voľné termíny na očkovanie na nasledujúcich miestach:
 </p>
 <ul>
-    {% for city, free in cities_free.items() %}
-        <li><b>{{ city }}</b>: {{ free }}</li>
+    {% for city, city_dict in cities_free.items() %}
+        <li>
+            <b>{{ city }}</b>: {{ city_dict["free"] }}
+            <ul>
+                {% for title, free in city_dict["places"] %}
+                    <li><b>{{ title }}</b>: {{ free }}</li>
+                {% endfor %}
+            </ul>
+        </li>
     {% endfor %}
 </ul>
 

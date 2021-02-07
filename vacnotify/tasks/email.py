@@ -36,7 +36,7 @@ def email_notification_group(email: str, secret: str, new_groups: List[str]):
 
 
 @celery.task(ignore_result=True)
-def email_notification_spot(email: str, secret: str, cities_free: Mapping[str, int]):
+def email_notification_spot(email: str, secret: str, cities_free: Mapping):
     sentry_sdk.set_user({"id": remove_pii(email)})
     html = render_template("email/notification_spot.html.jinja2", secret=secret, cities_free=cities_free)
     msg = Message("Voľné miesta na očkovanie", recipients=[email], html=html,

@@ -390,7 +390,10 @@ def notify_spots():
         free_cities = set(city for city in subscription.cities if city.free_online)
         if free_cities != set(subscription.known_cities) and free_cities:
             logging.info(f"Sending spot notification to [{subscription.id}] {remove_pii(subscription.email)}.")
-            new_subscription_cities = {city.name: city.free_online for city in free_cities}
+            new_subscription_cities = {city.name: {
+                "free": city.free_online,
+                "places": [(place.title, place.free) for place in city.places if place.online and place.free]
+            } for city in free_cities}
             with transaction():
                 email_notification_spot.delay(subscription.email, hexlify(subscription.secret).decode(), new_subscription_cities)
                 subscription.last_notification_at = now
