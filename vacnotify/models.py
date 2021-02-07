@@ -100,9 +100,15 @@ class VaccinationCity(db.Model):
         return f"VaccinationCity([{self.id}], {self.name})"
 
 
+class SubscriptionType(Enum):
+    Email = auto()
+    PUSH = auto()
+
+
 class GroupSubscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(128))
+    push_sub = db.Column(db.Text)
     created_at = db.Column(db.DateTime)
     secret = db.Column(db.LargeBinary(16))
     status = db.Column(db.Enum(Status))
@@ -117,12 +123,20 @@ class GroupSubscription(db.Model):
         self.known_groups = known_groups
 
     def __str__(self):
-        return f"GroupSubscription([{self.id}], {self.email}, {hexlify(self.secret).decode()}, {self.status}, created_at={self.created_at}, notif_at={self.last_notification_at})"
+        return f"GroupSubscription([{self.id}], {self.email if self.subscription_type == SubscriptionType.Email else 'PUSH'}, {hexlify(self.secret).decode()}, {self.status}, created_at={self.created_at}, notif_at={self.last_notification_at})"
+
+    @property
+    def subscription_type(self):
+        if self.email:
+            return SubscriptionType.Email
+        else:
+            return SubscriptionType.PUSH
 
 
 class SpotSubscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(128))
+    push_sub = db.Column(db.Text)
     created_at = db.Column(db.DateTime)
     secret = db.Column(db.LargeBinary(16))
     status = db.Column(db.Enum(Status))
@@ -139,7 +153,14 @@ class SpotSubscription(db.Model):
         self.known_cities = known_cities
 
     def __str__(self):
-        return f"SpotSubscription([{self.id}], {self.email}, {hexlify(self.secret).decode()}, {self.status}, created_at={self.created_at}, notif_at={self.last_notification_at})"
+        return f"SpotSubscription([{self.id}], {self.email if self.subscription_type == SubscriptionType.Email else 'PUSH'}, {hexlify(self.secret).decode()}, {self.status}, created_at={self.created_at}, notif_at={self.last_notification_at})"
+
+    @property
+    def subscription_type(self):
+        if self.email:
+            return SubscriptionType.Email
+        else:
+            return SubscriptionType.PUSH
 
 
 class JSONable(object):

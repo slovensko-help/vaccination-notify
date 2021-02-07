@@ -51,5 +51,5 @@ navigator.serviceWorker.ready
                 });
             });
     }).then((subscription) => {
-        console.log(subscription);
+        console.log(JSON.stringify(subscription));
     })
