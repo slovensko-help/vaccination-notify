@@ -1,4 +1,4 @@
-import random
+import sys
 import time
 import requests
 
@@ -9,13 +9,14 @@ from typing import Set, List
 
 from celery.utils.log import get_task_logger
 from flask import current_app
+from requests.utils import default_user_agent
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import joinedload
 from stem import Signal
 from stem.control import Controller
 from stem.util.log import get_logger as get_stem_logger
 
-from vacnotify import celery, useragents
+from vacnotify import celery
 from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, VaccinationDay, GroupSubscription, SpotSubscription, \
     Status, VaccinationStats, VaccinationCity, SubscriptionStats
@@ -42,9 +43,8 @@ class RetrySession(object):
                                       port=current_app.config["TOR_CONTROL_PORT"]) as controller:
                 controller.authenticate(password=current_app.config["TOR_CONTROL_PASSWORD"])
                 controller.signal(Signal.NEWNYM)
-        useragent = random.choice(useragents)
-        self.sess.headers["User-Agent"] = useragent
-        logging.info(f"Now I am {useragent}")
+        self.sess.headers["User-Agent"] = f"vaccination-notify/{current_app.env} {default_user_agent()} Python/{'.'.join(map(str, sys.version_info[:3]))}"
+        logging.info("Restarted session.")
 
     def get(self, *args, **kwargs):
         for i in range(self.retries):

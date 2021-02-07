@@ -44,9 +44,6 @@ try:
 except locale.Error:
     pass
 
-with app.open_resource("useragents.json") as f:
-    useragents = json.load(f)
-
 try:
     with app.open_instance_resource("alerts.json") as f:
         alerts = json.load(f)
