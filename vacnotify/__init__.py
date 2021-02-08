@@ -142,3 +142,33 @@ def errorhandler_exc(error: Exception):
 @app.template_global()
 def get_alerts():
     return alerts
+
+
+@app.template_global()
+def format_timedelta(ts):
+    def format_inner(s):
+        if s < 60:
+            return [f"{s} sekúnd" if s != 1 else f"{s} sekunda"]
+        if s < 3600:
+            m = int(s // 60)
+            res = [f"{m} minút" if m != 1 else f"{m} minúta"]
+            if s % 60 != 0:
+                res.extend(format_inner(s % 60))
+            return res
+        if s < 86400:
+            h = int(s // 3600)
+            res = [f"{h} hodín" if h != 1 else f"{h} hodina"]
+            if s % 3600 != 0:
+                res.extend(format_inner(s % 3600))
+            return res
+        d = int(s // 86400)
+        res = [f"{d} dní" if d != 1 else f"{d} deň"]
+        if s % 86400 != 0:
+            res.extend(format_inner(s % 86400))
+        return res
+
+    vlist = format_inner(ts)
+    if len(vlist) == 1:
+        return vlist[0]
+    else:
+        return ", ".join(vlist[:-1]) + " a " + vlist[-1]

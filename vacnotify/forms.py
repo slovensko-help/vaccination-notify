@@ -1,7 +1,7 @@
 import math
 
 from markupsafe import Markup
-from wtforms import validators, SelectMultipleField, Label
+from wtforms import validators, SelectMultipleField, Label, HiddenField
 from wtforms.fields.html5 import EmailField
 from flask_wtf import FlaskForm
 from wtforms.widgets import CheckboxInput, html_params
@@ -50,9 +50,11 @@ class MultiCheckboxField(SelectMultipleField):
 
 
 class SpotSubscriptionForm(FlaskForm):
-    email = EmailField("email", [validators.DataRequired(), validators.Email(), validators.Length(max=128)])
+    email = EmailField("email", [validators.Email(), validators.Length(max=128)])
+    push_sub = HiddenField("push_sub")
     cities = MultiCheckboxField("cities", [validators.DataRequired()], coerce=int)
 
 
 class GroupSubscriptionForm(FlaskForm):
-    email = EmailField("email", [validators.DataRequired(), validators.Email(), validators.Length(max=128)])
+    email = EmailField("email", [validators.DataRequired(), validators.Length(max=128)])
+    push_sub = HiddenField("push_sub")

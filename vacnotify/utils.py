@@ -19,24 +19,29 @@ class CustomEncoder(JSONEncoder):
             return JSONEncoder.default(self, o)
 
 
-def hcaptcha_required(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        if request.method == "POST":
-            if "h-captcha-response" not in request.form:
-                abort(403)
-            captcha = request.form["h-captcha-response"]
-            captcha_resp = requests.post("https://hcaptcha.com/siteverify",
-                                         data={"response": captcha,
-                                               "secret": current_app.config["HCAPTCHA_SECRET_KEY"],
-                                               "ip": request.remote_addr,
-                                               "sitekey": current_app.config["HCAPTCHA_SITEKEY"]})
-            captcha_result = captcha_resp.json()
-            if not captcha_result["success"]:
-                abort(403)
-        return f(*args, **kwargs)
-
-    return wrapper
+def hcaptcha_required(passthru_arg):
+    def hcaptcha_deco(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            if request.method == "POST":
+                if passthru_arg in request.form and request.form[passthru_arg]:
+                    return f(*args, **kwargs)
+                if "h-captcha-response" not in request.form:
+                    abort(403)
+                captcha = request.form["h-captcha-response"]
+                if not captcha:
+                    abort(403)
+                captcha_resp = requests.post("https://hcaptcha.com/siteverify",
+                                             data={"response": captcha,
+                                                   "secret": current_app.config["HCAPTCHA_SECRET_KEY"],
+                                                   "ip": request.remote_addr,
+                                                   "sitekey": current_app.config["HCAPTCHA_SITEKEY"]})
+                captcha_result = captcha_resp.json()
+                if not captcha_result["success"]:
+                    abort(403)
+            return f(*args, **kwargs)
+        return wrapper
+    return hcaptcha_deco
 
 
 def sentry_untraced(f):

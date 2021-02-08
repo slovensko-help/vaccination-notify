@@ -30,7 +30,7 @@ def privacy():
 
 
 @main.route("/groups/subscribe", methods=["GET", "POST"])
-@hcaptcha_required
+@hcaptcha_required("push_sub")
 def group_subscribe():
     frm = GroupSubscriptionForm()
     if request.method == "GET" or not frm.validate_on_submit():
@@ -79,7 +79,7 @@ def group_confirm(secret):
 
 
 @main.route("/spots/subscribe", methods=["GET", "POST"])
-@hcaptcha_required
+@hcaptcha_required("push_sub")
 def spot_subscribe():
     frm = SpotSubscriptionForm()
     places = VaccinationPlace.query.options(joinedload(VaccinationPlace.days)).filter_by(online=True).all()
@@ -90,6 +90,7 @@ def spot_subscribe():
     cities = VaccinationCity.query.options(joinedload(VaccinationCity.places)).order_by(VaccinationCity.name).all()
     cities_id = list(map(lambda city: (city.id, city), cities))
     frm.cities.choices = cities_id
+
     if request.method == "GET" or not frm.validate_on_submit():
         last_stats = VaccinationStats.query.order_by(VaccinationStats.id.desc()).first()
         return render_template("subscribe_spot.jinja2", form=frm, places=places, dates=dates, last_stats=last_stats)

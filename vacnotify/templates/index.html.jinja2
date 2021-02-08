@@ -85,7 +85,7 @@
             <div class="row">
                 <div class="col-sm-10 mx-auto mt-3">
                     <p>
-                        Dáta sa aktualizujú každých 5 minút.
+                        Dáta sa aktualizujú každých {{ format_timedelta(config["QUERY_PERIOD"]) }}.
                         Očkovací termín je dostupný, ak očkovacie miesto hlási v daný deň kapacitu a nie je v daný deň
                         zatvorené. Očkovacie miesta bývajú nedostupné (a vtedy nie sú ani viditeľné a nie sú na výber vo
                         formulári NCZI), keď sa aktualizuje ich kapacita, čo často býva v noci.
