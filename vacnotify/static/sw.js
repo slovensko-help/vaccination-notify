@@ -24,11 +24,21 @@ self.addEventListener('push', async function (event) {
             })
         );
     } else if (payload.action === "notifyGroups") {
-
+        event.waitUntil(
+            self.registration.showNotification('Nová skupina na očkovanie', {
+                body: payload.body,
+                icon: payload.icon,
+                lang: "sk"
+            })
+        );
     } else if (payload.action === "notify") {
-
-    } else {
-        // Unknown action, show something anyway?
+        event.waitUntil(
+            self.registration.showNotification('Notifikácie o COVID-19 vakcinácii', {
+                body: payload.body,
+                icon: payload.icon,
+                lang: "sk"
+            })
+        );
     }
 });
 

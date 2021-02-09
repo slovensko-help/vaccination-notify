@@ -1,3 +1,4 @@
+import json
 import sys
 import time
 import requests
@@ -21,6 +22,7 @@ from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, VaccinationDay, GroupSubscription, SpotSubscription, \
     Status, VaccinationStats, VaccinationCity, SubscriptionStats
 from vacnotify.tasks.email import email_notification_group, email_notification_spot
+from vacnotify.tasks.push import push_notification_group, push_notification_spot
 from vacnotify.utils import remove_pii
 
 logging = get_task_logger(__name__)
@@ -362,15 +364,30 @@ def notify_groups():
     all_groups = EligibilityGroup.query.all()
     now = datetime.now()
     group_backoff_time = timedelta(seconds=current_app.config["GROUP_NOTIFICATION_BACKOFF"])
-    all_group_subscriptions = GroupSubscription.query.filter(and_(GroupSubscription.status == Status.CONFIRMED,
-                                                                  or_(GroupSubscription.last_notification_at.is_(None),
-                                                                      GroupSubscription.last_notification_at < now - group_backoff_time))).all()
-    for subscription in all_group_subscriptions:
+    group_subs_email = GroupSubscription.query.options(joinedload(GroupSubscription.known_groups)).filter(
+        and_(GroupSubscription.status == Status.CONFIRMED,
+             GroupSubscription.push_sub.is_(None),
+             or_(GroupSubscription.last_notification_at.is_(None),
+                 GroupSubscription.last_notification_at < now - group_backoff_time))).all()
+    for subscription in group_subs_email:
         new_subscription_groups = set(map(attrgetter("item_description"), set(all_groups) - set(subscription.known_groups)))
         if new_subscription_groups:
             logging.info(f"Sending group notification to [{subscription.id}] {remove_pii(subscription.email)}.")
             with transaction():
                 email_notification_group.delay(subscription.email, hexlify(subscription.secret).decode(), list(new_subscription_groups))
+                subscription.last_notification_at = now
+                subscription.known_groups = all_groups
+    group_subs_push = GroupSubscription.query.options(joinedload(GroupSubscription.known_groups)).filter(
+        and_(GroupSubscription.status == Status.CONFIRMED,
+             GroupSubscription.email.is_(None),
+             or_(GroupSubscription.last_notification_at.is_(None),
+                 GroupSubscription.last_notification_at < now - group_backoff_time))).all()
+    for subscription in group_subs_push:
+        new_subscription_groups = set(map(attrgetter("item_description"), set(all_groups) - set(subscription.known_groups)))
+        if new_subscription_groups:
+            logging.info(f"Sending group notification to [{subscription.id}].")
+            with transaction():
+                push_notification_group.delay(json.loads(subscription.push_sub), list(new_subscription_groups))
                 subscription.last_notification_at = now
                 subscription.known_groups = all_groups
 
@@ -379,10 +396,11 @@ def notify_spots():
     # Send out the spot notifications.
     now = datetime.now()
     spot_backoff_time = timedelta(seconds=current_app.config["SPOT_NOTIFICATION_BACKOFF"])
-    spot_subs_free = SpotSubscription.query.options(joinedload(SpotSubscription.known_cities), joinedload(SpotSubscription.cities)).join(SpotSubscription.cities).join(VaccinationCity.places).filter(
+    spot_subs_free = SpotSubscription.query.options(joinedload(SpotSubscription.known_cities)).join(SpotSubscription.cities).join(VaccinationCity.places).filter(
         and_(VaccinationPlace.free > 0,
              VaccinationPlace.online,
              SpotSubscription.status == Status.CONFIRMED,
+             SpotSubscription.push_sub.is_(None),
              or_(SpotSubscription.last_notification_at.is_(None),
                  SpotSubscription.last_notification_at < now - spot_backoff_time))).all()
 
@@ -396,6 +414,23 @@ def notify_spots():
             } for city in free_cities}
             with transaction():
                 email_notification_spot.delay(subscription.email, hexlify(subscription.secret).decode(), new_subscription_cities)
+                subscription.last_notification_at = now
+                subscription.known_cities = list(free_cities)
+
+    spot_subs_free_push = SpotSubscription.query.options(joinedload(SpotSubscription.known_cities)).join(SpotSubscription.cities).join(VaccinationCity.places).filter(
+        and_(VaccinationPlace.free > 0,
+             VaccinationPlace.online,
+             SpotSubscription.status == Status.CONFIRMED,
+             SpotSubscription.email.is_(None),
+             or_(SpotSubscription.last_notification_at.is_(None),
+                 SpotSubscription.last_notification_at < now - spot_backoff_time))).all()
+    for subscription in spot_subs_free_push:
+        free_cities = set(city for city in subscription.cities if city.free_online)
+        if free_cities != set(subscription.known_cities) and free_cities:
+            logging.info(f"Sending spot notification to [{subscription.id}].")
+            new_subscription_cities = {city.name: city.free_online for city in free_cities}
+            with transaction():
+                push_notification_spot.delay(json.loads(subscription.push_sub), new_subscription_cities)
                 subscription.last_notification_at = now
                 subscription.known_cities = list(free_cities)
 
