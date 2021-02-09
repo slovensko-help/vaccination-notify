@@ -1,4 +1,5 @@
 import hashlib
+import locale
 from binascii import unhexlify, hexlify
 from datetime import datetime, timedelta
 from operator import attrgetter
@@ -83,11 +84,12 @@ def group_confirm(secret):
 def spot_subscribe():
     frm = SpotSubscriptionForm()
     places = VaccinationPlace.query.options(joinedload(VaccinationPlace.days)).filter_by(online=True).all()
-    places.sort(key=attrgetter("city.name"))
+    places.sort(key=lambda place: locale.strxfrm(place.city.name))
     dates = list(map(attrgetter("date"), places[0].days))
     dates.sort()
 
     cities = VaccinationCity.query.options(joinedload(VaccinationCity.places)).order_by(VaccinationCity.name).all()
+    cities.sort(key=lambda city: locale.strxfrm(city.name))
     cities_id = list(map(lambda city: (city.id, city), cities))
     frm.cities.choices = cities_id
 
