@@ -17,8 +17,24 @@
         <script type="text/javascript" src="{{ url_for('static', filename='base.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='jquery.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='sentry.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='sentry.tracing.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='d3.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='d3-legend.min.js') }}"></script>
+        <script type="text/javascript">
+            let envs = {
+                "covid-dev.neuromancer.sk": "staging",
+                "covid.neuromancer.sk": "production",
+                "localhost.localdomain": "development"
+            }
+            console.log(envs[window.location.hostname]);
+            Sentry.init({
+                dsn: "{{ config['SENTRY_INGEST'] }}",
+                environment: envs[window.location.hostname],
+                debug: true,
+                release: "{{ get_release() }}"
+            });
+        </script>
     {% endblock %}
 </head>
 

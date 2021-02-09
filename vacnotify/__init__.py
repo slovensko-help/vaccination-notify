@@ -1,6 +1,7 @@
 import json
 import locale
 import sentry_sdk
+import subprocess
 
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
@@ -58,6 +59,15 @@ with app.open_instance_resource("vapid_privkey.der") as f:
     vapid_privkey = f.read().decode()
 with app.open_instance_resource("vapid_pubkey.der") as f:
     vapid_pubkey = f.read().decode()
+
+try:
+    res = subprocess.run(["git", "rev-parse", "--short", "HEAD"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    if res:
+        release = res.stdout.decode().strip()
+    else:
+        release = "vacnotify"
+except:
+    pass
 
 
 # DB
@@ -142,6 +152,11 @@ def errorhandler_exc(error: Exception):
 @app.template_global()
 def get_alerts():
     return alerts
+
+
+@app.template_global()
+def get_release():
+    return release
 
 
 @app.template_global()
