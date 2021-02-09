@@ -110,14 +110,17 @@ class GroupSubscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(128))
     push_sub = db.Column(db.Text)
+    push_sub_endpoint = db.Column(db.String(1024))
     created_at = db.Column(db.DateTime)
     secret = db.Column(db.LargeBinary(16))
     status = db.Column(db.Enum(Status))
     known_groups = db.relationship("EligibilityGroup", secondary=group_db)
     last_notification_at = db.Column(db.DateTime)
 
-    def __init__(self, email: str, secret: secret, created_at, known_groups):
+    def __init__(self, email: Optional[str], push_sub: Optional[str], push_sub_endpoint: Optional[str], secret: secret, created_at, known_groups):
         self.email = email
+        self.push_sub = push_sub
+        self.push_sub_endpoint = push_sub_endpoint
         self.secret = secret
         self.status = Status.UNCONFIRMED
         self.created_at = created_at
@@ -138,6 +141,7 @@ class SpotSubscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(128))
     push_sub = db.Column(db.Text)
+    push_sub_endpoint = db.Column(db.String(1024))
     created_at = db.Column(db.DateTime)
     secret = db.Column(db.LargeBinary(16))
     status = db.Column(db.Enum(Status))
@@ -145,9 +149,10 @@ class SpotSubscription(db.Model):
     known_cities = db.relationship("VaccinationCity", secondary=known_city_db)
     last_notification_at = db.Column(db.DateTime)
 
-    def __init__(self, email: Optional[str], push_sub: Optional[str], secret: bytes, created_at, tracked_cities, known_cities):
+    def __init__(self, email: Optional[str], push_sub: Optional[str], push_sub_endpoint: Optional[str], secret: bytes, created_at, tracked_cities, known_cities):
         self.email = email
         self.push_sub = push_sub
+        self.push_sub_endpoint = push_sub_endpoint
         self.secret = secret
         self.status = Status.UNCONFIRMED
         self.created_at = created_at

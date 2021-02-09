@@ -41,18 +41,48 @@ def group_subscribe():
         return render_template("subscribe_group.jinja2", form=frm, groups=EligibilityGroup.query.all(), last_stats=last_stats)
     else:
         if frm.validate_on_submit():
-            email_exists = GroupSubscription.query.filter_by(email=frm.email.data).first() is not None
-            if email_exists:
-                return render_template("error.html.jinja2", error="Na daný email už je nastavená notifikácia.")
-            else:
-                h = hashlib.blake2b(key=current_app.config["APP_SECRET"].encode(), digest_size=16)
-                h.update(frm.email.data.encode())
-                secret = h.digest()
-                with transaction() as t:
-                    subscription = GroupSubscription(frm.email.data, secret, datetime.now(), EligibilityGroup.query.all())
-                    t.add(subscription)
-                email_confirmation.delay(subscription.email, hexlify(subscription.secret).decode(), "group")
-                return render_template("confirmation_sent.jinja2", email=subscription.email)
+            if frm.email.data:
+                # Email subscription
+                email_exists = GroupSubscription.query.filter_by(email=frm.email.data).first() is not None
+                if email_exists:
+                    return render_template("error.html.jinja2", error="Na daný email už je nastavená notifikácia.")
+                else:
+                    h = hashlib.blake2b(key=current_app.config["APP_SECRET"].encode(), digest_size=16)
+                    h.update(frm.email.data.encode())
+                    secret = h.digest()
+                    with transaction() as t:
+                        subscription = GroupSubscription(frm.email.data, None, None, secret, datetime.now(), EligibilityGroup.query.all())
+                        t.add(subscription)
+                    email_confirmation.delay(subscription.email, hexlify(subscription.secret).decode(), "group")
+                    return render_template("confirmation_sent.jinja2", email=subscription.email)
+            if frm.push_sub.data:
+                # PUSH subscription
+                try:
+                    sub_data = json.loads(frm.push_sub.data)
+                    if not isinstance(sub_data, dict) or "endpoint" not in sub_data:
+                        raise ValueError
+                except Exception:
+                    abort(400)
+                endpoint_exists = GroupSubscription.query.filter_by(push_sub_endpoint=sub_data["endpoint"]).first() is not None
+                if endpoint_exists:
+                    return render_template("ok.html.jinja2", msg="PUSH notifikácie už máte nastavené.")
+                else:
+                    h = hashlib.blake2b(key=current_app.config["APP_SECRET"].encode(), digest_size=16)
+                    h.update(sub_data["endpoint"].encode())
+                    secret = h.digest()
+                    with transaction() as t:
+                        subscription = GroupSubscription(None, json.dumps(sub_data), sub_data["endpoint"], secret, datetime.now(), EligibilityGroup.query.all())
+                        t.add(subscription)
+                    try:
+                        webpush(subscription_info=sub_data,
+                                data=json.dumps({"action": "confirm",
+                                                 "endpoint": url_for(".group_confirm", secret=hexlify(secret).decode(),
+                                                                     push=1)}),
+                                vapid_private_key=privkey,
+                                vapid_claims=claims)
+                    except WebPushException:
+                        return render_template("error.html.jinja2", error="Odber notifikácii sa nepodarilo potvrdiť.")
+                    return render_template("ok.html.jinja2", msg="Odber notifikácii bol potvrdený.")
         else:
             abort(400)
 
@@ -78,6 +108,8 @@ def group_confirm(secret):
     subscription = GroupSubscription.query.filter_by(secret=secret_bytes).first_or_404()
     with transaction():
         subscription.status = Status.CONFIRMED
+    if "push" in request.args:
+        return jsonify({"msg": "Odber notifikácii bol potvrdený."})
     return render_template("ok.html.jinja2", msg="Odber notifikácii bol potvrdený.")
 
 
@@ -93,7 +125,6 @@ def spot_subscribe():
     frm.cities.choices = cities_id
 
     if request.method == "GET" or not frm.validate_on_submit():
-        print("here")
         places = VaccinationPlace.query.options(joinedload(VaccinationPlace.days)).filter_by(online=True).all()
         places.sort(key=lambda place: locale.strxfrm(place.city.name))
         dates = list(map(attrgetter("date"), places[0].days))
@@ -114,7 +145,7 @@ def spot_subscribe():
                     h.update(frm.email.data.encode())
                     secret = h.digest()
                     with transaction() as t:
-                        subscription = SpotSubscription(frm.email.data, None, secret, datetime.now(), selected_cities, [])
+                        subscription = SpotSubscription(frm.email.data, None, None, secret, datetime.now(), selected_cities, [])
                         t.add(subscription)
                     email_confirmation.delay(frm.email.data, hexlify(secret).decode(), "spot")
                     return render_template("confirmation_sent.jinja2", email=frm.email.data)
@@ -126,23 +157,26 @@ def spot_subscribe():
                         raise ValueError
                 except Exception:
                     abort(400)
-                # TODO: Store endpoint separately and query on it here to detect resubmit.
-                selected_cities = list(map(lambda city_id: cities_map[city_id], frm.cities.data))
-                h = hashlib.blake2b(key=current_app.config["APP_SECRET"].encode(), digest_size=16)
-                h.update(sub_data["endpoint"].encode())
-                secret = h.digest()
-                with transaction() as t:
-                    subscription = SpotSubscription(None, json.dumps(sub_data), secret, datetime.now(), selected_cities, [])
-                    t.add(subscription)
-                try:
-                    webpush(subscription_info=sub_data,
-                            data=json.dumps({"action": "confirm",
-                                             "endpoint": url_for(".spot_confirm", secret=hexlify(secret).decode(), push=1)}),
-                            vapid_private_key=privkey,
-                            vapid_claims=claims)
-                except WebPushException:
-                    return render_template("error.html.jinja2", error="Odber notifikácii sa nepodarilo potvrdiť.")
-                return render_template("ok.html.jinja2", msg="Odber notifikácii bol potvrdený.")
+                endpoint_exists = SpotSubscription.query.filter_by(push_sub_endpoint=sub_data["endpoint"]).first() is not None
+                if endpoint_exists:
+                    return render_template("ok.html.jinja2", msg="PUSH notifikácie už máte nastavené.")
+                else:
+                    selected_cities = list(map(lambda city_id: cities_map[city_id], frm.cities.data))
+                    h = hashlib.blake2b(key=current_app.config["APP_SECRET"].encode(), digest_size=16)
+                    h.update(sub_data["endpoint"].encode())
+                    secret = h.digest()
+                    with transaction() as t:
+                        subscription = SpotSubscription(None, json.dumps(sub_data), sub_data["endpoint"], secret, datetime.now(), selected_cities, [])
+                        t.add(subscription)
+                    try:
+                        webpush(subscription_info=sub_data,
+                                data=json.dumps({"action": "confirm",
+                                                 "endpoint": url_for(".spot_confirm", secret=hexlify(secret).decode(), push=1)}),
+                                vapid_private_key=privkey,
+                                vapid_claims=claims)
+                    except WebPushException:
+                        return render_template("error.html.jinja2", error="Odber notifikácii sa nepodarilo potvrdiť.")
+                    return render_template("ok.html.jinja2", msg="Odber notifikácii bol potvrdený.")
         else:
             abort(400)
 
