@@ -1,6 +1,7 @@
 from binascii import hexlify
 from enum import Enum, auto
 from operator import attrgetter
+from typing import Optional
 
 from vacnotify import db
 
@@ -144,8 +145,9 @@ class SpotSubscription(db.Model):
     known_cities = db.relationship("VaccinationCity", secondary=known_city_db)
     last_notification_at = db.Column(db.DateTime)
 
-    def __init__(self, email: str, secret: bytes, created_at, tracked_cities, known_cities):
+    def __init__(self, email: Optional[str], push_sub: Optional[str], secret: bytes, created_at, tracked_cities, known_cities):
         self.email = email
+        self.push_sub = push_sub
         self.secret = secret
         self.status = Status.UNCONFIRMED
         self.created_at = created_at

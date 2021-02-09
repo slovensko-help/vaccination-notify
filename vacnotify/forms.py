@@ -15,7 +15,11 @@ class CityListWidget(object):
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         size = kwargs.get("size", 1)
+        if "size" in kwargs:
+            del kwargs["size"]
         field_kwargs = kwargs.get("field_kwargs", {})
+        if "field_kwargs" in kwargs:
+            del kwargs["field_kwargs"]
         html = [f'<div class="row" {html_params(**kwargs)}>']
         choice_map = {id: choice for id, choice in field.choices}
         fields = [(subfield.id, subfield.data, subfield(**field_kwargs)) for subfield in field]
@@ -49,12 +53,25 @@ class MultiCheckboxField(SelectMultipleField):
     option_widget = CheckboxInput()
 
 
-class SpotSubscriptionForm(FlaskForm):
-    email = EmailField("email", [validators.Email(), validators.Length(max=128)])
-    push_sub = HiddenField("push_sub")
+class SubscriptionForm(FlaskForm):
+    email = EmailField("email", [validators.Length(max=128)])
+    push_sub = HiddenField("push_sub", [validators.Length(max=5000)])
+
+    def validate(self):
+        if self.email.data:
+            valid = super().validate({"email": [validators.Email(), validators.DataRequired()],
+                                      "push_sub": [validators.Length(max=0)]})
+        elif self.push_sub.data:
+            valid = super().validate({"push_sub": [validators.DataRequired()],
+                                      "email": [validators.Length(max=0)]})
+        else:
+            valid = False
+        return valid
+
+
+class SpotSubscriptionForm(SubscriptionForm):
     cities = MultiCheckboxField("cities", [validators.DataRequired()], coerce=int)
 
 
-class GroupSubscriptionForm(FlaskForm):
-    email = EmailField("email", [validators.DataRequired(), validators.Length(max=128)])
-    push_sub = HiddenField("push_sub")
+class GroupSubscriptionForm(SubscriptionForm):
+    pass

@@ -30,6 +30,9 @@
 
                         <div class="mb-3">
                             <label class="form-label">Mestá</label>
+                            {% for err in form.errors["cities"] %}
+                                <div class="invalid-feedback">{{ err }}</div>
+                            {% endfor %}
                             <p class="form-text">Vyberte si mestá pre ktoré chcete dostávať notifikácie.</p>
 
                             {{ form.cities(size=3, field_kwargs={"class_": "form-check-input"}) }}
@@ -44,6 +47,9 @@
                                 </p>
                                 <div class="mb-3">
                                     <label for="email" class="form-label">Email</label>
+                                    {% for err in form.errors["email"] %}
+                                        <div class="invalid-feedback">{{ err }}</div>
+                                    {% endfor %}
                                     {{ form.email(class_="form-control") }}
                                     <div class="form-text">Na tento email Vám budú chodiť notifikácie.</div>
                                 </div>
@@ -54,6 +60,7 @@
                                 <p>PUSH nofitikácie sú upozornenia, ktoré sa zobrazia priamo na vašom mobilnom zariadení či počítači
                                     Pri použití push notifikácii nieje potrebný email.</p>
                                 {{ form.push_sub() }}
+                                <p id="push-unsupported" class="d-none"><i class="fas fa-exclamation-triangle"></i> Váš prehliadač nepodporuje PUSH notifikácie.</p>
                                 <input id="push-submit" type="submit" class="btn btn-primary" value="Chcem PUSH notifikácie"/>
                             </div>
                         </div>
@@ -80,6 +87,11 @@
                         </div>
                     </div>
                     <script type="text/javascript">
+                        if (!("serviceWorker" in navigator) || !("Notification" in window)) {
+                            $("#push-submit").attr("disabled", "disabled");
+                            $("#push-unsupported").removeClass("d-none");
+                        }
+
                         function onSubmit(token) {
                             document.getElementById('spot-form').submit();
                         }
@@ -97,38 +109,47 @@
                                 event.stopPropagation()
                             }
                         }
-                        function onPush(event) {
+                        async function onPush(event) {
                             let elem = $("#push_sub")
-                            elem.attr('required','required');
+                            elem.attr('required', 'required');
                             $("#email").attr("required", null);
-                            if (pushSub !== null){
-                                elem.val(JSON.stringify(pushSub));
-                            } else {
-                                let modal = new bootstrap.Modal(document.getElementById("push-modal"));
-                                modal.show();
-                                event.preventDefault();
-                                event.stopPropagation()
-                            }
+                            event.preventDefault();
+                            event.stopPropagation()
+                            await navigator.serviceWorker.getRegistration().then((registration) => {
+                                if (registration !== null) {
+                                    return registration.pushManager.getSubscription().then((subscription) => {
+                                        if (subscription !== null) {
+                                            elem.val(JSON.stringify(subscription));
+                                            onSubmit(null);
+                                        } else {
+                                            let modal = new bootstrap.Modal(document.getElementById("push-modal"));
+                                            modal.show();
+                                        }
+                                    });
+                                }
+                            });
                         }
 
-                        function onNotificationRequest(event) {
-                            swReg.pushManager.getSubscription()
-                                .then(async (subscription) => {
-                                    if (subscription) {
-                                        return subscription;
-                                    }
-                                    const response = await fetch('/pubkey');
-                                    const vapidPublicKey = await response.text();
-                                    const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
-                                    return swReg.pushManager.subscribe({
-                                        userVisibleOnly: true,
-                                        applicationServerKey: convertedVapidKey
-                                    });
-                                }).then((subscription) => {
-                                    pushSub = subscription;
-                                    $("#push_sub").val(JSON.stringify(pushSub));
-                                    onSubmit(null);
-                                });
+                        async function onNotificationRequest(event) {
+                            await navigator.serviceWorker.getRegistration().then((registration) => {
+                                if (registration) {
+                                    registration.pushManager.getSubscription().then(async (subscription) => {
+                                        if (subscription) {
+                                            return subscription;
+                                        }
+                                        const response = await fetch('/pubkey');
+                                        const vapidPublicKey = await response.text();
+                                        const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+                                        return registration.pushManager.subscribe({
+                                            userVisibleOnly: true,
+                                            applicationServerKey: convertedVapidKey
+                                        });
+                                    }).then((subscription) => {
+                                        $("#push_sub").val(JSON.stringify(subscription));
+                                        onSubmit(null);
+                                    })
+                                }
+                            });
                         }
                         $("#email-submit").click(onEmail);
                         $("#push-submit").click(onPush);
@@ -162,15 +183,19 @@
                     <tr>
                         <td>{{ place.title }}{% if not place.online %}
                             <i class="fas fa-exclamation-triangle" title="Očkovacie miesto nieje dostupné."
-                               data-toggle="tooltip"></i>{% endif %}</td>
+                               data-toggle="tooltip"></i>{% endif %}{% if "Preočkovanie" in place.title %}
+                            <i class="fas fa-exclamation" title="Očkovacie miesto na preočkovanie." data-toggle="tooltip"></i>
+                        {% endif %}</td>
                         {% for day in place.days %}
-                            <td class="{{ 'table-success' if place.online and day.capacity > 0 and day.open else 'table-danger' }}">
-                            {% if day.capacity > 0 %}
+                            <td class="{{ 'table-success' if place.online and day.capacity > 0 and day.open else 'table-danger' }} text-center">
+                            {% if not day.open %}
+                                <i class="fas fa-ban fa-sm text-danger"></i>
+                            {% elif day.capacity > 0 %}
                                 {{ day.capacity }}
                             {% elif day.capacity < 0 %}
                                 <span title="Počet termínov reportovaný od NCZI je záporný ({{ day.capacity }})." data-toggle="tooltip">0*</span>
                             {% else %}
-                                0
+                                <span class="text-muted">0</span>
                             {% endif %}
                             </td>
                         {% endfor %}
