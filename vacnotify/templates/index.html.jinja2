@@ -36,7 +36,7 @@
                             <p class="card-text">Chcem dostávať notifikácie na email o voľných termínoch na&nbsp;očkovanie
                                 vo vybraných očkovacích miestach.</p>
                             <a href="{{ url_for('main.spot_subscribe') }}" class="btn btn-primary">Ďalej</a>
-                            <a href="{{ url_for('main.spot_subscribe') + "#places-table" }}"
+                            <a href="{{ url_for('main.spot_subscribe', _anchor="places-table") }}"
                                class="btn btn-outline-secondary">Prehľad voľných termínov</a>
                         </div>
                     </div>
@@ -49,7 +49,7 @@
                             <p class="card-text">Chcem dostávať notifikácie na email o otvorení očkovania pre novú
                                 skupinu ľudí.</p>
                             <a href="{{ url_for('main.group_subscribe') }}" class="btn btn-primary">Ďalej</a>
-                            <a href="{{ url_for('main.group_subscribe') + "#groups-list" }}"
+                            <a href="{{ url_for('main.group_subscribe', _anchor="groups-list") }}"
                                class="btn btn-outline-secondary">Prehľad skupín</a>
                         </div>
                     </div>

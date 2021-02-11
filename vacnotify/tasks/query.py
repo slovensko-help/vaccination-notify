@@ -387,7 +387,7 @@ def notify_groups():
         if new_subscription_groups:
             logging.info(f"Sending group notification to [{subscription.id}].")
             with transaction():
-                push_notification_group.delay(json.loads(subscription.push_sub), list(new_subscription_groups))
+                push_notification_group.delay(json.loads(subscription.push_sub), hexlify(subscription.secret).decode(), list(new_subscription_groups))
                 subscription.last_notification_at = now
                 subscription.known_groups = all_groups
 
@@ -430,7 +430,7 @@ def notify_spots():
             logging.info(f"Sending spot notification to [{subscription.id}].")
             new_subscription_cities = {city.name: city.free_online for city in free_cities}
             with transaction():
-                push_notification_spot.delay(json.loads(subscription.push_sub), new_subscription_cities)
+                push_notification_spot.delay(json.loads(subscription.push_sub), hexlify(subscription.secret).decode(), new_subscription_cities)
                 subscription.last_notification_at = now
                 subscription.known_cities = list(free_cities)
 

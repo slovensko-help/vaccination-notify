@@ -1,3 +1,4 @@
+from binascii import unhexlify
 from datetime import datetime, timedelta
 
 from celery.utils.log import get_task_logger
@@ -10,7 +11,6 @@ from vacnotify.models import GroupSubscription, Status, SpotSubscription
 from vacnotify.utils import remove_pii
 
 logging = get_task_logger(__name__)
-
 
 
 @celery.task(ignore_result=True)
@@ -29,3 +29,16 @@ def clear_db_unconfirmed():
         for spot_sub in to_clear_spot:
             t.delete(spot_sub)
     logging.info(f"Cleared {to_clear}")
+
+
+@celery.task(ignore_result=True)
+def clear_db_push(secret):
+    secret_bytes = unhexlify(secret)
+    to_clear_group = GroupSubscription.query.filter_by(secret=secret_bytes).first()
+    to_clear_spot = SpotSubscription.query.filter_by(secret=secret_bytes).first()
+    with transaction() as t:
+        if to_clear_group:
+            t.delete(to_clear_group)
+        if to_clear_spot:
+            t.delete(to_clear_spot)
+    logging.info(f"Cleared expired PUSH subscription")
