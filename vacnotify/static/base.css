@@ -6,6 +6,10 @@
     margin-left: 4%;
 }
 
+.cursor-pointer {
+    cursor: pointer;
+}
+
 #reg-button {
     font-size: 0.9rem;
     font-weight: bolder;

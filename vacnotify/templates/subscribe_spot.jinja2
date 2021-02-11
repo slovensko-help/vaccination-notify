@@ -33,6 +33,10 @@
                                 <p class="text-danger">{{ err }}</p>
                             {% endfor %}
                             <p class="form-text">Vyberte si mestá pre ktoré chcete dostávať notifikácie.</p>
+                            <div class="mb-3">
+                                <button id="select-all" class="btn btn-secondary"><i class="fas fa-check"></i> Vybrať všetky</button>
+                                <button id="select-none" class="btn btn-secondary"><i class="fas fa-times"></i> Zrušit výber</button>
+                            </div>
                             {{ form.cities(size=3, field_kwargs={"class_": "form-check-input"}) }}
                         </div>
                         <div class="row mt-5">
@@ -89,12 +93,21 @@
                             $("#push-submit").attr("disabled", "disabled");
                             $("#push-unsupported").removeClass("d-none");
                         }
-
                         function onSubmit(token) {
                             document.getElementById('spot-form').submit();
                         }
                         function loadCaptcha() {
                             hcaptcha.render("hcaptcha", {sitekey: '{{ config["HCAPTCHA_SITEKEY"] }}'})
+                        }
+                        function onSelectAll(event) {
+                            $("#cities input").prop("checked", true);
+                            event.preventDefault();
+                            event.stopPropagation()
+                        }
+                        function onSelectNone(event) {
+                            $("#cities input").prop("checked", false);
+                            event.preventDefault();
+                            event.stopPropagation()
                         }
                         function onEmail(event) {
                             let elem = $("#email");
@@ -127,7 +140,6 @@
                                 }
                             });
                         }
-
                         async function onNotificationRequest(event) {
                             await navigator.serviceWorker.getRegistration().then((registration) => {
                                 if (registration) {
@@ -149,6 +161,8 @@
                                 }
                             });
                         }
+                        $("#select-all").click(onSelectAll);
+                        $("#select-none").click(onSelectNone);
                         $("#email-submit").click(onEmail);
                         $("#push-submit").click(onPush);
                         $("#notification-ask").click(onNotificationRequest);

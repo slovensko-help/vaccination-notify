@@ -1,7 +1,7 @@
 import math
 
 from markupsafe import Markup
-from wtforms import validators, SelectMultipleField, Label, HiddenField
+from wtforms import validators, SelectMultipleField, Label, HiddenField, ValidationError
 from wtforms.fields.html5 import EmailField
 from flask_wtf import FlaskForm
 from wtforms.widgets import CheckboxInput, html_params
@@ -53,13 +53,25 @@ class MultiCheckboxField(SelectMultipleField):
     option_widget = CheckboxInput()
 
 
+def encoding(which, message=None):
+    if message is None:
+        message = f"The value contains illegal characters, can only contain {which} characters."
+
+    def _encoding(form, field):
+        try:
+            field.data.encode(which)
+        except UnicodeEncodeError:
+            raise ValidationError(message)
+    return _encoding
+
+
 class SubscriptionForm(FlaskForm):
-    email = EmailField("email", [validators.Length(max=128)])
+    email = EmailField("email", [validators.Length(max=128, message="Maximálna dĺžka emailu je 128 znakov."), encoding("ascii", "Email obsahuje nepovolen=e znaky")])
     push_sub = HiddenField("push_sub", [validators.Length(max=5000)])
 
     def validate(self):
         if self.email.data:
-            valid = super().validate({"email": [validators.Email(), validators.DataRequired()],
+            valid = super().validate({"email": [validators.Email(message="Email nemá správny formát."), validators.DataRequired(message="Email je povinný.")],
                                       "push_sub": [validators.Length(max=0)]})
         elif self.push_sub.data:
             valid = super().validate({"push_sub": [validators.DataRequired()],
@@ -70,7 +82,7 @@ class SubscriptionForm(FlaskForm):
 
 
 class SpotSubscriptionForm(SubscriptionForm):
-    cities = MultiCheckboxField("cities", [validators.DataRequired()], coerce=int)
+    cities = MultiCheckboxField("cities", [validators.DataRequired(message="Výber miest je povinný.")], coerce=int)
 
 
 class GroupSubscriptionForm(SubscriptionForm):
