@@ -41,20 +41,20 @@
 <body class="position-relative">
 <div class="d-flex align-items-center mb-5" id="wrapper">
     <nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light border-bottom fixed-top">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button id="nav-toggle" class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Otvoriť menu">
             <span class="navbar-toggler-icon"></span>
         </button>
         <a class="navbar-brand" href="{{ url_for("main.index") }}"><i class="fas fa-virus"></i> <span class="d-none d-md-inline">Notifikácie o COVID-19 vakcinácii</span><span class="d-sm-none">Domov</span></a>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
-                <li class="nav-item mx-2">
+                <li class="nav-item mx-3">
                     <a class="nav-link" href="{{ url_for('main.spot_subscribe') }}">Voľné miesta</a>
                 </li>
-                <li class="nav-item mx-2">
+                <li class="nav-item mx-3">
                     <a class="nav-link" href="{{ url_for('main.group_subscribe') }}">Nová skupina</a>
                 </li>
-                <li class="nav-item mx-2">
+                <li class="nav-item mx-3">
                     <a class="nav-link" href="{{ url_for('main.privacy') }}">Zásady ochrany osobných údajov</a>
                 </li>
             </ul>

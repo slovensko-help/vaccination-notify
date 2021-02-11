@@ -3,6 +3,7 @@ import locale
 import sentry_sdk
 import subprocess
 
+from flask_wtf.csrf import CSRFError
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.celery import CeleryIntegration
@@ -136,6 +137,11 @@ def set_sentry_user():
 @app.errorhandler(404)
 def errorhandler_notfound(error):
     return render_template("error.html.jinja2", error="Stránka neexistuje."), 404
+
+
+@app.errorhandler(CSRFError)
+def errorhandler_csrf(error):
+    return render_template("error.html.jinja2", error="Nepodarilo sa overiť CSRF token. Skúste prosím použiť iný webový prehliadač alebo okno inkognito."), 400
 
 
 @app.errorhandler(403)

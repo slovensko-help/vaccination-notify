@@ -28,8 +28,8 @@
                     <form id="group-form" action="{{ url_for('main.group_subscribe') }}" method="post">
                         {{ form.csrf_token }}
 
-                        <div class="row">
-                            <div class="col-sm">
+                        <div class="row" style="margin-top: -1.5rem">
+                            <div class="col-sm gx-4 gy-4">
                                 <h3><i class="fas fa-envelope"></i> Email notifikácie</h3>
                                 <p>
                                     Emailové notifikácie budete dostávať vždy pri otvorení novej skupiny na očkovanie.
@@ -45,9 +45,9 @@
                                 </div>
                                 <input id="email-submit" type="submit" class="btn btn-primary" value="Chcem notifikácie na email"/>
                             </div>
-                            <div class="col-sm">
+                            <div class="col-sm gx-4 gy-4">
                                 <h3><i class="fas fa-bell"></i> PUSH notifikácie</h3>
-                                <p>PUSH nofitikácie sú upozornenia, ktoré sa zobrazia priamo na vašom mobilnom zariadení či počítači
+                                <p>Push nofitikácie sú upozornenia, ktoré sa zobrazia priamo na vašom mobilnom zariadení či počítači.
                                     Pri použití push notifikácii nieje potrebný email.</p>
                                 {{ form.push_sub() }}
                                 <p id="push-unsupported" class="d-none"><i class="fas fa-exclamation-triangle"></i> Váš prehliadač nepodporuje PUSH notifikácie.</p>
