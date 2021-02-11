@@ -368,7 +368,7 @@ def notify_groups():
         and_(GroupSubscription.status == Status.CONFIRMED,
              GroupSubscription.push_sub.is_(None),
              or_(GroupSubscription.last_notification_at.is_(None),
-                 GroupSubscription.last_notification_at < now - group_backoff_time))).all()
+                 GroupSubscription.last_notification_at < now - group_backoff_time)))
     for subscription in group_subs_email:
         new_subscription_groups = set(map(attrgetter("item_description"), set(all_groups) - set(subscription.known_groups)))
         if new_subscription_groups:
@@ -381,7 +381,7 @@ def notify_groups():
         and_(GroupSubscription.status == Status.CONFIRMED,
              GroupSubscription.email.is_(None),
              or_(GroupSubscription.last_notification_at.is_(None),
-                 GroupSubscription.last_notification_at < now - group_backoff_time))).all()
+                 GroupSubscription.last_notification_at < now - group_backoff_time)))
     for subscription in group_subs_push:
         new_subscription_groups = set(map(attrgetter("item_description"), set(all_groups) - set(subscription.known_groups)))
         if new_subscription_groups:
@@ -396,42 +396,45 @@ def notify_spots():
     # Send out the spot notifications.
     now = datetime.now()
     spot_backoff_time = timedelta(seconds=current_app.config["SPOT_NOTIFICATION_BACKOFF"])
-    spot_subs_free = SpotSubscription.query.options(joinedload(SpotSubscription.known_cities)).join(SpotSubscription.cities).join(VaccinationCity.places).filter(
+    spot_subs_free = SpotSubscription.query.join(SpotSubscription.cities).join(VaccinationCity.places).filter(
         and_(VaccinationPlace.free > 0,
              VaccinationPlace.online,
              SpotSubscription.status == Status.CONFIRMED,
              SpotSubscription.push_sub.is_(None),
              or_(SpotSubscription.last_notification_at.is_(None),
-                 SpotSubscription.last_notification_at < now - spot_backoff_time))).all()
+                 SpotSubscription.last_notification_at < now - spot_backoff_time)))
 
     for subscription in spot_subs_free:
         free_cities = set(city for city in subscription.cities if city.free_online)
-        if free_cities != set(subscription.known_cities) and free_cities:
-            logging.info(f"Sending spot notification to [{subscription.id}] {remove_pii(subscription.email)}.")
-            new_subscription_cities = {city.name: {
-                "free": city.free_online,
-                "places": [(place.title, place.free) for place in city.places if place.online and place.free]
-            } for city in free_cities}
+        if free_cities != set(subscription.known_cities):
             with transaction():
-                email_notification_spot.delay(subscription.email, hexlify(subscription.secret).decode(), new_subscription_cities)
-                subscription.last_notification_at = now
+                if free_cities:
+                    logging.info(f"Sending spot notification to [{subscription.id}] {remove_pii(subscription.email)}.")
+                    new_subscription_cities = {city.name: {
+                        "free": city.free_online,
+                        "places": [(place.title, place.free) for place in city.places if place.online and place.free]
+                    } for city in free_cities}
+                    email_notification_spot.delay(subscription.email, hexlify(subscription.secret).decode(), new_subscription_cities)
+                    subscription.last_notification_at = now
                 subscription.known_cities = list(free_cities)
 
-    spot_subs_free_push = SpotSubscription.query.options(joinedload(SpotSubscription.known_cities)).join(SpotSubscription.cities).join(VaccinationCity.places).filter(
+    spot_subs_free_push = SpotSubscription.query.join(SpotSubscription.cities).join(VaccinationCity.places).filter(
         and_(VaccinationPlace.free > 0,
              VaccinationPlace.online,
              SpotSubscription.status == Status.CONFIRMED,
              SpotSubscription.email.is_(None),
              or_(SpotSubscription.last_notification_at.is_(None),
-                 SpotSubscription.last_notification_at < now - spot_backoff_time))).all()
+                 SpotSubscription.last_notification_at < now - spot_backoff_time)))
     for subscription in spot_subs_free_push:
         free_cities = set(city for city in subscription.cities if city.free_online)
-        if free_cities != set(subscription.known_cities) and free_cities:
-            logging.info(f"Sending spot notification to [{subscription.id}].")
-            new_subscription_cities = {city.name: city.free_online for city in free_cities}
+        if free_cities != set(subscription.known_cities):
             with transaction():
-                push_notification_spot.delay(json.loads(subscription.push_sub), hexlify(subscription.secret).decode(), new_subscription_cities)
-                subscription.last_notification_at = now
+                if free_cities:
+                    logging.info(f"Sending spot notification to [{subscription.id}].")
+                    new_subscription_cities = {city.name: city.free_online for city in free_cities}
+                    push_notification_spot.delay(json.loads(subscription.push_sub), hexlify(subscription.secret).decode(),
+                                                 new_subscription_cities)
+                    subscription.last_notification_at = now
                 subscription.known_cities = list(free_cities)
 
 
