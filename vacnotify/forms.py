@@ -1,7 +1,7 @@
 import math
 
 from markupsafe import Markup
-from wtforms import validators, SelectMultipleField, Label
+from wtforms import validators, SelectMultipleField, Label, HiddenField, ValidationError
 from wtforms.fields.html5 import EmailField
 from flask_wtf import FlaskForm
 from wtforms.widgets import CheckboxInput, html_params
@@ -15,7 +15,11 @@ class CityListWidget(object):
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         size = kwargs.get("size", 1)
+        if "size" in kwargs:
+            del kwargs["size"]
         field_kwargs = kwargs.get("field_kwargs", {})
+        if "field_kwargs" in kwargs:
+            del kwargs["field_kwargs"]
         html = [f'<div class="row" {html_params(**kwargs)}>']
         choice_map = {id: choice for id, choice in field.choices}
         fields = [(subfield.id, subfield.data, subfield(**field_kwargs)) for subfield in field]
@@ -49,10 +53,37 @@ class MultiCheckboxField(SelectMultipleField):
     option_widget = CheckboxInput()
 
 
-class SpotSubscriptionForm(FlaskForm):
-    email = EmailField("email", [validators.DataRequired(), validators.Email(), validators.Length(max=128)])
-    cities = MultiCheckboxField("cities", [validators.DataRequired()], coerce=int)
+def encoding(which, message=None):
+    if message is None:
+        message = f"The value contains illegal characters, can only contain {which} characters."
+
+    def _encoding(form, field):
+        try:
+            field.data.encode(which)
+        except UnicodeEncodeError:
+            raise ValidationError(message)
+    return _encoding
 
 
-class GroupSubscriptionForm(FlaskForm):
-    email = EmailField("email", [validators.DataRequired(), validators.Email(), validators.Length(max=128)])
+class SubscriptionForm(FlaskForm):
+    email = EmailField("email", [validators.Length(max=128, message="Maximálna dĺžka emailu je 128 znakov."), encoding("ascii", "Email obsahuje nepovolen=e znaky")])
+    push_sub = HiddenField("push_sub", [validators.Length(max=5000)])
+
+    def validate(self):
+        if self.email.data:
+            valid = super().validate({"email": [validators.Email(message="Email nemá správny formát."), validators.DataRequired(message="Email je povinný.")],
+                                      "push_sub": [validators.Length(max=0)]})
+        elif self.push_sub.data:
+            valid = super().validate({"push_sub": [validators.DataRequired()],
+                                      "email": [validators.Length(max=0)]})
+        else:
+            valid = False
+        return valid
+
+
+class SpotSubscriptionForm(SubscriptionForm):
+    cities = MultiCheckboxField("cities", [validators.DataRequired(message="Výber miest je povinný.")], coerce=int)
+
+
+class GroupSubscriptionForm(SubscriptionForm):
+    pass

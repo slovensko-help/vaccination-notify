@@ -5,7 +5,7 @@
     {% block head %}
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <meta name="application-name" content="COVID19-vaccine-availability"/>
+        <meta name="application-name" content="Notifikácie o COVID-19 vakcinácii"/>
         {% block title %}<title>{{ title|default("Notifikácie o COVID-19 vakcinácii") }}</title>{% endblock %}
         <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}"/>
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
@@ -14,31 +14,47 @@
               rel="stylesheet">
         <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
         <script type="text/javascript" src="{{ url_for('static', filename='mail.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='base.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='jquery.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='sentry.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='sentry.tracing.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='d3.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='d3-legend.min.js') }}"></script>
-        <script src="https://hcaptcha.com/1/api.js?hl=sk" async defer></script>
+        <script type="text/javascript">
+            let envs = {
+                "covid-dev.neuromancer.sk": "staging",
+                "covid.neuromancer.sk": "production",
+                "localhost.localdomain": "development"
+            }
+            console.log(envs[window.location.hostname]);
+            Sentry.init({
+                dsn: "{{ config['SENTRY_INGEST'] }}",
+                environment: envs[window.location.hostname],
+                debug: true,
+                release: "{{ get_release() }}"
+            });
+        </script>
     {% endblock %}
 </head>
 
 <body class="position-relative">
 <div class="d-flex align-items-center mb-5" id="wrapper">
     <nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light border-bottom fixed-top">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button id="nav-toggle" class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Otvoriť menu">
             <span class="navbar-toggler-icon"></span>
         </button>
         <a class="navbar-brand" href="{{ url_for("main.index") }}"><i class="fas fa-virus"></i> <span class="d-none d-md-inline">Notifikácie o COVID-19 vakcinácii</span><span class="d-sm-none">Domov</span></a>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
-                <li class="nav-item mx-2">
+                <li class="nav-item mx-3">
                     <a class="nav-link" href="{{ url_for('main.spot_subscribe') }}">Voľné miesta</a>
                 </li>
-                <li class="nav-item mx-2">
+                <li class="nav-item mx-3">
                     <a class="nav-link" href="{{ url_for('main.group_subscribe') }}">Nová skupina</a>
                 </li>
-                <li class="nav-item mx-2">
+                <li class="nav-item mx-3">
                     <a class="nav-link" href="{{ url_for('main.privacy') }}">Zásady ochrany osobných údajov</a>
                 </li>
             </ul>

@@ -1,3 +1,4 @@
+import json
 import sys
 import time
 import requests
@@ -7,11 +8,13 @@ from operator import attrgetter, itemgetter
 from datetime import date, datetime, timedelta
 from typing import Set, List
 
+import sentry_sdk
 from celery.utils.log import get_task_logger
 from flask import current_app
 from requests.utils import default_user_agent
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import joinedload
+from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from stem import Signal
 from stem.control import Controller
 from stem.util.log import get_logger as get_stem_logger
@@ -21,6 +24,7 @@ from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, VaccinationDay, GroupSubscription, SpotSubscription, \
     Status, VaccinationStats, VaccinationCity, SubscriptionStats
 from vacnotify.tasks.email import email_notification_group, email_notification_spot
+from vacnotify.tasks.push import push_notification_group, push_notification_spot
 from vacnotify.utils import remove_pii
 
 logging = get_task_logger(__name__)
@@ -362,42 +366,91 @@ def notify_groups():
     all_groups = EligibilityGroup.query.all()
     now = datetime.now()
     group_backoff_time = timedelta(seconds=current_app.config["GROUP_NOTIFICATION_BACKOFF"])
-    all_group_subscriptions = GroupSubscription.query.filter(and_(GroupSubscription.status == Status.CONFIRMED,
-                                                                  or_(GroupSubscription.last_notification_at.is_(None),
-                                                                      GroupSubscription.last_notification_at < now - group_backoff_time))).all()
-    for subscription in all_group_subscriptions:
-        new_subscription_groups = set(map(attrgetter("item_description"), set(all_groups) - set(subscription.known_groups)))
-        if new_subscription_groups:
-            logging.info(f"Sending group notification to [{subscription.id}] {remove_pii(subscription.email)}.")
-            with transaction():
-                email_notification_group.delay(subscription.email, hexlify(subscription.secret).decode(), list(new_subscription_groups))
-                subscription.last_notification_at = now
-                subscription.known_groups = all_groups
+    group_subs_email = GroupSubscription.query.options(joinedload(GroupSubscription.known_groups)).filter(
+        and_(GroupSubscription.status == Status.CONFIRMED,
+             GroupSubscription.push_sub.is_(None),
+             or_(GroupSubscription.last_notification_at.is_(None),
+                 GroupSubscription.last_notification_at < now - group_backoff_time)))
+    for subscription in group_subs_email:
+        try:
+            new_subscription_groups = set(map(attrgetter("item_description"), set(all_groups) - set(subscription.known_groups)))
+            if new_subscription_groups:
+                logging.info(f"Sending group notification to [{subscription.id}] {remove_pii(subscription.email)}.")
+                with transaction():
+                    email_notification_group.delay(subscription.email, hexlify(subscription.secret).decode(), list(new_subscription_groups))
+                    subscription.last_notification_at = now
+                    subscription.known_groups = all_groups
+        except (ObjectDeletedError, StaleDataError) as e:
+            logging.warn(f"Got some races: {e}")
+
+    group_subs_push = GroupSubscription.query.options(joinedload(GroupSubscription.known_groups)).filter(
+        and_(GroupSubscription.status == Status.CONFIRMED,
+             GroupSubscription.email.is_(None),
+             or_(GroupSubscription.last_notification_at.is_(None),
+                 GroupSubscription.last_notification_at < now - group_backoff_time)))
+    for subscription in group_subs_push:
+        try:
+            new_subscription_groups = set(map(attrgetter("item_description"), set(all_groups) - set(subscription.known_groups)))
+            if new_subscription_groups:
+                logging.info(f"Sending group notification to [{subscription.id}].")
+                with transaction():
+                    push_notification_group.delay(json.loads(subscription.push_sub), hexlify(subscription.secret).decode(), list(new_subscription_groups))
+                    subscription.last_notification_at = now
+                    subscription.known_groups = all_groups
+        except (ObjectDeletedError, StaleDataError) as e:
+            logging.warn(f"Got some races: {e}")
 
 
 def notify_spots():
     # Send out the spot notifications.
     now = datetime.now()
     spot_backoff_time = timedelta(seconds=current_app.config["SPOT_NOTIFICATION_BACKOFF"])
-    spot_subs_free = SpotSubscription.query.options(joinedload(SpotSubscription.known_cities), joinedload(SpotSubscription.cities)).join(SpotSubscription.cities).join(VaccinationCity.places).filter(
+    spot_subs_free = SpotSubscription.query.join(SpotSubscription.cities).join(VaccinationCity.places).filter(
         and_(VaccinationPlace.free > 0,
              VaccinationPlace.online,
              SpotSubscription.status == Status.CONFIRMED,
+             SpotSubscription.push_sub.is_(None),
              or_(SpotSubscription.last_notification_at.is_(None),
-                 SpotSubscription.last_notification_at < now - spot_backoff_time))).all()
+                 SpotSubscription.last_notification_at < now - spot_backoff_time)))
 
     for subscription in spot_subs_free:
-        free_cities = set(city for city in subscription.cities if city.free_online)
-        if free_cities != set(subscription.known_cities) and free_cities:
-            logging.info(f"Sending spot notification to [{subscription.id}] {remove_pii(subscription.email)}.")
-            new_subscription_cities = {city.name: {
-                "free": city.free_online,
-                "places": [(place.title, place.free) for place in city.places if place.online and place.free]
-            } for city in free_cities}
-            with transaction():
-                email_notification_spot.delay(subscription.email, hexlify(subscription.secret).decode(), new_subscription_cities)
-                subscription.last_notification_at = now
-                subscription.known_cities = list(free_cities)
+        try:
+            free_cities = set(city for city in subscription.cities if city.free_online)
+            if free_cities != set(subscription.known_cities):
+                with transaction():
+                    if free_cities:
+                        logging.info(f"Sending spot notification to [{subscription.id}] {remove_pii(subscription.email)}.")
+                        new_subscription_cities = {city.name: {
+                            "free": city.free_online,
+                            "places": [(place.title, place.free) for place in city.places if place.online and place.free]
+                        } for city in free_cities}
+                        email_notification_spot.delay(subscription.email, hexlify(subscription.secret).decode(), new_subscription_cities)
+                        subscription.last_notification_at = now
+                    subscription.known_cities = list(free_cities)
+        except (ObjectDeletedError, StaleDataError) as e:
+            logging.warn(f"Got some races: {e}")
+
+    spot_subs_free_push = SpotSubscription.query.join(SpotSubscription.cities).join(VaccinationCity.places).filter(
+        and_(VaccinationPlace.free > 0,
+             VaccinationPlace.online,
+             SpotSubscription.status == Status.CONFIRMED,
+             SpotSubscription.email.is_(None),
+             or_(SpotSubscription.last_notification_at.is_(None),
+                 SpotSubscription.last_notification_at < now - spot_backoff_time)))
+    for subscription in spot_subs_free_push:
+        try:
+            free_cities = set(city for city in subscription.cities if city.free_online)
+            if free_cities != set(subscription.known_cities):
+                with transaction():
+                    if free_cities:
+                        logging.info(f"Sending spot notification to [{subscription.id}].")
+                        new_subscription_cities = {city.name: city.free_online for city in free_cities}
+                        push_notification_spot.delay(json.loads(subscription.push_sub), hexlify(subscription.secret).decode(),
+                                                     new_subscription_cities)
+                        subscription.last_notification_at = now
+                    subscription.known_cities = list(free_cities)
+        except (ObjectDeletedError, StaleDataError) as e:
+            logging.warn(f"Got some races: {e}")
 
 
 def compute_subscription_stats():
@@ -421,17 +474,20 @@ def compute_subscription_stats():
 def run():
     s = NCZI(RetrySession())
 
-    query_groups(s)
-    time.sleep(current_app.config["QUERY_DELAY"])
-
-    if current_app.config["API_USE_AGGREGATE"]:
-        place_stats = query_places_aggregate(s)
-    else:
-        query_places(s)
+    with sentry_sdk.start_span(op="query", description="Query groups"):
+        query_groups(s)
         time.sleep(current_app.config["QUERY_DELAY"])
-        place_stats = query_places_all(s)
 
-    sub_stats = compute_subscription_stats()
+    with sentry_sdk.start_span(op="query", description="Query places"):
+        if current_app.config["API_USE_AGGREGATE"]:
+            place_stats = query_places_aggregate(s)
+        else:
+            query_places(s)
+            time.sleep(current_app.config["QUERY_DELAY"])
+            place_stats = query_places_all(s)
+
+    with sentry_sdk.start_span(op="query", description="Query stats"):
+        sub_stats = compute_subscription_stats()
 
     # Add stats
     now = datetime.now()
@@ -439,6 +495,8 @@ def run():
         t.add(VaccinationStats(now, **place_stats))
         t.add(SubscriptionStats(now, **sub_stats))
 
-    notify_groups()
-    notify_spots()
+    with sentry_sdk.start_span(op="query", description="Notify groups"):
+        notify_groups()
+    with sentry_sdk.start_span(op="query", description="Notify places"):
+        notify_spots()
 

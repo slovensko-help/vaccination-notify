@@ -21,7 +21,7 @@
                 ochoreniu COVID-19 a tiež o momente otvorenia očkovacieho formulára pre nové skupiny obyvateľov. Stránka
                 používa informácie od NCZI. Stránka neslúži na registrovanie na očkovanie, pre registráciu na očkovanie
                 použite <a href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" target="_blank">formulár NCZI</a>.
-                Pre aktuálne informácie oo ochorení COVID-19 choďte na <a href="https://korona.gov.sk" target="_blank">korona.gov.sk</a>.</p>
+                Pre aktuálne informácie o ochorení COVID-19 choďte na <a href="https://korona.gov.sk" target="_blank">korona.gov.sk</a>.</p>
             {{ render_alerts(get_alerts()) }}
         </div>
     </div>
@@ -36,7 +36,7 @@
                             <p class="card-text">Chcem dostávať notifikácie na email o voľných termínoch na&nbsp;očkovanie
                                 vo vybraných očkovacích miestach.</p>
                             <a href="{{ url_for('main.spot_subscribe') }}" class="btn btn-primary">Ďalej</a>
-                            <a href="{{ url_for('main.spot_subscribe') + "#places-table" }}"
+                            <a href="{{ url_for('main.spot_subscribe', _anchor="places-table") }}"
                                class="btn btn-outline-secondary">Prehľad voľných termínov</a>
                         </div>
                     </div>
@@ -49,7 +49,7 @@
                             <p class="card-text">Chcem dostávať notifikácie na email o otvorení očkovania pre novú
                                 skupinu ľudí.</p>
                             <a href="{{ url_for('main.group_subscribe') }}" class="btn btn-primary">Ďalej</a>
-                            <a href="{{ url_for('main.group_subscribe') + "#groups-list" }}"
+                            <a href="{{ url_for('main.group_subscribe', _anchor="groups-list") }}"
                                class="btn btn-outline-secondary">Prehľad skupín</a>
                         </div>
                     </div>
@@ -85,7 +85,7 @@
             <div class="row">
                 <div class="col-sm-10 mx-auto mt-3">
                     <p>
-                        Dáta sa aktualizujú každých 5 minút.
+                        Dáta sa aktualizujú každých {{ format_timedelta(config["QUERY_PERIOD"]) }}.
                         Očkovací termín je dostupný, ak očkovacie miesto hlási v daný deň kapacitu a nie je v daný deň
                         zatvorené. Očkovacie miesta bývajú nedostupné (a vtedy nie sú ani viditeľné a nie sú na výber vo
                         formulári NCZI), keď sa aktualizuje ich kapacita, čo často býva v noci.

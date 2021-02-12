@@ -2,8 +2,20 @@
     overflow-x: hidden;
 }
 
+#content {
+    min-height: 70vh;
+}
+
+#nav-toggle {
+    margin-left: 1rem;
+}
+
 .navbar-brand {
     margin-left: 4%;
+}
+
+.cursor-pointer {
+    cursor: pointer;
 }
 
 #reg-button {

@@ -1,6 +1,7 @@
 from binascii import hexlify
 from enum import Enum, auto
 from operator import attrgetter
+from typing import Optional
 
 from vacnotify import db
 
@@ -100,29 +101,47 @@ class VaccinationCity(db.Model):
         return f"VaccinationCity([{self.id}], {self.name})"
 
 
+class SubscriptionType(Enum):
+    Email = auto()
+    PUSH = auto()
+
+
 class GroupSubscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(128))
+    push_sub = db.Column(db.Text)
+    push_sub_endpoint = db.Column(db.String(1024))
     created_at = db.Column(db.DateTime)
     secret = db.Column(db.LargeBinary(16))
     status = db.Column(db.Enum(Status))
     known_groups = db.relationship("EligibilityGroup", secondary=group_db)
     last_notification_at = db.Column(db.DateTime)
 
-    def __init__(self, email: str, secret: secret, created_at, known_groups):
+    def __init__(self, email: Optional[str], push_sub: Optional[str], push_sub_endpoint: Optional[str], secret: secret, created_at, known_groups):
         self.email = email
+        self.push_sub = push_sub
+        self.push_sub_endpoint = push_sub_endpoint
         self.secret = secret
         self.status = Status.UNCONFIRMED
         self.created_at = created_at
         self.known_groups = known_groups
 
     def __str__(self):
-        return f"GroupSubscription([{self.id}], {self.email}, {hexlify(self.secret).decode()}, {self.status}, created_at={self.created_at}, notif_at={self.last_notification_at})"
+        return f"GroupSubscription([{self.id}], {self.email if self.subscription_type == SubscriptionType.Email else 'PUSH'}, {hexlify(self.secret).decode()}, {self.status}, created_at={self.created_at}, notif_at={self.last_notification_at})"
+
+    @property
+    def subscription_type(self):
+        if self.email:
+            return SubscriptionType.Email
+        else:
+            return SubscriptionType.PUSH
 
 
 class SpotSubscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(128))
+    push_sub = db.Column(db.Text)
+    push_sub_endpoint = db.Column(db.String(1024))
     created_at = db.Column(db.DateTime)
     secret = db.Column(db.LargeBinary(16))
     status = db.Column(db.Enum(Status))
@@ -130,8 +149,10 @@ class SpotSubscription(db.Model):
     known_cities = db.relationship("VaccinationCity", secondary=known_city_db)
     last_notification_at = db.Column(db.DateTime)
 
-    def __init__(self, email: str, secret: bytes, created_at, tracked_cities, known_cities):
+    def __init__(self, email: Optional[str], push_sub: Optional[str], push_sub_endpoint: Optional[str], secret: bytes, created_at, tracked_cities, known_cities):
         self.email = email
+        self.push_sub = push_sub
+        self.push_sub_endpoint = push_sub_endpoint
         self.secret = secret
         self.status = Status.UNCONFIRMED
         self.created_at = created_at
@@ -139,7 +160,14 @@ class SpotSubscription(db.Model):
         self.known_cities = known_cities
 
     def __str__(self):
-        return f"SpotSubscription([{self.id}], {self.email}, {hexlify(self.secret).decode()}, {self.status}, created_at={self.created_at}, notif_at={self.last_notification_at})"
+        return f"SpotSubscription([{self.id}], {self.email if self.subscription_type == SubscriptionType.Email else 'PUSH'}, {hexlify(self.secret).decode()}, {self.status}, created_at={self.created_at}, notif_at={self.last_notification_at})"
+
+    @property
+    def subscription_type(self):
+        if self.email:
+            return SubscriptionType.Email
+        else:
+            return SubscriptionType.PUSH
 
 
 class JSONable(object):

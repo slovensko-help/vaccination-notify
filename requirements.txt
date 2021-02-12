@@ -16,3 +16,4 @@ Flask-Migrate
 Flask-Mail
 email_validator
 wtforms
+pywebpush

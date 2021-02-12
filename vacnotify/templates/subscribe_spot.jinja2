@@ -9,13 +9,14 @@
     <meta property="og:url" content="{{ url_for('main.spot_subscribe') }}"/>
     <meta property="og:locale" content="sk_SK"/>
     <meta property="og:description" content="Táto stránka poskytuje notifikácie na Váš email o voľných miestach na očkovanie proti COVID-19."/>
+    <script src="https://hcaptcha.com/1/api.js?hl=sk&onload=loadCaptcha&render=explicit" async defer></script>
 {% endblock %}
 {% block content %}
     <div class="row">
         <div class="col-sm-10 mx-auto">
             <h1>Notifikácie o voľných miestach</h1>
             <p class="lead">
-                Chcem dostávať notifikácie na email o voľných termínoch na očkovanie vo vybraných očkovacích miestach.
+                Chcem dostávať notifikácie o voľných termínoch na očkovanie vo vybraných očkovacích miestach.
             </p>
             {{ render_alerts(get_alerts()) }}
         </div>
@@ -26,23 +27,145 @@
                 <div class="card-body">
                     <form id="spot-form" action="{{ url_for('main.spot_subscribe') }}" method="post">
                         {{ form.csrf_token }}
-
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            {{ form.email(class_="form-control") }}
-                            <div class="form-text">Na tento email Vám budú chodiť notifikácie.</div>
-                        </div>
                         <div class="mb-3">
                             <label class="form-label">Mestá</label>
+                            {% for err in form.errors["cities"] %}
+                                <p class="text-danger">{{ err }}</p>
+                            {% endfor %}
+                            <p class="form-text">Vyberte si mestá pre ktoré chcete dostávať notifikácie.</p>
+                            <div class="mb-3">
+                                <button id="select-all" class="btn btn-secondary"><i class="fas fa-check"></i> Vybrať všetky</button>
+                                <button id="select-none" class="btn btn-secondary"><i class="fas fa-times"></i> Zrušit výber</button>
+                            </div>
                             {{ form.cities(size=3, field_kwargs={"class_": "form-check-input"}) }}
-                            <div class="form-text">Notifikácie budete dostávať len o nových voľných termínoch vo vyznačených mestách.</div>
                         </div>
-                        <input type="submit" class="btn btn-primary h-captcha" value="Odoslať" data-sitekey="{{ config["HCAPTCHA_SITEKEY"] }}" data-callback="submitForm"/>
+                        <div class="row">
+                            <div class="col-sm gx-4 gy-4">
+                                <h3><i class="fas fa-envelope"></i> Email notifikácie</h3>
+                                <p>
+                                    Emailové notifikácie budete dostávať vždy pri zmene voľných kapacít na úrovni mesta, teda napríklad
+                                    keď v meste predtým neboli voľné termíny a už sú, alebo keď v meste termíny boli, no všetky sa minuli.
+                                    Notifikácie vám nebudú chodiť častejšie ako raz za {{ format_timedelta(config["SPOT_NOTIFICATION_BACKOFF"]) }}.
+                                </p>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    {% for err in form.errors["email"] %}
+                                        <p class="text-danger">{{ err }}</p>
+                                    {% endfor %}
+                                    {{ form.email(class_="form-control") }}
+                                    <div class="form-text">Na tento email Vám budú chodiť notifikácie.</div>
+                                </div>
+                                <input id="email-submit" type="submit" class="btn btn-primary" value="Chcem notifikácie na email"/>
+                            </div>
+                            <div class="col-sm gx-4 gy-4">
+                                <h3><i class="fas fa-bell"></i> PUSH notifikácie</h3>
+                                <p>Push nofitikácie sú upozornenia, ktoré sa zobrazia priamo na vašom mobilnom zariadení či počítači.
+                                    Pri použití push notifikácii nie je potrebný email.</p>
+                                {{ form.push_sub() }}
+                                <p id="push-unsupported" class="d-none"><i class="fas fa-exclamation-triangle"></i> Váš prehliadač nepodporuje PUSH notifikácie.</p>
+                                <input id="push-submit" type="submit" class="btn btn-primary" value="Chcem PUSH notifikácie"/>
+                            </div>
+                        </div>
+                        <div id="hcaptcha" class="h-captcha" data-sitekey="{{ config["HCAPTCHA_SITEKEY"] }}" data-callback="onSubmit" data-size="invisible"></div>
                     </form>
+                    <div class="modal fade" tabindex="-1" id="push-modal">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Potvrdiť notifikácie</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Zatvotiť"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Táto strána potrebuje vaše povolenie aby vám mohla zasielať notifikácie. Po kliknitú na
+                                    <b>Odoslať</b> sa vám zobrazí okno podobné tomu nižšie, prosím povoľte v ňom zasielanie notifikácii.</p>
+                                    <img class="img-fluid p-3 border" src="{{ url_for('.static', filename='notification_request.png') }}"/>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť</button>
+                                    <button type="button" class="btn btn-primary" id="notification-ask"><i class="fas fa-check"></i> Odoslať</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <script type="text/javascript">
-                        function submitForm(token) {
+                        if (!("serviceWorker" in navigator) || !("Notification" in window)) {
+                            $("#push-submit").attr("disabled", "disabled");
+                            $("#push-unsupported").removeClass("d-none");
+                        }
+                        function onSubmit(token) {
                             document.getElementById('spot-form').submit();
                         }
+                        function loadCaptcha() {
+                            hcaptcha.render("hcaptcha", {sitekey: '{{ config["HCAPTCHA_SITEKEY"] }}'})
+                        }
+                        function onSelectAll(event) {
+                            $("#cities input").prop("checked", true);
+                            event.preventDefault();
+                            event.stopPropagation()
+                        }
+                        function onSelectNone(event) {
+                            $("#cities input").prop("checked", false);
+                            event.preventDefault();
+                            event.stopPropagation()
+                        }
+                        function onEmail(event) {
+                            let elem = $("#email");
+                            let h5elem = elem.get()[0]
+                            elem.attr('required','required');
+                            $("#push_sub").attr("required", null);
+                            if (h5elem.validity.valid) {
+                                hcaptcha.execute();
+                                event.preventDefault();
+                                event.stopPropagation()
+                            }
+                        }
+                        async function onPush(event) {
+                            let elem = $("#push_sub")
+                            elem.attr('required', 'required');
+                            $("#email").attr("required", null);
+                            event.preventDefault();
+                            event.stopPropagation()
+                            await navigator.serviceWorker.getRegistration().then((registration) => {
+                                if (registration !== null) {
+                                    return registration.pushManager.getSubscription().then((subscription) => {
+                                        if (subscription !== null) {
+                                            elem.val(JSON.stringify(subscription));
+                                            onSubmit(null);
+                                        } else {
+                                            let modal = new bootstrap.Modal(document.getElementById("push-modal"));
+                                            modal.show();
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                        async function onNotificationRequest(event) {
+                            await navigator.serviceWorker.getRegistration().then((registration) => {
+                                if (registration) {
+                                    registration.pushManager.getSubscription().then(async (subscription) => {
+                                        if (subscription) {
+                                            return subscription;
+                                        }
+                                        const response = await fetch('/pubkey');
+                                        const vapidPublicKey = await response.text();
+                                        const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+                                        return registration.pushManager.subscribe({
+                                            userVisibleOnly: true,
+                                            applicationServerKey: convertedVapidKey
+                                        });
+                                    }).then((subscription) => {
+                                        $("#push_sub").val(JSON.stringify(subscription));
+                                        onSubmit(null);
+                                    })
+                                }
+                            });
+                        }
+                        $("#select-all").click(onSelectAll);
+                        $("#select-none").click(onSelectNone);
+                        $("#email-submit").click(onEmail);
+                        $("#push-submit").click(onPush);
+                        $("#notification-ask").click(onNotificationRequest);
                     </script>
                 </div>
             </div>
@@ -72,15 +195,19 @@
                     <tr>
                         <td>{{ place.title }}{% if not place.online %}
                             <i class="fas fa-exclamation-triangle" title="Očkovacie miesto nieje dostupné."
-                               data-toggle="tooltip"></i>{% endif %}</td>
+                               data-toggle="tooltip"></i>{% endif %}{% if "Preočkovanie" in place.title %}
+                            <i class="fas fa-exclamation" title="Očkovacie miesto na preočkovanie." data-toggle="tooltip"></i>
+                        {% endif %}</td>
                         {% for day in place.days %}
-                            <td class="{{ 'table-success' if place.online and day.capacity > 0 and day.open else 'table-danger' }}">
-                            {% if day.capacity > 0 %}
+                            <td class="{{ 'table-success' if place.online and day.capacity > 0 and day.open else 'table-danger' }} text-center">
+                            {% if not day.open %}
+                                <i class="fas fa-ban fa-sm text-danger"></i>
+                            {% elif day.capacity > 0 %}
                                 {{ day.capacity }}
                             {% elif day.capacity < 0 %}
                                 <span title="Počet termínov reportovaný od NCZI je záporný ({{ day.capacity }})." data-toggle="tooltip">0*</span>
                             {% else %}
-                                0
+                                <span class="text-muted">0</span>
                             {% endif %}
                             </td>
                         {% endfor %}
