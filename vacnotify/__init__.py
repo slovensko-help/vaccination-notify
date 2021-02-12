@@ -3,6 +3,7 @@ import locale
 import sentry_sdk
 import subprocess
 
+from flask_assets import Environment
 from flask_wtf.csrf import CSRFError
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
@@ -15,6 +16,8 @@ from flask_redis import FlaskRedis
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 from flask_mail import Mail
+from webassets import Bundle
+
 from vacnotify.utils import CustomEncoder, remove_pii
 
 
@@ -69,6 +72,19 @@ try:
         release = "vacnotify"
 except:
     pass
+
+# webassets
+assets = Environment(app)
+js_libs = Bundle("lib/polyfill.min.js", "lib/jquery.min.js", "lib/bootstrap.bundle.min.js",
+                 "lib/d3.min.js", "lib/d3-legend.min.js",
+                 "lib/sentry.min.js", "lib/sentry.tracing.min.js", output="gen/libs.js")
+js_mine = Bundle("polyfill.js", "mail.js", "base.js", filters="rjsmin", output="gen/mine.js")
+css_libs = Bundle("lib/bootstrap.min.css", "lib/fontawesome.min.css", output="gen/libs.css")
+css_mine = Bundle("base.css", output="gen/mine.css")
+assets.register("js_libs", js_libs)
+assets.register("js_mine", js_mine)
+assets.register("css_libs", css_libs)
+assets.register("css_mine", css_mine)
 
 
 # DB

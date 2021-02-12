@@ -9,21 +9,14 @@
         {% block title %}<title>{{ title|default("Notifikácie o COVID-19 vakcinácii") }}</title>{% endblock %}
         <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
         <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='lib/bootstrap.min.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='lib/fontawesome.min.css') }}">
+        {% assets "css_libs", "css_mine" %}
+            <link rel="stylesheet" href="{{ ASSET_URL }}">
+        {% endassets %}
         <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&display=swap"
               rel="stylesheet">
-        <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
-        <script type="text/javascript" src="{{ url_for('static', filename='lib/polyfill.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='polyfill.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='lib/jquery.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='lib/bootstrap.bundle.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='lib/d3.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='lib/d3-legend.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='mail.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='base.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='lib/sentry.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='lib/sentry.tracing.min.js') }}"></script>
+        {% assets "js_libs", "js_mine" %}
+            <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+        {% endassets %}
         <script type="text/javascript">
             let envs = {
                 "covid-dev.neuromancer.sk": "staging",
