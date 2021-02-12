@@ -9,6 +9,9 @@
         {% block title %}<title>{{ title|default("Notifikácie o COVID-19 vakcinácii") }}</title>{% endblock %}
         <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
         <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}"/>
+        <link rel="preload" href="{{ url_for('static', filename='webfonts/fa-regular-400.woff2') }}" as="font" crossorigin>
+        <link rel="preload" href="{{ url_for('static', filename='webfonts/fa-solid-900.woff2') }}" as="font" crossorigin>
+        <link rel="preload" href="{{ url_for('static', filename='webfonts/fa-brands-400.woff2') }}" as="font" crossorigin>
         {% assets "css_libs", "css_mine" %}
             <link rel="stylesheet" href="{{ ASSET_URL }}">
         {% endassets %}
@@ -80,13 +83,13 @@
                     <a href="https://neuromancer.sk" class="text-decoration-none"><i class="far fa-copyright"></i> 2021 Ján Jančár</a>
                     <br/>
                     <p class="text-muted">Problémy so službou môžete oznámiť na
-                        <a href="https://github.com/slovensko-help/vaccination-notify/issues" target="_blank" class="text-decoration-none">githube</a>
+                        <a href="https://github.com/slovensko-help/vaccination-notify/issues" rel="noopener" target="_blank" class="text-decoration-none">githube</a>
                     alebo na <a data-rot13="wbual@arhebznapre.fx" class="mail-href text-decoration-none">emaili</a>.</p>
                 </div>
             </div>
         </div>
     </div>
-    <a class="btn btn-primary" href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" id="reg-button" target="_blank" title="Kliknite pre formulár NCZI na registráciu na očkovanie." data-toggle="tooltip">
+    <a class="btn btn-primary" href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" id="reg-button" rel="noopener" target="_blank" title="Kliknite pre formulár NCZI na registráciu na očkovanie." data-toggle="tooltip">
         Registrácia<br>na očkovanie <i class="fas fa-external-link-alt"></i>
     </a>
 </footer>

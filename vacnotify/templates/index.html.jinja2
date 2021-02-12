@@ -2,6 +2,7 @@
 {% from "utils.html.jinja2" import render_alerts %}
 {% block head %}
     {{ super() }}
+    <meta name="description" content="Táto stránka poskytuje notifikácie o voľných miestach na očkovanie proti COVID-19 a tiež o momente otvorenia očkovacieho formuláru pre nové skupiny obyvateľov."/>
     <meta property="og:title" content="Notifikácie o COVID-19 vakcinácii"/>
     <meta property="og:type" content="website"/>
     <meta property="og:image" content="{{ url_for('static', filename='img/virus.svg', _external=True) }}"/>
@@ -9,7 +10,7 @@
     <meta property="og:url" content="{{ url_for('main.index') }}"/>
     <meta property="og:locale" content="sk_SK"/>
     <meta property="og:description"
-          content="Táto stránka poskytuje notifikácie na Váš email o voľných miestach na očkovanie proti COVID-19 a tiež o momente otvorenia očkovacieho formuláru pre nové skupiny obyvateľov."/>
+          content="Táto stránka poskytuje notifikácie o voľných miestach na očkovanie proti COVID-19 a tiež o momente otvorenia očkovacieho formuláru pre nové skupiny obyvateľov."/>
 {% endblock %}
 {% block content %}
     <div class="row">
@@ -20,8 +21,8 @@
             <p class="lead">Táto stránka poskytuje notifikácie na Váš email o voľných miestach na očkovanie proti
                 ochoreniu COVID-19 a tiež o momente otvorenia očkovacieho formulára pre nové skupiny obyvateľov. Stránka
                 používa informácie od NCZI. Stránka neslúži na registrovanie na očkovanie, pre registráciu na očkovanie
-                použite <a href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" target="_blank">formulár NCZI</a>.
-                Pre aktuálne informácie o ochorení COVID-19 choďte na <a href="https://korona.gov.sk" target="_blank">korona.gov.sk</a>.</p>
+                použite <a href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" rel="noopener" target="_blank">formulár NCZI</a>.
+                Pre aktuálne informácie o ochorení COVID-19 choďte na <a href="https://korona.gov.sk" rel="noopener" target="_blank">korona.gov.sk</a>.</p>
             {{ render_alerts(get_alerts()) }}
         </div>
     </div>
