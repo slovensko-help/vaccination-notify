@@ -1,0 +1,348 @@
+{% extends "base.html.jinja2" %}
+{% from "utils.html.jinja2" import render_alerts %}
+{% block head %}
+    {{ super() }}
+    <meta property="og:title" content="Notifikácie o COVID-19 vakcinácii"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content="{{ url_for('static', filename='img/virus.svg', _external=True) }}"/>
+    <meta property="og:image:alt" content="Obrázok vírusu"/>
+    <meta property="og:url" content="{{ url_for('main.stats') }}"/>
+    <meta property="og:locale" content="sk_SK"/>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-10 mx-auto">
+            <h1><i class="fas fa-chart-line fa-fw"></i> Štatistiky</h1>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-sm-10 mx-auto mt-2">
+            <h2 class="anchor" id="vaccinations">Očkovanie</h2>
+            <div class="row my-4">
+                <div class="col-sm">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title fs-4 fw-bold">{{ current_vstats.total_free_online_spots }} <i class="fas fa-syringe"></i></h5>
+                            <p class="card-text">Dostupné očkovacie termíny</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title fs-4 fw-bold">{{ current_vstats.online_places }} <i class="fas fa-map-marker"></i></h5>
+                            <p class="card-text">Dostupné očkovacie miesta</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title fs-4 fw-bold">{{ current_vstats.total_places }} <i class="fas fa-map-marker"></i></h5>
+                            <p class="card-text">Očkovacie miesta</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title fs-4 fw-bold">{{ current_vstats.datetime.strftime("%d.%m.%Y %H:%M") }}</h5>
+                            <p class="card-text">Posledná aktualizácia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="mx-4">
+                Dáta sa aktualizujú každých {{ format_timedelta(config["QUERY_PERIOD"]) }}.
+                Očkovací termín je dostupný, ak očkovacie miesto hlási v daný deň kapacitu a nie je v daný deň
+                zatvorené. Očkovacie miesta bývajú nedostupné (a vtedy nie sú ani viditeľné a nie sú na výber vo
+                formulári NCZI), keď sa aktualizuje ich kapacita, čo často býva v noci.
+            </p>
+            <div id="vaccination-stats-spots"></div>
+            <div id="vaccination-stats-places"></div>
+
+            <h2 class="anchor" id="subscriptions">Odber notifikácií</h2>
+            <div class="row my-4">
+                <div class="col-sm">
+                    <div class="card bg-light h-100">
+                        <div class="card-body">
+                            <h5 class="card-title fs-4 fw-bold">{{ current_sstats.unique_emails }}</h5>
+                            <p class="card-text">Odbery notifikácii</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="card bg-light h-100">
+                        <div class="card-body">
+                            <h5 class="card-title fs-4 fw-bold">{{ current_sstats.spot_subs_confirmed + current_sstats.spot_subs_unconfirmed }}</h5>
+                            <p class="card-text">Odbery notifikácií o voľných miestach</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="card bg-light h-100">
+                        <div class="card-body">
+                            <h5 class="card-title fs-4 fw-bold">{{ current_sstats.group_subs_confirmed + current_sstats.group_subs_unconfirmed }}</h5>
+                            <p class="card-text">Odbery notifikácií o novej skupine</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="card bg-light h-100">
+                        <div class="card-body">
+                            <h5 class="card-title fs-4 fw-bold">{{ current_sstats.shared_emails }}</h5>
+                            <p class="card-text">Zdieľané odbery</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="mx-4 mt-3">Odbery</h3>
+            <p class="mx-4">
+
+            </p>
+            <div id="subscription-stats-both"></div>
+            <h3 class="mx-4 mt-3">Odbery notifikácií o voľných miestach</h3>
+            <p class="mx-4">
+                Počet odberov notifikácii o voľných miestach je značený
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+                    <circle fill="#0d6efd" cx="10" cy="10" r="4"></circle>
+                </svg>, a skladá sa z potvrdených odberov
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+                    <circle fill="#3e7d00" cx="10" cy="10" r="4"></circle>
+                </svg> a nepotvrdených odberov
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+                    <circle fill="#ac1313" cx="10" cy="10" r="4"></circle>
+                </svg>.
+            </p>
+            <div id="subscription-stats-spots"></div>
+            <h3 class="mx-4 mt-3">Odbery notifikácií o novej skupine</h3>
+            <p class="mx-4">
+                Počet odberov notifikácii o nových skupinách je značený
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+                    <circle fill="#0d6efd" cx="10" cy="10" r="4"></circle>
+                </svg>, a skladá sa z potvrdených odberov
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+                    <circle fill="#3e7d00" cx="10" cy="10" r="4"></circle>
+                </svg> a nepotvrdených odberov
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+                    <circle fill="#ac1313" cx="10" cy="10" r="4"></circle>
+                </svg>.
+            </p>
+            <div id="subscription-stats-groups"></div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        let vaccination_stats = JSON.parse('{{ vaccination_stats | tojson }}');
+        vaccination_stats.forEach(d => {d.datetime = Date.parse(d.datetime)});
+        let subscription_stats = JSON.parse('{{ subscription_stats | tojson }}');
+        subscription_stats.forEach(d => {
+            d.datetime = Date.parse(d.datetime);
+            d.total_ids = d.spot_subs_top_id + d.group_subs_top_id;
+            d.spot_subs_total = d.spot_subs_confirmed + d.spot_subs_unconfirmed;
+            d.group_subs_total = d.group_subs_confirmed + d.group_subs_unconfirmed;
+        });
+        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+        const bp = Math.max(vw, vh);
+        let width = 600;
+        let height = 200;
+        if (bp < 576) {
+            width *= 0.7;
+            height *= 0.7;
+        } else if (bp <= 768) {
+            width *= 0.8;
+            height *= 0.8;
+        } else if (bp <= 992) {
+            width *= 0.9;
+            height *= 0.9;
+        } else if (bp <= 1200) {
+        } else {
+            width *= 1.1;
+            height *= 1.1;
+        }
+
+        let margin = ({top: 20, right: 30, bottom: 30, left: 50});
+
+        let locale = {
+            "dateTime": "%A,%e.%B %Y, %X",
+            "date": "%-d.%-m.%Y",
+            "time": "%H:%M:%S",
+            "periods": ["AM", "PM"],
+            "days": ["nedeľa", "pondelok", "utorok", "streda", "štvrtok", "piatok", "sobota"],
+            "shortDays": ["ne.", "po.", "ut.", "st.", "št.", "pia.", "so."],
+            "months": ["január", "február", "marec", "apríl", "máj", "jún", "júl", "august", "september", "október", "november", "december"],
+            "shortMonths": ["jan", "feb", "mar", "apr", "máj", "jún", "júl", "aug", "sep", "okt", "nov", "dec"]
+        }
+        d3.timeFormatDefaultLocale(locale);
+
+        let formatMillisecond = d3.timeFormat(".%L"),
+            formatSecond = d3.timeFormat(":%S"),
+            formatMinute = d3.timeFormat("%H:%M"),
+            formatHour = d3.timeFormat("%H:00"),
+            formatDay = d3.timeFormat("%a %d"),
+            formatWeek = d3.timeFormat("%b %d"),
+            formatMonth = d3.timeFormat("%B"),
+            formatYear = d3.timeFormat("%Y");
+
+        function multiFormat(date) {
+            return (d3.timeSecond(date) < date ? formatMillisecond
+                : d3.timeMinute(date) < date ? formatSecond
+                    : d3.timeHour(date) < date ? formatMinute
+                        : d3.timeDay(date) < date ? formatHour
+                            : d3.timeMonth(date) < date ? (d3.timeWeek(date) < date ? formatDay : formatWeek)
+                                : d3.timeYear(date) < date ? formatMonth
+                                    : formatYear)(date);
+        }
+
+        function plotLine(stats, variables, id) {
+            //param, max_offset, color, label, id
+            let maxVal = Math.max.apply(null, variables.map(variable => d3.max(stats, d => d[variable.param]) + variable.max_offset));
+            let y = d3.scaleLinear()
+                .domain([0, maxVal]).nice()
+                .range([height - margin.bottom, margin.top]);
+            let yAxis = g => {
+                let r = g.attr("transform", `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(y))
+                    .call(g => g.selectAll(".tick line").clone()
+                        .attr("x2", width - (margin.right + margin.left))
+                        .attr("stroke-opacity", 0.1));
+                variables.forEach((variable, i) => {
+                    r = r.call(g => g.select(`.tick:nth-of-type(${i + 2})`).insert("circle")
+                        .attr("fill", variable.color)
+                        .attr("cx", 10)
+                        .attr("r", 4));
+                    r = r.call(g => g.select(`.tick:nth-of-type(${i + 2}) text`).clone()
+                        .attr("x", 15)
+                        .attr("text-anchor", "start")
+                        .attr("font-weight", "bold")
+                        .text(variable.label));
+                });
+                return r;
+            }
+
+            let x = d3.scaleTime()
+                .domain(d3.extent(stats, d => d.datetime))
+                .range([margin.left, width - margin.right]);
+            let xAxis = g => g
+                .attr("transform", `translate(0,${height - margin.bottom})`)
+                .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0).tickFormat(multiFormat))
+                .call(g => g.selectAll(".tick line").clone()
+                    .attr("y2", -height + margin.top + margin.bottom)
+                    .attr("stroke-opacity", 0.1));
+
+            const svg = d3.create("svg")
+                .attr("viewBox", [0, 0, width, height]);
+
+            variables.forEach((variable, i) => {
+                let line = d3.line()
+                    .defined(d => !isNaN(d[variable.param]))
+                    .x(d => x(d.datetime))
+                    .y(d => y(d[variable.param]));
+                svg.append("path")
+                    .datum(stats)
+                    .attr("fill", "none")
+                    .attr("stroke", variable.color)
+                    .attr("stroke-width", 1.5)
+                    .attr("stroke-linejoin", "round")
+                    .attr("stroke-linecap", "round")
+                    .attr("d", line)
+            });
+
+            svg.append("g")
+                .call(xAxis);
+
+            svg.append("g")
+                .call(yAxis);
+
+            d3.select(id).append(() => svg.node());
+        }
+
+        plotLine(vaccination_stats, [
+            {
+                param: "total_free_online_spots",
+                max_offset: 0,
+                color: "#0d6efd",
+                label: "Dostupné očkovacie termíny"
+            }
+        ], "#vaccination-stats-spots");
+
+        plotLine(vaccination_stats, [
+            {
+                param: "online_places",
+                max_offset: 0,
+                color: "#0d6efd",
+                label: "Dostupné očkovacie miesta"
+            }
+        ], "#vaccination-stats-places");
+
+        plotLine(subscription_stats, [
+            {
+                param: "unique_emails",
+                max_offset: 0,
+                color: "#0d6efd",
+                label: "Odbery notifikácií"
+            },
+            {
+                param: "spot_subs_total",
+                max_offset: 0,
+                color: "#3e7d00",
+                label: "Odbery notifikácií o voľných miestach"
+            },
+            {
+                param: "group_subs_total",
+                max_offset: 0,
+                color: "#ac1313",
+                label: "Odbery notifikácii o novej skupine"
+            },
+            {
+                param: "shared_emails",
+                max_offset: 0,
+                color: "#7a21c1",
+                label: "Zdieľané odbery"
+            }
+        ], "#subscription-stats-both");
+
+        plotLine(subscription_stats, [
+            {
+                param: "spot_subs_total",
+                max_offset: 0,
+                color: "#0d6efd",
+                label: "Všetky"
+            },
+            {
+                param: "spot_subs_confirmed",
+                max_offset: 0,
+                color: "#3e7d00",
+                label: "Potvrdené"
+            },
+            {
+                param: "spot_subs_unconfirmed",
+                max_offset: 0,
+                color: "#ac1313",
+                label: "Nepotvrdené"
+            }
+        ], "#subscription-stats-spots");
+
+        plotLine(subscription_stats, [
+            {
+                param: "group_subs_total",
+                max_offset: 0,
+                color: "#0d6efd",
+                label: "Všetky"
+            },
+            {
+                param: "group_subs_confirmed",
+                max_offset: 0,
+                color: "#3e7d00",
+                label: "Potvrdené"
+            },
+            {
+                param: "group_subs_unconfirmed",
+                max_offset: 0,
+                color: "#ac1313",
+                label: "Nepotvrdené"
+            }
+        ], "#subscription-stats-groups");
+    </script>
+{% endblock %}

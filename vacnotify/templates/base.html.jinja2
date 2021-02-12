@@ -7,31 +7,32 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <meta name="application-name" content="Notifikácie o COVID-19 vakcinácii"/>
         {% block title %}<title>{{ title|default("Notifikácie o COVID-19 vakcinácii") }}</title>{% endblock %}
-        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}"/>
-        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome.min.css') }}">
+        <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+        <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}"/>
+        <link rel="stylesheet" href="{{ url_for('static', filename='lib/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='lib/fontawesome.min.css') }}">
         <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&display=swap"
               rel="stylesheet">
         <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+        <script type="text/javascript" src="{{ url_for('static', filename='lib/polyfill.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='polyfill.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='lib/jquery.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='lib/bootstrap.bundle.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='lib/d3.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='lib/d3-legend.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='mail.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='base.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='jquery.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='sentry.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='sentry.tracing.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='d3.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='d3-legend.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='lib/sentry.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='lib/sentry.tracing.min.js') }}"></script>
         <script type="text/javascript">
             let envs = {
                 "covid-dev.neuromancer.sk": "staging",
                 "covid.neuromancer.sk": "production",
                 "localhost.localdomain": "development"
             }
-            console.log(envs[window.location.hostname]);
             Sentry.init({
                 dsn: "{{ config['SENTRY_INGEST'] }}",
                 environment: envs[window.location.hostname],
-                debug: true,
                 release: "{{ get_release() }}"
             });
         </script>
@@ -53,6 +54,9 @@
                 </li>
                 <li class="nav-item mx-3">
                     <a class="nav-link" href="{{ url_for('main.group_subscribe') }}">Nová skupina</a>
+                </li>
+                <li class="nav-item mx-3">
+                    <a class="nav-link" href="{{ url_for('main.stats') }}">Štatistiky</a>
                 </li>
                 <li class="nav-item mx-3">
                     <a class="nav-link" href="{{ url_for('main.privacy') }}">Zásady ochrany osobných údajov</a>
@@ -83,7 +87,7 @@
                     <a href="https://neuromancer.sk" class="text-decoration-none"><i class="far fa-copyright"></i> 2021 Ján Jančár</a>
                     <br/>
                     <p class="text-muted">Problémy so službou môžete oznámiť na
-                        <a href="https://github.com/slovensko-help/vaccination-notify/issues/new/choose" target="_blank" class="text-decoration-none">linku</a>
+                        <a href="https://github.com/slovensko-help/vaccination-notify/issues" target="_blank" class="text-decoration-none">githube</a>
                     alebo na <a data-rot13="wbual@arhebznapre.fx" class="mail-href text-decoration-none">emaili</a>.</p>
                 </div>
             </div>

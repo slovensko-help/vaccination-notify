@@ -13,7 +13,7 @@ from vacnotify import vapid_pubkey as pubkey, vapid_privkey as privkey, vapid_cl
 from vacnotify.blueprint import main
 from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, GroupSubscription, Status, SpotSubscription, \
-    VaccinationStats, VaccinationCity
+    VaccinationStats, VaccinationCity, SubscriptionStats
 from vacnotify.forms import GroupSubscriptionForm, SpotSubscriptionForm
 from vacnotify.tasks.email import email_confirmation
 from vacnotify.utils import hcaptcha_required, sentry_untraced
@@ -21,15 +21,21 @@ from vacnotify.utils import hcaptcha_required, sentry_untraced
 
 @main.route("/")
 def index():
-    stats = VaccinationStats.query.filter(VaccinationStats.datetime > (datetime.now() - timedelta(days=7))).order_by(VaccinationStats.id.desc()).all()
-    current_stats = VaccinationStats.query.order_by(VaccinationStats.id.desc()).first()
-
-    return render_template("index.html.jinja2", stats=stats, current_stats=current_stats)
+    return render_template("index.html.jinja2")
 
 
 @main.route("/privacy")
 def privacy():
     return render_template("privacy_policy.html.jinja2")
+
+
+@main.route("/stats")
+def stats():
+    vaccination_stats = VaccinationStats.query.filter(VaccinationStats.datetime > (datetime.now() - timedelta(days=7))).order_by(VaccinationStats.id.desc()).all()
+    subscription_stats = SubscriptionStats.query.filter(SubscriptionStats.datetime > (datetime.now() - timedelta(days=7))).order_by(SubscriptionStats.id.desc()).all()
+
+    return render_template("stats.html.jinja2", vaccination_stats=vaccination_stats, subscription_stats=subscription_stats,
+                           current_vstats=vaccination_stats[0], current_sstats=subscription_stats[0])
 
 
 @main.route("/groups/subscribe", methods=["GET", "POST"])

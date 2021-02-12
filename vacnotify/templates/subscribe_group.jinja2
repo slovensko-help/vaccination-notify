@@ -4,7 +4,7 @@
     {{ super() }}
     <meta property="og:title" content="Notifikácie o COVID-19 vakcinácii"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:image" content="{{ url_for('static', filename='virus.svg', _external=True) }}"/>
+    <meta property="og:image" content="{{ url_for('static', filename='img/virus.svg', _external=True) }}"/>
     <meta property="og:image:alt" content="Obrázok vírusu"/>
     <meta property="og:url" content="{{ url_for('main.spot_subscribe') }}"/>
     <meta property="og:locale" content="sk_SK"/>
@@ -14,7 +14,7 @@
 {% block content %}
     <div class="row">
         <div class="col-sm-10 mx-auto">
-            <h1>Notifikácie o novej skupine</h1>
+            <h1><i class="fas fa-users fa-fw"></i> Notifikácie o novej skupine</h1>
             <p class="lead">
                 Chcem dostávať notifikácie na email o otvorení očkovania pre novú skupinu ľudí.
             </p>
@@ -67,7 +67,7 @@
                                 <div class="modal-body">
                                     <p>Táto strána potrebuje vaše povolenie aby vám mohla zasielať notifikácie. Po kliknitú na
                                     <b>Odoslať</b> sa vám zobrazí okno podobné tomu nižšie, prosím povoľte v ňom zasielanie notifikácii.</p>
-                                    <img class="img-fluid p-3 border" src="{{ url_for('.static', filename='notification_request.png') }}"/>
+                                    <img class="img-fluid p-3 border" src="{{ url_for('.static', filename='img/notification_request.png') }}"/>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť</button>

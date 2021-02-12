@@ -3,7 +3,7 @@ function urlBase64ToUint8Array(base64String) {
     let base64 = (base64String + padding)
         .replace(/\-/g, '+')
         .replace(/_/g, '/');
-    console.log(base64);
+
     let rawData = window.atob(base64);
     let outputArray = new Uint8Array(rawData.length);
 

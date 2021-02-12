@@ -1,0 +1,42 @@
+{
+  "short_name": "Vacnotify",
+  "name": "Notifikácie o COVID-19 vakcinácii",
+  "icons": [
+    {
+      "src": "/static/img/virus.svg",
+      "sizes": "any"
+    }
+  ],
+  "start_url": "/?source=pwa",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#0d6efd",
+  "shortcuts": [
+    {
+      "name": "Voľné miesta",
+      "short_name": "Miesta",
+      "description": "Notifikácie o voľných miestach na očkovanie",
+      "url": "/spots/subscribe?source=pwa",
+      "icons": [
+        {
+          "src": "/static/img/virus.svg",
+          "sizes": "any"
+        }
+      ]
+    },
+    {
+      "name": "Nová skupina",
+      "short_name": "Skupiny",
+      "description": "Notifikácie o nových skupinách na očkovanie",
+      "url": "/groups/subscribe?source=pwa",
+      "icons": [
+        {
+          "src": "/static/img/virus.svg",
+          "sizes": "any"
+        }
+      ]
+    }
+  ],
+  "description": "Táto stránka poskytuje notifikácie na Váš email o voľných miestach na očkovanie proti COVID-19 a tiež o momente otvorenia očkovacieho formuláru pre nové skupiny obyvateľov."
+}
