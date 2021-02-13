@@ -13,6 +13,16 @@ function urlBase64ToUint8Array(base64String) {
     return outputArray;
 }
 
+const browser = bowser.getParser(window.navigator.userAgent);
+let noPush = browser.satisfies({
+    chrome: "<=54",
+    firefox: "<=51",
+    edge: "<=16",
+    ie: "*",
+    safari: "*",
+    opera: "<=41",
+    samsung_internet: "<=5.4"
+});
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js', {scope: '/'}).catch(function (error) {

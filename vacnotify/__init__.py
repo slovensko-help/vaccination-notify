@@ -75,8 +75,9 @@ except:
 
 # webassets
 assets = Environment(app)
+assets.debug = True
 js_libs = Bundle("lib/polyfill.min.js", "lib/jquery.min.js", "lib/bootstrap.bundle.min.js",
-                 "lib/d3.min.js", "lib/d3-legend.min.js",
+                 "lib/d3.min.js", "lib/d3-legend.min.js", "lib/bowser.min.js",
                  "lib/sentry.min.js", "lib/sentry.tracing.min.js", output="gen/libs.js")
 js_mine = Bundle("polyfill.js", "mail.js", "base.js", filters="rjsmin", output="gen/mine.js")
 css_libs = Bundle("lib/bootstrap.min.css", "lib/fontawesome.min.css", output="gen/libs.css")

@@ -18,33 +18,33 @@
     <div class="row mb-3">
         <div class="col-sm-10 mx-auto mt-2">
             <h2 class="anchor" id="vaccinations">Očkovanie</h2>
-            <div class="row my-4">
-                <div class="col-sm">
-                    <div class="card bg-light">
+            <div class="row mb-4">
+                <div class="col-sm gy-4">
+                    <div class="card bg-light h-100">
                         <div class="card-body">
                             <h5 class="card-title fs-4 fw-bold">{{ current_vstats.total_free_online_spots }} <i class="fas fa-syringe"></i></h5>
                             <p class="card-text">Dostupné očkovacie termíny</p>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm">
-                    <div class="card bg-light">
+                <div class="col-sm gy-4">
+                    <div class="card bg-light h-100">
                         <div class="card-body">
                             <h5 class="card-title fs-4 fw-bold">{{ current_vstats.online_places }} <i class="fas fa-map-marker"></i></h5>
                             <p class="card-text">Dostupné očkovacie miesta</p>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm">
-                    <div class="card bg-light">
+                <div class="col-sm gy-4">
+                    <div class="card bg-light h-100">
                         <div class="card-body">
                             <h5 class="card-title fs-4 fw-bold">{{ current_vstats.total_places }} <i class="fas fa-map-marker"></i></h5>
                             <p class="card-text">Očkovacie miesta</p>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm">
-                    <div class="card bg-light">
+                <div class="col-sm gy-4">
+                    <div class="card bg-light h-100">
                         <div class="card-body">
                             <h5 class="card-title fs-4 fw-bold">{{ current_vstats.datetime.strftime("%d.%m.%Y %H:%M") }}</h5>
                             <p class="card-text">Posledná aktualizácia</p>
@@ -62,8 +62,8 @@
             <div id="vaccination-stats-places"></div>
 
             <h2 class="anchor" id="subscriptions">Odber notifikácií</h2>
-            <div class="row my-4">
-                <div class="col-sm">
+            <div class="row mb-4">
+                <div class="col-sm gy-4">
                     <div class="card bg-light h-100">
                         <div class="card-body">
                             <h5 class="card-title fs-4 fw-bold">{{ current_sstats.unique_emails }}</h5>
@@ -71,7 +71,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm">
+                <div class="col-sm gy-4">
                     <div class="card bg-light h-100">
                         <div class="card-body">
                             <h5 class="card-title fs-4 fw-bold">{{ current_sstats.spot_subs_confirmed + current_sstats.spot_subs_unconfirmed }}</h5>
@@ -79,7 +79,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm">
+                <div class="col-sm gy-4">
                     <div class="card bg-light h-100">
                         <div class="card-body">
                             <h5 class="card-title fs-4 fw-bold">{{ current_sstats.group_subs_confirmed + current_sstats.group_subs_unconfirmed }}</h5>
@@ -87,7 +87,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm">
+                <div class="col-sm gy-4">
                     <div class="card bg-light h-100">
                         <div class="card-body">
                             <h5 class="card-title fs-4 fw-bold">{{ current_sstats.shared_emails }}</h5>

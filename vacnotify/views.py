@@ -29,6 +29,11 @@ def privacy():
     return render_template("privacy_policy.html.jinja2")
 
 
+@main.route("/faq")
+def faq():
+    return render_template("faq.html.jinja2")
+
+
 @main.route("/stats")
 def stats():
     vaccination_stats = VaccinationStats.query.filter(VaccinationStats.datetime > (datetime.now() - timedelta(days=7))).order_by(VaccinationStats.id.desc()).all()

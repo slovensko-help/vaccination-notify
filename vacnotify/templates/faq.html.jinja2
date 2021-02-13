@@ -1,0 +1,146 @@
+{% extends "base.html.jinja2" %}
+{% from "utils.html.jinja2" import render_alerts %}
+{% block head %}
+    {{ super() }}
+    <meta property="og:title" content="Notifikácie o COVID-19 vakcinácii"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content="{{ url_for('static', filename='img/virus.svg', _external=True) }}"/>
+    <meta property="og:image:alt" content="Obrázok vírusu"/>
+    <meta property="og:url" content="{{ url_for('main.faq') }}"/>
+    <meta property="og:locale" content="sk_SK"/>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-10 mx-auto">
+            <h1><i class="fas fa-question fa-fw"></i> Často kladené otázky</h1>
+            <p class="lead">
+                Pre aktuálne informácie o ochorení COVID-19 a opatreniach na Slovensku choďte na <a
+                    href="https://korona.gov.sk" rel="noopener"
+                    target="_blank">korona.gov.sk</a>.
+            </p>
+            {{ render_alerts(get_alerts()) }}
+        </div>
+    </div>
+    <div class="row anchor" id="q1">
+        <div class="col-sm-10 mx-auto">
+            <h3>Ako sa zaregistrujem na očkovanie?</h3>
+            <p>
+                Pre registráciu na očkovanie použite <a
+                    href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" rel="noopener" target="_blank">formulár
+                NCZI</a>.
+                Vo formulári je možná registrácia len ak spadáte do práve otvorených skupín na očkovanie a sú voľné
+                termíny.
+            </p>
+        </div>
+    </div>
+    <div class="row anchor" id="q2">
+        <div class="col-sm-10 mx-auto">
+            <h3>Ešte nieje otvorená moja skupina, ako sa môžem zaregistrovať ako náhradník?</h3>
+            <p>
+                Proces registrácie ako náhradník je špecifický na konkrétne očkovacie miesto. Kontaktujte preto Vaše
+                očkovacie miesto ktoré bude mať informácie o zozname náhradníkov. Zoznamy náhradníkov však sú vo veľa
+                očkovacích miestach plné.
+            </p>
+        </div>
+    </div>
+    <div class="row anchor" id="q3">
+        <div class="col-sm-10 mx-auto">
+            <h3>Kedy sú rozosielané notifikácie o voľných miestach?</h3>
+            <p>
+                Notifikácie, na email a push, sú rozosielané vždy ked dôjde k zmene voľných termínov na úrovni mesta.
+                Teda vtedy,
+                keď v nejakom meste voľné termíny neboli a už sú, alebo keď voľné termíny boli a už niesu. Notifikácie o
+                tom, že
+                voľné termíny niesu v žiadnom meste sa nerozosielajú.
+            </p>
+        </div>
+    </div>
+    <div class="row anchor" id="q4">
+        <div class="col-sm-10 mx-auto">
+            <h3>Kedy sú rozosielané notifikácie o novej skupine?</h3>
+            <p>
+                Notifikácie, na email a push, sú rozosielané vždy keď sa otvorí nová skupina na očkovanie.
+            </p>
+        </div>
+    </div>
+    <div class="row anchor" id="q5">
+        <div class="col-sm-10 mx-auto">
+            <h3>Neprišiel mi potvrdzovací email, čo mám robiť?</h3>
+            <p>
+                Je možné, že Vám email prišiel do priečinku SPAM, pozrite sa preto aj doňho. Ak ste potvrdzovací email
+                nenašli ani tam, je pravdepodobné, že ho zablokoval Váš poskytovateľ emailovej schránky. Niektorí
+                poskytovatelia bohužiaľ blokujú emaily z tejto stránky. Využite na zaregistrovanie prosím inú emailovú
+                adresu. Momentálne je známe, že emaily blokujú:
+            </p>
+            <ul>
+                <li>outlook.com</li>
+                <li>outlook.sk</li>
+                <li>hotmail.com</li>
+                <li>windowslive.com</li>
+                <li>azet.sk</li>
+            </ul>
+        </div>
+    </div>
+    <div class="row anchor" id="q6">
+        <div class="col-sm-10 mx-auto">
+            <h3>Nechodia mi notifikácie na email, prečo?</h3>
+            <p>
+                Notifikácie Vám nebudú rozosielané ak ste nepotvrdili potvrdzovací email. Notifikácie môžu skončiť v
+                priečinku SPAM. Je možné že notifikácie blokuje Váš poskytovateľ emailovej schránky, viď
+                <a href="#q4">predošlu otázku</a>. Je takisto možné, že jednoducho niesu dôvôdy na notifikáciu, viď
+                <a href="#q2">otázky</a> <a href="#q3">vyššie</a>.
+            </p>
+        </div>
+    </div>
+    <div class="row anchor" id="q7">
+        <div class="col-sm-10 mx-auto">
+            <h3>Prišla mi notifikácia o voľných termínoch vo formulári na registráciu som ich však nanašiel, prečo?</h3>
+            <p>
+                Je možné, že miesta sa medzi časom odoslania notifikácie a skontrolovaním formulára sa miesta minuli.
+                Takisto je možné, že miesta do formulára pribudli avšak neskôr boli z formulára stiahnuté a už sú
+                nedostupné, z dát je viditeľné, źe toto sa deje hlavne v noci.
+            </p>
+        </div>
+    </div>
+    <div class="row anchor" id="q8">
+        <div class="col-sm-10 mx-auto">
+            <h3>Ako si môžem zrušiť odber notifikácií?</h3>
+            <p>
+                V prípade emailových notifikácii nájdete link na zrušenie odberu na konci každého emailu (notifikačného
+                aj potvrdzovacieho). V prípade push notifikácii je možné zrušiť odber v nastaveniach stránky
+                pomocou webového prehliadača.
+            </p>
+        </div>
+    </div>
+    <div class="row anchor" id="q9">
+        <div class="col-sm-10 mx-auto">
+            <h3>Stránka mi nefunguje, čo mám robiť?</h3>
+            <p>
+                Na nastavenie odberu notifikácií stránka potrebuje určité verzie webových prehliadačov. Push notifikácie
+                vyžadujú pomerne nové prehliadače a niesu dostupné v Safari prehliadači. Ak Vám nastavenie odberu na
+                stránke nefunguje, skúste novšiu verziu webového prehliadača, alebo iný prehliadač.
+                <span id="browser"></span>
+            </p>
+        </div>
+    </div>
+    <div class="row anchor" id="q10">
+        <div class="col-sm-10 mx-auto">
+            <h3>Ďalšie informácie</h3>
+            <p>
+                Ďalšie informácie o očkovaní nájdete na stránke
+                <a href="https://www.slovenskoproticovidu.sk/" rel="noopener" target="_blank">www.slovenskoproticovidu.sk</a>
+                a
+                <a href="https://korona.gov.sk" rel="noopener" target="_blank">korona.gov.sk</a>.
+            </p>
+        </div>
+    </div>
+    <script type="text/javascript">
+        let browserText = "Váš aktuálny prehliadač je <b>" + browser.getBrowserName() + " " + browser.getBrowserVersion() + "</b>" ;
+        if (!("serviceWorker" in navigator) || !("Notification" in window) || noPush) {
+            browserText += " ktorý nemá podporu push notifikácií.";
+        } else {
+            browserText += " ktorý má podporu push notifikácií.";
+        }
+        $("#browser").html(browserText);
+    </script>
+{% endblock %}
