@@ -13,12 +13,12 @@
         <link rel="preload" href="{{ url_for('static', filename='webfonts/fa-solid-900.woff2') }}" as="font" crossorigin>
         <link rel="preload" href="{{ url_for('static', filename='webfonts/fa-brands-400.woff2') }}" as="font" crossorigin>
         {% assets "css_libs", "css_mine" %}
-            <link rel="stylesheet" href="{{ ASSET_URL }}">
+            <link rel="stylesheet" href="{{ ASSET_URL }}?{{ get_release() }}">
         {% endassets %}
         <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&display=swap"
               rel="stylesheet">
         {% assets "js_libs", "js_mine" %}
-            <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+            <script type="text/javascript" src="{{ ASSET_URL }}?{{ get_release() }}"></script>
         {% endassets %}
         <script type="text/javascript">
             let envs = {
@@ -55,7 +55,7 @@
                     <a class="nav-link" href="{{ url_for('main.stats') }}">Štatistiky</a>
                 </li>
                 <li class="nav-item mx-3">
-                    <a class="nav-link" href="{{ url_for('main.faq') }}">Často kladené otázky</a>
+                    <a class="nav-link" href="{{ url_for('main.faq') }}">Časté otázky</a>
                 </li>
                 <li class="nav-item mx-3">
                     <a class="nav-link" href="{{ url_for('main.privacy') }}">Zásady ochrany osobných údajov</a>
