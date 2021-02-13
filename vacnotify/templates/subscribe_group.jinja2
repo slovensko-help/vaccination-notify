@@ -79,7 +79,7 @@
                     <script type="text/javascript" src="{{ url_for('static', filename='push.dummy.js') }}"></script>
                     <script type="text/javascript" src="{{ url_for('static', filename='push.js') }}"></script>
                     <script type="text/javascript">
-                        if (!("serviceWorker" in navigator) || !("Notification" in window)) {
+                        if (!("serviceWorker" in navigator) || !("Notification" in window) || noPush) {
                             $("#push-submit").attr("disabled", "disabled");
                             $("#push-unsupported").removeClass("d-none");
                         }
