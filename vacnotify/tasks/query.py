@@ -454,13 +454,18 @@ def notify_spots():
 
 
 def compute_subscription_stats():
-    spot_emails = set(SpotSubscription.query.with_entities(SpotSubscription.email).all())
+    spot_emails = set(SpotSubscription.query.filter(SpotSubscription.email.isnot(None)).with_entities(SpotSubscription.email).all())
+    spot_push_subs = set(SpotSubscription.query.filter(SpotSubscription.push_sub_endpoint.isnot(None)).with_entities(SpotSubscription.push_sub_endpoint).all())
     spot_top_id = SpotSubscription.query.order_by(SpotSubscription.id.desc()).with_entities(SpotSubscription.id).limit(1).scalar()
-    group_emails = set(GroupSubscription.query.with_entities(GroupSubscription.email).all())
+    group_emails = set(GroupSubscription.query.filter(GroupSubscription.email.isnot(None)).with_entities(GroupSubscription.email).all())
+    group_push_subs = set(GroupSubscription.query.filter(GroupSubscription.push_sub_endpoint.isnot(None)).with_entities(GroupSubscription.push_sub_endpoint).all())
     group_top_id = GroupSubscription.query.order_by(GroupSubscription.id.desc()).with_entities(GroupSubscription.id).limit(1).scalar()
+
     return {
         "unique_emails": len(spot_emails | group_emails),
         "shared_emails": len(spot_emails & group_emails),
+        "unique_push_subs": len(spot_push_subs | group_push_subs),
+        "shared_push_subs": len(spot_push_subs & group_push_subs),
         "spot_subs_top_id": spot_top_id if spot_top_id is not None else 0,
         "spot_subs_confirmed": SpotSubscription.query.filter(SpotSubscription.status == Status.CONFIRMED).count(),
         "spot_subs_unconfirmed": SpotSubscription.query.filter(SpotSubscription.status == Status.UNCONFIRMED).count(),

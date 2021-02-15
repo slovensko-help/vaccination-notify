@@ -34,6 +34,8 @@ def count_users():
     total_spot_subs = stats["spot_subs_confirmed"] + stats["spot_subs_unconfirmed"]
     click.echo(f"Unique emails: {stats['unique_emails']}")
     click.echo(f"Shared emails: {stats['shared_emails']}")
+    click.echo(f"Unique PUSH subscriptions: {stats['unique_push_subs']}")
+    click.echo(f"Shared PUSH subscriptions: {stats['shared_push_subs']}")
     click.echo(f"Spot subscriptions: top(id) = {stats['spot_subs_top_id']}, total = {total_spot_subs}")
     click.echo(f" - Confirmed: {stats['spot_subs_confirmed']}")
     click.echo(f" - Unconfirmed: {stats['spot_subs_unconfirmed']}")

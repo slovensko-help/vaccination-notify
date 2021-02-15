@@ -66,7 +66,7 @@
                 <div class="col-sm gy-4">
                     <div class="card bg-light h-100">
                         <div class="card-body">
-                            <h5 class="card-title fs-4 fw-bold">{{ current_sstats.unique_emails }}</h5>
+                            <h5 class="card-title fs-4 fw-bold">{{ current_sstats.unique_emails + current_sstats.unique_push_subs }}</h5>
                             <p class="card-text">Odbery notifikácii</p>
                         </div>
                     </div>
@@ -90,7 +90,7 @@
                 <div class="col-sm gy-4">
                     <div class="card bg-light h-100">
                         <div class="card-body">
-                            <h5 class="card-title fs-4 fw-bold">{{ current_sstats.shared_emails }}</h5>
+                            <h5 class="card-title fs-4 fw-bold">{{ current_sstats.shared_emails + current_sstats.shared_push_subs }}</h5>
                             <p class="card-text">Zdieľané odbery</p>
                         </div>
                     </div>
@@ -130,6 +130,8 @@
                 </svg>.
             </p>
             <div id="subscription-stats-groups"></div>
+            <h3 class="mx-4 mt-3">Odbery notifikácií podľa typu</h3>
+            <div id="subscription-stats-types"></div>
         </div>
     </div>
     <script type="text/javascript">
@@ -138,6 +140,8 @@
         let subscription_stats = JSON.parse('{{ subscription_stats | tojson }}');
         subscription_stats.forEach(d => {
             d.datetime = Date.parse(d.datetime);
+            d.unique = d.unique_emails + d.unique_push_subs;
+            d.shared = d.shared_emails + d.shared_push_subs;
             d.total_ids = d.spot_subs_top_id + d.group_subs_top_id;
             d.spot_subs_total = d.spot_subs_confirmed + d.spot_subs_unconfirmed;
             d.group_subs_total = d.group_subs_confirmed + d.group_subs_unconfirmed;
@@ -198,6 +202,8 @@
         function plotLine(stats, variables, id) {
             //param, max_offset, color, label, id
             let maxVal = Math.max.apply(null, variables.map(variable => d3.max(stats, d => d[variable.param]) + variable.max_offset));
+            let dates = stats.map(d => d.datetime).reverse();
+            let len = stats.length;
             let y = d3.scaleLinear()
                 .domain([0, maxVal]).nice()
                 .range([height - margin.bottom, margin.top]);
@@ -231,6 +237,52 @@
                     .attr("y2", -height + margin.top + margin.bottom)
                     .attr("stroke-opacity", 0.1));
 
+            let hover = svg => {
+                if ("ontouchstart" in document) svg
+                    .style("-webkit-tap-highlight-color", "transparent")
+                    .on("touchmove", moved)
+                    .on("touchstart", entered)
+                    .on("touchend", left)
+                else svg
+                    .on("mousemove", moved)
+                    .on("mouseenter", entered)
+                    .on("mouseleave", left);
+
+                const dot = svg.append("g")
+                    .attr("display", "none");
+
+                dot.append("circle")
+                    .attr("r", 3);
+
+                dot.append("text")
+                    .attr("fill", "black")
+                    .attr("font-family", "sans-serif")
+                    .attr("font-size", 10)
+                    .attr("text-anchor", "middle")
+                    .attr("y", -8);
+
+                function moved(event) {
+                    event.preventDefault();
+                    const pointer = d3.pointer(event, this);
+                    const xm = x.invert(pointer[0]);
+                    const ym = y.invert(pointer[1]);
+                    const i = d3.bisectCenter(dates, xm);
+                    const s = d3.least(variables, variable => Math.abs(stats[len - i - 1][variable.param] - ym));
+                    const val = stats[len - i - 1][s.param];
+                    dot.attr("fill", s.color);
+                    dot.attr("transform", `translate(${x(dates[i])},${y(val)})`);
+                    dot.select("text").text(val);
+                }
+
+                function entered() {
+                    dot.attr("display", null);
+                }
+
+                function left() {
+                    dot.attr("display", "none");
+                }
+            }
+
             const svg = d3.create("svg")
                 .attr("viewBox", [0, 0, width, height]);
 
@@ -255,6 +307,8 @@
             svg.append("g")
                 .call(yAxis);
 
+            svg.call(hover);
+
             d3.select(id).append(() => svg.node());
         }
 
@@ -278,7 +332,7 @@
 
         plotLine(subscription_stats, [
             {
-                param: "unique_emails",
+                param: "unique",
                 max_offset: 0,
                 color: "#0d6efd",
                 label: "Odbery notifikácií"
@@ -296,7 +350,7 @@
                 label: "Odbery notifikácii o novej skupine"
             },
             {
-                param: "shared_emails",
+                param: "shared",
                 max_offset: 0,
                 color: "#7a21c1",
                 label: "Zdieľané odbery"
@@ -344,5 +398,20 @@
                 label: "Nepotvrdené"
             }
         ], "#subscription-stats-groups");
+
+        plotLine(subscription_stats, [
+            {
+                param: "unique_emails",
+                max_offset: 0,
+                color: "#0d6efd",
+                label: "Email"
+            },
+            {
+                param: "unique_push_subs",
+                max_offset: 0,
+                color: "#3e7d00",
+                label: "Push notifikácie"
+            }
+        ], "#subscription-stats-types");
     </script>
 {% endblock %}

@@ -203,6 +203,8 @@ class SubscriptionStats(db.Model, JSONable):
     datetime = db.Column(db.DateTime)
     unique_emails = db.Column(db.Integer)
     shared_emails = db.Column(db.Integer)
+    unique_push_subs = db.Column(db.Integer)
+    shared_push_subs = db.Column(db.Integer)
     spot_subs_top_id = db.Column(db.Integer)
     spot_subs_confirmed = db.Column(db.Integer)
     spot_subs_unconfirmed = db.Column(db.Integer)
@@ -210,12 +212,14 @@ class SubscriptionStats(db.Model, JSONable):
     group_subs_confirmed = db.Column(db.Integer)
     group_subs_unconfirmed = db.Column(db.Integer)
 
-    def __init__(self, datetime, unique_emails: int, shared_emails: int,
+    def __init__(self, datetime, unique_emails: int, shared_emails: int, unique_push_subs: int, shared_push_subs: int,
                  spot_subs_top_id: int, spot_subs_confirmed: int, spot_subs_unconfirmed: int,
                  group_subs_top_id: int, group_subs_confirmed: int, group_subs_unconfirmed: int):
         self.datetime = datetime
         self.unique_emails = unique_emails
         self.shared_emails = shared_emails
+        self.unique_push_subs = unique_push_subs
+        self.shared_push_subs = shared_push_subs
         self.spot_subs_top_id = spot_subs_top_id
         self.spot_subs_confirmed = spot_subs_confirmed
         self.spot_subs_unconfirmed = spot_subs_unconfirmed
