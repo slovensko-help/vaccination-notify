@@ -66,11 +66,12 @@ def parse_time(time_str):
 
 @app.cli.command("resend-confirmation", help="Resend confirmation emails to unconfirmed addresses.")
 @command_transaction
+@click.option("-m", "--method", "method", type=click.Choice(("email", "push", "both")), help="Which subscription method to send to.", default="both")
 @click.option("-t", "--type", "sub_type", type=click.Choice(("spot", "group", "both")), help="Which subscription type to send confirmation to.", default="both")
 @click.option("-n", "--dry-run", "dry_run", is_flag=True, help="Do not actually send anything.")
 @click.option("-o", "--older", "older_than", type=str, metavar="<timedelta>", help="Only send to subscription created more than <older_than> time units ago.")
 @click.argument("ids", nargs=-1, type=int)
-def resend_confirmation(sub_type, dry_run, older_than, ids):
+def resend_confirmation(method, sub_type, dry_run, older_than, ids):
     # TODO: make this also send PUSHes
     older_than = parse_time(older_than)
     now = datetime.now()
@@ -111,13 +112,13 @@ def resend_confirmation(sub_type, dry_run, older_than, ids):
         if subs[0].subscription_type == SubscriptionType.Email:
             if dry_run:
                 click.echo(f"Would send {sub_type} confirmation email to {subs[0].email}.")
-            else:
+            elif method in ("email", "both"):
                 click.echo(f"Sending {sub_type} confirmation email to {subs[0].email}.")
                 email_confirmation.delay(subs[0].email, hexlify(secret).decode(), sub_type)
         else:
             if dry_run:
                 click.echo(f"Would send {sub_type} confirmation PUSH to [{subs[0].id}].")
-            else:
+            elif method in ("push", "both"):
                 click.echo(f"Sending {sub_type} confirmation PUSH to [{subs[0].id}].")
                 push_confirmation.delay(json.loads(subs[0].push_sub), hexlify(secret).decode(), sub_type)
 
@@ -128,7 +129,7 @@ def trigger_query():
     run.delay()
 
 
-@app.cli.command("find")
+@app.cli.command("find", help="Find a subscription by email.")
 @command_transaction
 @click.argument("email")
 def find_email(email):
@@ -143,7 +144,7 @@ def find_email(email):
         print(f"\t {sub.known_groups}")
 
 
-@app.cli.command("send-email")
+@app.cli.command("send-email", help="Send email using the app's sender.")
 @command_transaction
 @click.option("-s", "--subject", required=True, help="The subject of the email.")
 @click.option("-b", "--body", help="The content of the email body.")
