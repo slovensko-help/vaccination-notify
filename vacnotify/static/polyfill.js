@@ -21,4 +21,9 @@
             })
         }
     }
+    if (!Number.parseFloat) {
+    	Object.defineProperty(Number, "parseFloat", {
+    		value: parseFloat
+    	});
+    }
 })()

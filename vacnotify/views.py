@@ -252,6 +252,8 @@ def both_confirm(secret):
                 spot_subscription.status = Status.CONFIRMED
             if group_subscription is not None:
                 group_subscription.status = Status.CONFIRMED
+        if "push" in request.args:
+            return jsonify({"msg": "Odber notifikácii bol potvrdený."})
         return render_template("ok.html.jinja2", msg="Odber notifikácii bol potvrdený.")
     else:
         abort(404)

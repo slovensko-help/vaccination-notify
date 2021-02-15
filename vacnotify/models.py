@@ -50,6 +50,12 @@ class EligibilityGroup(db.Model):
         self.item_id = item_id
         self.item_description = item_description
 
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return f"Group({self.item_id})"
+
 
 class VaccinationPlace(db.Model):
     id = db.Column(db.Integer, primary_key=True)
