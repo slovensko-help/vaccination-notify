@@ -5,3 +5,12 @@
         </div>
     {% endfor %}
 {% endmacro %}
+
+{% macro render_bad_browser(bad_browser) %}
+    {% if bad_browser %}
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i> {{ bad_browser }}
+        </div>
+    {% endif %}
+{% endmacro %}
+

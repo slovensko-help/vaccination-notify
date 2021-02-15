@@ -104,7 +104,9 @@ def group_unsubscribe(secret):
         secret_bytes = unhexlify(secret)
     except Exception:
         abort(404)
-    subscription = GroupSubscription.query.filter_by(secret=secret_bytes).first_or_404()
+    subscription = GroupSubscription.query.filter_by(secret=secret_bytes).first()
+    if not subscription:
+        return render_template("error.html.jinja2", error="Odber notifikácii sa nenašiel, buď neexistuje alebo bol už zrušený."), 404
     with transaction() as t:
         t.delete(subscription)
     return render_template("ok.html.jinja2", msg="Odber notifikácii bol úspešne zrušený a Váše osobné údaje (email) boli odstránené.")
@@ -198,7 +200,9 @@ def spot_unsubscribe(secret):
         secret_bytes = unhexlify(secret)
     except Exception:
         abort(404)
-    subscription = SpotSubscription.query.filter_by(secret=secret_bytes).first_or_404()
+    subscription = SpotSubscription.query.filter_by(secret=secret_bytes).first()
+    if not subscription:
+        return render_template("error.html.jinja2", error="Odber notifikácii sa nenašiel, buď neexistuje alebo bol už zrušený."), 404
     with transaction() as t:
         t.delete(subscription)
     return render_template("ok.html.jinja2", msg="Odber notifikácii bol úspešne zrušený a Váše osobné údaje (email) boli odstránené.")
@@ -235,7 +239,7 @@ def both_unsubscribe(secret):
         return render_template("ok.html.jinja2",
                                msg="Odber notifikácii bol úspešne zrušený a Váše osobné údaje (email) boli odstránené.")
     else:
-        abort(404)
+        return render_template("error.html.jinja2", error="Odber notifikácii sa nenašiel, buď neexistuje alebo bol už zrušený."), 404
 
 
 @main.route("/both/confirm/<string(length=32):secret>")

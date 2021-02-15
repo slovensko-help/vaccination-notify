@@ -1,5 +1,5 @@
 {% extends "base.html.jinja2" %}
-{% from "utils.html.jinja2" import render_alerts %}
+{% from "utils.html.jinja2" import render_alerts, render_bad_browser %}
 {% block head %}
     {{ super() }}
     <meta property="og:title" content="Notifikácie o COVID-19 vakcinácii"/>
@@ -19,6 +19,7 @@
                 Chcem dostávať notifikácie na email o otvorení očkovania pre novú skupinu ľudí.
             </p>
             {{ render_alerts(get_alerts()) }}
+            {{ render_bad_browser(get_bad_browser()) }}
         </div>
     </div>
     <div class="row mt-2 mb-5">
@@ -65,9 +66,16 @@
                                             aria-label="Zatvotiť"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <p>Táto strána potrebuje vaše povolenie aby vám mohla zasielať notifikácie. Po kliknitú na
-                                    <b>Odoslať</b> sa vám zobrazí okno podobné tomu nižšie, prosím povoľte v ňom zasielanie notifikácii.</p>
-                                    <img class="img-fluid p-3 border" src="{{ url_for('.static', filename='img/notification_request.png') }}"/>
+                                    <div id="push-requested">
+                                        <p>Táto strána potrebuje vaše povolenie aby vám mohla zasielať notifikácie. Po kliknitú na
+                                        <b>Odoslať</b> sa vám zobrazí okno podobné tomu nižšie, prosím povoľte v ňom zasielanie notifikácií.</p>
+                                        <img class="img-fluid p-3 border" src="{{ url_for('.static', filename='img/notification_request.png') }}"/>
+                                    </div>
+                                    <div id="push-denied" style="display: none">
+                                        <p>Váš prehliadač zakazuje stránke zasielať vám notifikácie, prosím povoľte v ňom zasielanie notifikácií
+                                        podľa obrázku nižšie a obnovte stránku.</p>
+                                        <img class="img-fluid p-3 border" src="{{ url_for('.static', filename='img/notification_denied.png') }}"/>
+                                    </div>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť</button>

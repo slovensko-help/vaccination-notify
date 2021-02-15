@@ -36,7 +36,15 @@ async function onNotificationRequest(event) {
             }).then((subscription) => {
                 $("#push_sub").val(JSON.stringify(subscription));
                 onSubmit(null);
-            })
+            }).catch((error) => {
+                if ($("#push-requested").css("display") !== "none") {
+                    $("#push-requested").fadeToggle(250, "swing", () => {
+                        $("#push-denied").fadeToggle(250, "swing")
+                    })
+                }
+            });
         }
+    }).catch((error) => {
+        console.log(error);
     });
 }

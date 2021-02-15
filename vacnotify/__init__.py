@@ -16,7 +16,8 @@ from flask_redis import FlaskRedis
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 from flask_mail import Mail
-from webassets import Bundle
+from flask_assets import Bundle
+from ua_parser import user_agent_parser
 
 from vacnotify.utils import CustomEncoder, remove_pii
 
@@ -137,7 +138,7 @@ def setup_periodic_tasks(sender, **kwargs):
     sender.add_periodic_task(24 * 3600, clear_db_unconfirmed.s(), name="Clear unconfirmed and old subscriptions.")
 
 
-from .views import main
+from .blueprint import main
 app.register_blueprint(main)
 
 from .commands import *
@@ -180,6 +181,16 @@ def get_alerts():
 @app.template_global()
 def get_release():
     return release
+
+
+@app.template_global()
+def get_bad_browser():
+    browser = user_agent_parser.Parse(request.headers["User-Agent"])
+    family = browser["user_agent"]["family"]
+    major = browser["user_agent"]["major"]
+    if family == "IE":
+        return f"Váš prehliadač ({family} {major}) je zastaralý a časti tejto stránky na ňom nemusia fungovať."
+    return None
 
 
 @app.template_global()
