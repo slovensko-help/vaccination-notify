@@ -185,7 +185,10 @@ def get_release():
 
 @app.template_global()
 def get_bad_browser():
-    browser = user_agent_parser.Parse(request.headers["User-Agent"])
+    ua = request.headers.get("User-Agent")
+    if not ua:
+        return None
+    browser = user_agent_parser.Parse(ua)
     family = browser["user_agent"]["family"]
     major = browser["user_agent"]["major"]
     if family == "IE":
