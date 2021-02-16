@@ -30,9 +30,9 @@ def push_notification(subscription_info, body: str):
 @celery.task(ignore_result=True)
 def push_confirmation(subscription_info, secret: str, subscription_type: str):
     endpoint_map = {
-        "group": ".group_confirm",
-        "spot": ".spot_confirm",
-        "both": ".both_confirm"
+        "group": "main.group_confirm",
+        "spot": "main.spot_confirm",
+        "both": "main.both_confirm"
     }
     endpoint = endpoint_map[subscription_type]
     try:
