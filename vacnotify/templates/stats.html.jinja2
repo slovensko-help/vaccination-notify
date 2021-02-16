@@ -268,10 +268,12 @@
                     const ym = y.invert(pointer[1]);
                     const i = d3.bisectCenter(dates, xm);
                     const s = d3.least(variables, variable => Math.abs(stats[len - i - 1][variable.param] - ym));
-                    const val = stats[len - i - 1][s.param];
-                    dot.attr("fill", s.color);
-                    dot.attr("transform", `translate(${x(dates[i])},${y(val)})`);
-                    dot.select("text").text(val);
+                    if (s !== undefined) {
+                        const val = stats[len - i - 1][s.param];
+                        dot.attr("fill", s.color);
+                        dot.attr("transform", `translate(${x(dates[i])},${y(val)})`);
+                        dot.select("text").text(val);
+                    }
                 }
 
                 function entered() {
