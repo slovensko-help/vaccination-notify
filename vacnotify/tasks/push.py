@@ -38,7 +38,7 @@ def push_confirmation(subscription_info, secret: str, subscription_type: str):
     try:
         webpush(subscription_info=subscription_info,
                 data=json.dumps({"action": "confirm",
-                                 "endpoint": url_for(endpoint, secret=hexlify(secret).decode(), push=1)}),
+                                 "endpoint": url_for(endpoint, secret=secret, push=1)}),
                 vapid_private_key=vapid_privkey,
                 vapid_claims=vapid_claims)
     except WebPushException as e:
@@ -49,7 +49,7 @@ def push_confirmation(subscription_info, secret: str, subscription_type: str):
 
 
 @celery.task(ignore_result=True)
-def push_notification_spot(subscription_info, secret, cities_free: Mapping):
+def push_notification_spot(subscription_info, secret: str, cities_free: Mapping):
     actions = [
         {"action": "register",
          "title": "Zaregistrovať sa",
@@ -84,7 +84,7 @@ def push_notification_spot(subscription_info, secret, cities_free: Mapping):
 
 
 @celery.task(ignore_result=True)
-def push_notification_group(subscription_info, secret, new_groups: List[str]):
+def push_notification_group(subscription_info, secret: str, new_groups: List[str]):
     text = "Vo formulári na registráciu na očkovanie"
     if len(new_groups) > 1:
         text += " pribudli nové skupiny"
