@@ -405,15 +405,13 @@ def notify_spots():
     # Send out the spot notifications.
     now = datetime.now()
     spot_backoff_time = timedelta(seconds=current_app.config["SPOT_NOTIFICATION_BACKOFF"])
-    spot_subs_free = SpotSubscription.query.join(SpotSubscription.cities).join(VaccinationCity.places).filter(
-        and_(VaccinationPlace.free > 0,
-             VaccinationPlace.online,
-             SpotSubscription.status == Status.CONFIRMED,
+    spot_subs_email = SpotSubscription.query.filter(
+        and_(SpotSubscription.status == Status.CONFIRMED,
              SpotSubscription.push_sub.is_(None),
              or_(SpotSubscription.last_notification_at.is_(None),
                  SpotSubscription.last_notification_at < now - spot_backoff_time)))
 
-    for subscription in spot_subs_free:
+    for subscription in spot_subs_email:
         try:
             free_cities = set(city for city in subscription.cities if city.free_online)
             if free_cities != set(subscription.known_cities):
@@ -430,14 +428,12 @@ def notify_spots():
         except (ObjectDeletedError, StaleDataError) as e:
             logging.warn(f"Got some races: {e}")
 
-    spot_subs_free_push = SpotSubscription.query.join(SpotSubscription.cities).join(VaccinationCity.places).filter(
-        and_(VaccinationPlace.free > 0,
-             VaccinationPlace.online,
-             SpotSubscription.status == Status.CONFIRMED,
+    spot_subs_push = SpotSubscription.query.filter(
+        and_(SpotSubscription.status == Status.CONFIRMED,
              SpotSubscription.email.is_(None),
              or_(SpotSubscription.last_notification_at.is_(None),
                  SpotSubscription.last_notification_at < now - spot_backoff_time)))
-    for subscription in spot_subs_free_push:
+    for subscription in spot_subs_push:
         try:
             free_cities = set(city for city in subscription.cities if city.free_online)
             if free_cities != set(subscription.known_cities):
