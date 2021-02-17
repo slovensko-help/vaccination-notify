@@ -293,14 +293,19 @@
                     .defined(d => !isNaN(d[variable.param]))
                     .x(d => x(d.datetime))
                     .y(d => y(d[variable.param]));
-                svg.append("path")
+                let path = svg.append("path")
                     .datum(stats)
                     .attr("fill", "none")
                     .attr("stroke", variable.color)
                     .attr("stroke-width", 1.5)
                     .attr("stroke-linejoin", "round")
                     .attr("stroke-linecap", "round")
-                    .attr("d", line)
+                    .attr("d", line);
+                if (variable.attrs) {
+                    for (let attr in variable.attrs) {
+                        path = path.attr(attr, variable.attrs[attr]);
+                    }
+                }
             });
 
             svg.append("g")
@@ -334,6 +339,15 @@
 
         plotLine(subscription_stats, [
             {
+                param: "total_ids",
+                max_offset: 0,
+                color: "#343c4b",
+                attrs: {
+                    "stroke-dasharray": "4"
+                },
+                label: "Odbery (aj zrušené)"
+            },
+            {
                 param: "unique",
                 max_offset: 0,
                 color: "#0d6efd",
@@ -361,6 +375,15 @@
 
         plotLine(subscription_stats, [
             {
+                param: "spot_subs_top_id",
+                max_offset: 0,
+                color: "#343c4b",
+                attrs: {
+                    "stroke-dasharray": "4"
+                },
+                label: "Odbery (aj zrušené)"
+            },
+            {
                 param: "spot_subs_total",
                 max_offset: 0,
                 color: "#0d6efd",
@@ -381,6 +404,15 @@
         ], "#subscription-stats-spots");
 
         plotLine(subscription_stats, [
+            {
+                param: "group_subs_top_id",
+                max_offset: 0,
+                color: "#343c4b",
+                attrs: {
+                    "stroke-dasharray": "4"
+                },
+                label: "Odbery (aj zrušené)"
+            },
             {
                 param: "group_subs_total",
                 max_offset: 0,
