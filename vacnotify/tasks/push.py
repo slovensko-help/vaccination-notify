@@ -19,7 +19,9 @@ def push_notification(subscription_info, body: str):
                 data=json.dumps({"action": "notify",
                                  "body": body,
                                  "icon": url_for('main.static', filename="img/virus.svg", _external=True),
-                                 "actions": []}))
+                                 "actions": []}),
+                vapid_private_key=vapid_privkey,
+                vapid_claims=dict(vapid_claims))
     except WebPushException as e:
         if e.response is not None and e.response.status_code == 410:
             logging.info(e)
@@ -40,7 +42,7 @@ def push_confirmation(subscription_info, secret: str, subscription_type: str):
                 data=json.dumps({"action": "confirm",
                                  "endpoint": url_for(endpoint, secret=secret, push=1)}),
                 vapid_private_key=vapid_privkey,
-                vapid_claims=vapid_claims)
+                vapid_claims=dict(vapid_claims))
     except WebPushException as e:
         if e.response is not None and e.response.status_code == 410:
             clear_db_push.delay(secret)
@@ -75,7 +77,7 @@ def push_notification_spot(subscription_info, secret: str, cities_free: Mapping)
                                  "actions": actions,
                                  "actionMap": action_map}),
                 vapid_private_key=vapid_privkey,
-                vapid_claims=vapid_claims)
+                vapid_claims=dict(vapid_claims))
     except WebPushException as e:
         if e.response is not None and e.response.status_code == 410:
             clear_db_push.delay(secret)
@@ -112,7 +114,7 @@ def push_notification_group(subscription_info, secret: str, new_groups: List[str
                                  "actions": actions,
                                  "actionMap": action_map}),
                 vapid_private_key=vapid_privkey,
-                vapid_claims=vapid_claims)
+                vapid_claims=dict(vapid_claims))
     except WebPushException as e:
         if e.response is not None and e.response.status_code == 410:
             clear_db_push.delay(secret)
