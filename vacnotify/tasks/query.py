@@ -325,7 +325,7 @@ def query_places_aggregate(s):
             previous_days = {day.date: day for day in place.days}
             for line in free_payload:
                 day_date = date.fromisoformat(line["c_date"])
-                open = line["is_closed"] != "1"
+                open = line["is_closed"] != 1
                 try:
                     capacity = int(line["free_capacity"])
                 except Exception:
