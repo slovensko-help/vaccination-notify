@@ -29,7 +29,10 @@
             Sentry.init({
                 dsn: "{{ config['SENTRY_INGEST'] }}",
                 environment: envs[window.location.hostname],
-                release: "{{ get_release() }}"
+                release: "{{ get_release() }}",
+                denyUrls: [
+                    "{{ url_for('static', filename='push.js') }}"
+                ]
             });
         </script>
     {% endblock %}
