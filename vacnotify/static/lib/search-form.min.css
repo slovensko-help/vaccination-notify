@@ -1,0 +1,9 @@
+.idsk-header__content {display: -webkit-box;display: -ms-flexbox;display: flex;}
+.search-form label {display: none;}
+.search-form {width: 100%;display: -webkit-box;display: -ms-flexbox;display: flex;margin-right: 20px;-webkit-box-pack: end;-ms-flex-pack: end;justify-content: flex-end;position: relative;}
+.search-input {width: 100%;max-width: 300px;border-left-width: 0;padding-right: 45px;}
+@media (min-width: 40.0625em) {.search-input {font-size: 20px;}}
+.search-input:focus {border: none;}
+.search-button {position: absolute;right: 2px;top: 2px;bottom: 2px;margin: 0;background-color: #005ea5;width: 38px;padding: 0;}
+.search-button:hover {background-color: #003078;}
+.search-button span {display: block;height: 23px;background-image: url("../img/magnifier.png");background-repeat: no-repeat;background-size: contain;background-position: center;text-indent: -9999px;}

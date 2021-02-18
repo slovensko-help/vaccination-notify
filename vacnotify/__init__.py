@@ -80,11 +80,11 @@ except:
 # webassets
 assets = Environment(app)
 assets.debug = True
-js_libs = Bundle("lib/polyfill.min.js", "lib/jquery.min.js", "lib/bootstrap.bundle.min.js",
+js_libs = Bundle("lib/polyfill.min.js", "lib/jquery.min.js", "lib/idsk-frontend-2.3.0.min.js", "lib/lang-picker.js",
                  "lib/d3.min.js", "lib/d3-legend.min.js", "lib/bowser.min.js",
                  "lib/sentry.min.js", "lib/sentry.tracing.min.js", output="gen/libs.js")
 js_mine = Bundle("polyfill.js", "mail.js", "base.js", filters="rjsmin", output="gen/mine.js")
-css_libs = Bundle("lib/bootstrap.min.css", "lib/fontawesome.min.css", output="gen/libs.css")
+css_libs = Bundle("idsk/fonts/fonts.css", "lib/idsk-frontend-2.3.0.min.css", "lib/search-form.min.css", "lib/govuk-finder.css", "lib/fontawesome.min.css", output="gen/libs.css")
 css_mine = Bundle("base.css", output="gen/mine.css")
 assets.register("js_libs", js_libs)
 assets.register("js_mine", js_mine)

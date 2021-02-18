@@ -10,133 +10,156 @@
     <meta property="og:locale" content="sk_SK"/>
 {% endblock %}
 {% block content %}
-    <div class="row">
-        <div class="col-sm-10 mx-auto">
-            <h1><i class="fas fa-chart-line fa-fw"></i> Štatistiky</h1>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <h1 class="govuk-heading-xl"><i class="fas fa-chart-line fa-fw"></i> Štatistiky</h1>
         </div>
     </div>
-    <div class="row mb-3">
-        <div class="col-sm-10 mx-auto mt-2">
-            <h2 class="anchor" id="vaccinations">Očkovanie</h2>
-            <div class="row mb-4">
-                <div class="col-sm gy-4">
-                    <div class="card bg-light h-100">
-                        <div class="card-body">
-                            <h5 class="card-title fs-4 fw-bold">{{ current_vstats.total_free_online_spots }} <i class="fas fa-syringe"></i></h5>
-                            <p class="card-text">Dostupné očkovacie termíny</p>
-                        </div>
+    <div class="govuk-grid-row govuk-!-margin-bottom-3">
+        <div class="govuk-grid-column-full govuk-!-margin-top-2">
+            <h2 class="govuk-heading-l" id="vaccinations">Očkovacie termíny</h2>
+            <div class="govuk-grid-row row-with-gray-boxes">
+                <div class="govuk-grid-column-one-quarter">
+                    <div class="govuk-!-margin-bottom-6 app-pane-gray govuk-!-padding-top-4 govuk-!-padding-bottom-2 govuk-!-padding-right-4 govuk-!-padding-left-4">
+                        <h2 class="govuk-heading-l">{{ current_vstats.total_free_online_spots }} <i
+                                class="fas fa-syringe"></i></h2>
+                        <p class="govuk-body"><strong>Dostupné očkovacie termíny</strong></p>
                     </div>
                 </div>
-                <div class="col-sm gy-4">
-                    <div class="card bg-light h-100">
-                        <div class="card-body">
-                            <h5 class="card-title fs-4 fw-bold">{{ current_vstats.online_places }} <i class="fas fa-map-marker"></i></h5>
-                            <p class="card-text">Očkovacie miesta</p>
-                        </div>
+                <div class="govuk-grid-column-one-quarter">
+                    <div class="govuk-!-margin-bottom-6 app-pane-gray govuk-!-padding-top-4 govuk-!-padding-bottom-2 govuk-!-padding-right-4 govuk-!-padding-left-4">
+                        <h2 class="govuk-heading-l">{{ current_vstats.online_places }} <i class="fas fa-map-marker"></i>
+                        </h2>
+                        <p class="govuk-body"><strong>Očkovacie miesta</strong></p>
                     </div>
                 </div>
-                <div class="col-sm gy-4">
-                    <div class="card bg-light h-100">
-                        <div class="card-body">
-                            <h5 class="card-title fs-4 fw-bold">{{ current_vstats.online_cities }} <i class="fas fa-building"></i></h5>
-                            <p class="card-text">Mestá s očkovacím miestom</p>
-                        </div>
+                <div class="govuk-grid-column-one-quarter">
+                    <div class="govuk-!-margin-bottom-6 app-pane-gray govuk-!-padding-top-4 govuk-!-padding-bottom-2 govuk-!-padding-right-4 govuk-!-padding-left-4">
+                        <h2 class="govuk-heading-l">{{ current_vstats.online_cities }} <i class="fas fa-building"></i>
+                        </h2>
+                        <p class="govuk-body"><strong>Mestá s očkovacím miestom</strong></p>
                     </div>
                 </div>
-                <div class="col-sm gy-4">
-                    <div class="card bg-light h-100">
-                        <div class="card-body">
-                            <h5 class="card-title fs-4 fw-bold">{{ current_vstats.datetime.strftime("%d.%m.%Y %H:%M") }}</h5>
-                            <p class="card-text">Posledná aktualizácia</p>
-                        </div>
+                <div class="govuk-grid-column-one-quarter">
+                    <div class="govuk-!-margin-bottom-6 app-pane-gray govuk-!-padding-top-4 govuk-!-padding-bottom-2 govuk-!-padding-right-4 govuk-!-padding-left-4">
+                        <h2 class="govuk-heading-l">{{ current_vstats.datetime.strftime("%d.%m. %H:%M") }}</h2>
+                        <p class="govuk-body"><strong>Posledná aktualizácia</strong></p>
                     </div>
                 </div>
             </div>
-            <p class="mx-4">
+            <p class="govuk-body">
                 Dáta sa aktualizujú každých {{ format_timedelta(config["QUERY_PERIOD"]) }}.
                 Očkovací termín je dostupný, ak očkovacie miesto hlási v daný deň kapacitu a nie je v daný deň
-                zatvorené. Očkovacie miesta bývajú nedostupné (a vtedy nie sú ani viditeľné a nie sú na výber vo
-                formulári NCZI), keď sa aktualizuje ich kapacita, čo často býva v noci.
+                zatvorené.
             </p>
             <div id="vaccination-stats-spots"></div>
             <div id="vaccination-stats-places"></div>
+        </div>
+    </div>
 
-            <h2 class="anchor" id="subscriptions">Odber notifikácií</h2>
-            <div class="row mb-4">
-                <div class="col-sm gy-4">
-                    <div class="card bg-light h-100">
-                        <div class="card-body">
-                            <h5 class="card-title fs-4 fw-bold">{{ current_sstats.unique_emails + current_sstats.unique_push_subs }}</h5>
-                            <p class="card-text">Odbery notifikácii</p>
-                        </div>
+    <div class="govuk-grid-row govuk-!-margin-bottom-3">
+        <div class="govuk-grid-column-full govuk-!-margin-top-2">
+            <h2 class="govuk-heading-l" id="subscriptions">Odber notifikácií</h2>
+            <div class="govuk-grid-row row-with-gray-boxes">
+                <div class="govuk-grid-column-one-quarter">
+                    <div class="govuk-!-margin-bottom-6 app-pane-gray govuk-!-padding-top-4 govuk-!-padding-bottom-2 govuk-!-padding-right-4 govuk-!-padding-left-4">
+                        <h2 class="govuk-heading-l">{{ current_sstats.unique_emails + current_sstats.unique_push_subs }}</h2>
+                        <p class="govuk-body"><strong>Odbery notifikácii</strong></p>
                     </div>
                 </div>
-                <div class="col-sm gy-4">
-                    <div class="card bg-light h-100">
-                        <div class="card-body">
-                            <h5 class="card-title fs-4 fw-bold">{{ current_sstats.spot_subs_confirmed + current_sstats.spot_subs_unconfirmed }}</h5>
-                            <p class="card-text">Odbery notifikácií o voľných miestach</p>
-                        </div>
+                <div class="govuk-grid-column-one-quarter">
+                    <div class="govuk-!-margin-bottom-6 app-pane-gray govuk-!-padding-top-4 govuk-!-padding-bottom-2 govuk-!-padding-right-4 govuk-!-padding-left-4">
+                        <h2 class="govuk-heading-l">{{ current_sstats.spot_subs_confirmed + current_sstats.spot_subs_unconfirmed }}</h2>
+                        <p class="govuk-body"><strong>Odbery notifikácií o voľných miestach</strong></p>
                     </div>
                 </div>
-                <div class="col-sm gy-4">
-                    <div class="card bg-light h-100">
-                        <div class="card-body">
-                            <h5 class="card-title fs-4 fw-bold">{{ current_sstats.group_subs_confirmed + current_sstats.group_subs_unconfirmed }}</h5>
-                            <p class="card-text">Odbery notifikácií o novej skupine</p>
-                        </div>
+                <div class="govuk-grid-column-one-quarter">
+                    <div class="govuk-!-margin-bottom-6 app-pane-gray govuk-!-padding-top-4 govuk-!-padding-bottom-2 govuk-!-padding-right-4 govuk-!-padding-left-4">
+                        <h2 class="govuk-heading-l">{{ current_sstats.group_subs_confirmed + current_sstats.group_subs_unconfirmed }}</h2>
+                        <p class="govuk-body"><strong>Odbery notifikácií o novej skupine</strong></p>
                     </div>
                 </div>
-                <div class="col-sm gy-4">
-                    <div class="card bg-light h-100">
-                        <div class="card-body">
-                            <h5 class="card-title fs-4 fw-bold">{{ current_sstats.shared_emails + current_sstats.shared_push_subs }}</h5>
-                            <p class="card-text">Zdieľané odbery</p>
-                        </div>
+                <div class="govuk-grid-column-one-quarter">
+                    <div class="govuk-!-margin-bottom-6 app-pane-gray govuk-!-padding-top-4 govuk-!-padding-bottom-2 govuk-!-padding-right-4 govuk-!-padding-left-4">
+                        <h2 class="govuk-heading-l">{{ current_sstats.shared_emails + current_sstats.shared_push_subs }}</h2>
+                        <p class="govuk-body"><strong>Zdieľané odbery</strong></p>
                     </div>
                 </div>
             </div>
-
-            <h3 class="mx-4 mt-3">Odbery</h3>
+        </div>
+    </div>
+    <div class="govuk-grid-row govuk-!-margin-bottom-3">
+        <div class="govuk-grid-column-full govuk-!-margin-top-2">
+            <h3 class="govuk-heading-m">Odbery</h3>
             <p class="mx-4">
 
             </p>
             <div id="subscription-stats-both"></div>
-            <h3 class="mx-4 mt-3">Odbery notifikácií o voľných miestach</h3>
+        </div>
+    </div>
+    <div class="govuk-grid-row govuk-!-margin-bottom-3">
+        <div class="govuk-grid-column-full govuk-!-margin-top-2">
+            <h3 class="govuk-heading-m">Odbery notifikácií o voľných miestach</h3>
             <p class="mx-4">
                 Počet odberov notifikácii o voľných miestach je značený
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
-                    <circle fill="#0d6efd" cx="10" cy="10" r="4"></circle>
-                </svg>, a skladá sa z potvrdených odberov
+                    <circle fill="#0d6efd" cx="10" cy="14" r="5"></circle>
+                </svg>
+                , a skladá sa z potvrdených odberov
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
-                    <circle fill="#3e7d00" cx="10" cy="10" r="4"></circle>
-                </svg> a nepotvrdených odberov
+                    <circle fill="#3e7d00" cx="10" cy="14" r="5"></circle>
+                </svg>
+                a nepotvrdených odberov
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
-                    <circle fill="#ac1313" cx="10" cy="10" r="4"></circle>
-                </svg>.
+                    <circle fill="#ac1313" cx="10" cy="14" r="5"></circle>
+                </svg>
+                .
             </p>
             <div id="subscription-stats-spots"></div>
-            <h3 class="mx-4 mt-3">Odbery notifikácií o novej skupine</h3>
-            <p class="mx-4">
+        </div>
+    </div>
+    <div class="govuk-grid-row govuk-!-margin-bottom-3">
+        <div class="govuk-grid-column-full govuk-!-margin-top-2">
+            <h3 class="govuk-heading-m">Odbery notifikácií o novej skupine</h3>
+            <p class="govuk-body">
                 Počet odberov notifikácii o nových skupinách je značený
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
-                    <circle fill="#0d6efd" cx="10" cy="10" r="4"></circle>
-                </svg>, a skladá sa z potvrdených odberov
+                    <circle fill="#0d6efd" cx="10" cy="14" r="5"></circle>
+                </svg>
+                , a skladá sa z potvrdených odberov
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
-                    <circle fill="#3e7d00" cx="10" cy="10" r="4"></circle>
-                </svg> a nepotvrdených odberov
+                    <circle fill="#3e7d00" cx="10" cy="14" r="5"></circle>
+                </svg>
+                a nepotvrdených odberov
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
-                    <circle fill="#ac1313" cx="10" cy="10" r="4"></circle>
-                </svg>.
+                    <circle fill="#ac1313" cx="10" cy="14" r="5"></circle>
+                </svg>
+                .
             </p>
             <div id="subscription-stats-groups"></div>
-            <h3 class="mx-4 mt-3">Odbery notifikácií podľa typu</h3>
+        </div>
+    </div>
+    <div class="govuk-grid-row govuk-!-margin-bottom-3">
+        <div class="govuk-grid-column-full govuk-!-margin-top-2">
+            <h3 class="govuk-heading-m">Odbery notifikácií podľa typu</h3>
+            <p class="govuk-body">
+                Počet odberov notifikácií na email je značený
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+                    <circle fill="#0d6efd" cx="10" cy="14" r="5"></circle>
+                </svg>
+                a počet odberov pomocou push notifikácii je značený
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+                    <circle fill="#3e7d00" cx="10" cy="14" r="5"></circle>
+                </svg>.
+            </p>
             <div id="subscription-stats-types"></div>
         </div>
     </div>
     <script type="text/javascript">
         let vaccination_stats = JSON.parse('{{ vaccination_stats | tojson }}');
-        vaccination_stats.forEach(d => {d.datetime = Date.parse(d.datetime)});
+        vaccination_stats.forEach(d => {
+            d.datetime = Date.parse(d.datetime)
+        });
         let subscription_stats = JSON.parse('{{ subscription_stats | tojson }}');
         subscription_stats.forEach(d => {
             d.datetime = Date.parse(d.datetime);
@@ -200,7 +223,6 @@
         }
 
         function plotLine(stats, variables, id) {
-            //param, max_offset, color, label, id
             let maxVal = Math.max.apply(null, variables.map(variable => d3.max(stats, d => d[variable.param]) + variable.max_offset));
             let dates = stats.map(d => d.datetime).reverse();
             let len = stats.length;
@@ -349,7 +371,8 @@
                 max_offset: 0,
                 color: "#343c4b",
                 attrs: {
-                    "stroke-dasharray": "4"
+                    "stroke-dasharray": "4",
+                    "stroke-opacity": 0.8
                 },
                 label: "Odbery (aj zrušené)"
             },
@@ -385,7 +408,8 @@
                 max_offset: 0,
                 color: "#343c4b",
                 attrs: {
-                    "stroke-dasharray": "4"
+                    "stroke-dasharray": "4",
+                    "stroke-opacity": 0.8
                 },
                 label: "Odbery (aj zrušené)"
             },
@@ -415,7 +439,8 @@
                 max_offset: 0,
                 color: "#343c4b",
                 attrs: {
-                    "stroke-dasharray": "4"
+                    "stroke-dasharray": "4",
+                    "stroke-opacity": 0.8
                 },
                 label: "Odbery (aj zrušené)"
             },

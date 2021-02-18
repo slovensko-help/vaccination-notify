@@ -6,45 +6,24 @@ async function onPush(event) {
     event.stopPropagation()
     await navigator.serviceWorker.getRegistration().then((registration) => {
         if (registration !== null) {
-            return registration.pushManager.getSubscription().then((subscription) => {
+            return registration.pushManager.getSubscription().then(async (subscription) => {
                 if (subscription !== null) {
-                    elem.val(JSON.stringify(subscription));
-                    onSubmit(null);
-                } else {
-                    let modal = new bootstrap.Modal(document.getElementById("push-modal"));
-                    modal.show();
-                }
-            });
-        }
-    });
-}
-
-async function onNotificationRequest(event) {
-    await navigator.serviceWorker.getRegistration().then((registration) => {
-        if (registration) {
-            registration.pushManager.getSubscription().then(async (subscription) => {
-                if (subscription) {
                     return subscription;
+                } else {
+                    const response = await fetch('/pubkey');
+                    const vapidPublicKey = await response.text();
+                    const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+                    return registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: convertedVapidKey
+                    });
                 }
-                const response = await fetch('/pubkey');
-                const vapidPublicKey = await response.text();
-                const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
-                return registration.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: convertedVapidKey
-                });
             }).then((subscription) => {
-                $("#push_sub").val(JSON.stringify(subscription));
+                elem.val(JSON.stringify(subscription));
                 onSubmit(null);
             }).catch((error) => {
-                if ($("#push-requested").css("display") !== "none") {
-                    $("#push-requested").fadeToggle(250, "swing", () => {
-                        $("#push-denied").fadeToggle(250, "swing")
-                    })
-                }
+                console.log(error);
             });
         }
-    }).catch((error) => {
-        console.log(error);
     });
 }

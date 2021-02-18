@@ -20,14 +20,19 @@ class CityListWidget(object):
         field_kwargs = kwargs.get("field_kwargs", {})
         if "field_kwargs" in kwargs:
             del kwargs["field_kwargs"]
-        html = [f'<div class="row" {html_params(**kwargs)}>']
+        html = [f'<div class="govuk-grid-row" {html_params(**kwargs)}>']
         choice_map = {id: choice for id, choice in field.choices}
         fields = [(subfield.id, subfield.data, subfield(**field_kwargs)) for subfield in field]
         total = len(fields)
         col = math.ceil(total / size)
+        col_class = {
+            1: "govuk-grid-column-full",
+            2: "govuk-grid-column-one-half",
+            3: "govuk-grid-column-one-third"
+        }.get(size, "govuk-grid-column-full")
         for i in range(size):
-            html.append('<div class="col-sm">')
-            html.append(f'<div class="list-group">')
+            html.append(f'<div class="{col_class}">')
+            html.append(f'<div class="govuk-checkboxes" data-module="govuk-checkboxes">')
             for j in range(col):
                 idx = i * col + j
                 if idx >= total:
@@ -36,12 +41,12 @@ class CityListWidget(object):
                 city = choice_map[data]
                 label_content = escape(city.name)
                 if city.free_online:
-                    label_content += Markup(' <i class="fas fa-check-circle fa-xs text-success" title="Mesto má voľné termíny." data-toggle="tooltip"></i>')
+                    label_content += Markup(' <i class="fas fa-check-circle fa-xs" title="Mesto má voľné termíny."></i>')
                 label = Label(id, label_content)
                 if self.prefix_label:
-                    html.append(f'<label class="list-group-item form-check-label">{label} {subfield}</label>')
+                    html.append(f'<div class="govuk-checkboxes__item">{label(class_="govuk-label govuk-checkboxes__label")} {subfield}</div>')
                 else:
-                    html.append(f'<label class="list-group-item form-check-label">{subfield} {label}</label>')
+                    html.append(f'<div class="govuk-checkboxes__item">{subfield} {label(class_="govuk-label govuk-checkboxes__label")}</div>')
             html.append(f'</div>')
             html.append("</div>")
         html.append("</div>")

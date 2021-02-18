@@ -10,37 +10,37 @@
     <meta property="og:locale" content="sk_SK"/>
 {% endblock %}
 {% block content %}
-    <div class="row">
-        <div class="col-sm-10 mx-auto">
-            <h1><i class="fas fa-user-shield fa-fw"></i> Zásady ochrany osobných údajov</h1>
-            <p class="lead">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <h1 class="govuk-heading-xl"><i class="fas fa-user-shield fa-fw"></i> Zásady ochrany osobných údajov</h1>
+            <p class="govuk-body-lead">
                 Táto stránka spracúva osobné údaje na účely poskytovania notifikácii o COVID-19 vakcinácii na Slovensku.
             </p>
             {{ render_alerts(get_alerts()) }}
         </div>
     </div>
-    <div class="row">
-        <div class="col-sm-10 mx-auto">
-            <h2>Kto som?</h2>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <h2 class="govuk-heading-l">Kto som?</h2>
             <p>
-                Táto stránka vznikla ako voľnočasová aktivita <a href="https://neuromancer.sk/about" rel="noopener" target="_blank">Jána
-                Jančára</a>, ktorý je aj jej prevádzkovateľom.
+                Táto stránka vznikla ako voľnočasová aktivita <a href="https://neuromancer.sk/about" rel="noopener" target="_blank" class="govuk-link">
+                Jána Jančára</a>, ktorý je aj jej prevádzkovateľom.
             </p>
         </div>
     </div>
-    <div class="row">
-        <div class="col-sm-10 mx-auto">
-            <h2>Kontaktujte ma</h2>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <h2 class="govuk-heading-l">Kontaktujte ma</h2>
             <p>Pre akékoľvek otázky ohľadom spracúvania osobných údajov, pripomienky, sťažnosti či iné žiadosti ma
                 kontaktujte na:</p>
-            <p>Email: <a data-rot13="wbual@arhebznapre.fx" class="mail-href"><span data-rot13="wbual@arhebznapre.fx"
+            <p>Email: <a data-rot13="wbual@arhebznapre.fx" class="mail-href govuk-link"><span data-rot13="wbual@arhebznapre.fx"
                                                                                    class="mail-inner">ENABLE@JAVASCRIPT</span></a>
             </p>
         </div>
     </div>
-    <div class="row">
-        <div class="col-sm-10 mx-auto">
-            <h2>Osobné údaje</h2>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <h2 class="govuk-heading-l">Osobné údaje</h2>
             <p>Táto stránka zbiera nasledovné osobné údaje:</p>
             <ul>
                 <li>Emailová adresa. Je potrebná na zasielanie notifikácii, čo tvorí hlavnú službu poskytovanú touto
@@ -50,37 +50,37 @@
             <p>Tieto osobné údaje sa nachádzajú na zabezpečenom a aktualizovanom virtuálnom serveri u poskytovateľa
                 DigitalOcean v jeho datacentrách v Európe.</p>
 
-            <h4>Prístup k osobným údajom</h4>
+            <h4 class="govuk-heading-s">Prístup k osobným údajom</h4>
             <p>Máte právo na prístup k Vašim osobným údajom, ktoré táto stránka zbiera pre poskytovanie jej služby.
                 Žiadosť o prístup môžete zaslať na vyššie uvedený email.</p>
 
-            <h4>Právo na opravu</h4>
+            <h4 class="govuk-heading-s">Právo na opravu</h4>
             <p>Máte právo, aby osobné údaje, ktoré spracúvame, boli správne a aktuálne. Pokiaľ chcete toto právo využiť
                 a požiadať o opravu údajov, pošlite žiadosť na vyššie uvedený email.</p>
 
-            <h4>Odstránenie osobných údajov</h4>
+            <h4 class="govuk-heading-s">Odstránenie osobných údajov</h4>
             <p>Stránka automaticky odstráni Vaše osobné údaje pri zrušení odberu notifikácii. Takisto máte právo
                 požiadať o vymazanie Vašich osobných údajov. Môžete tak urobiť zaslaním žiadosti na vyššie uvedený
                 email. Osobné údaje k nepotvrdenej žiadosti o odber notifikácií sú vymazané 7 dní od vytvorenia žiadosti.</p>
         </div>
     </div>
-    <div class="row">
-        <div class="col-sm-10 mx-auto">
-            <h2>Účel spracovania</h2>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <h2 class="govuk-heading-l">Účel spracovania</h2>
             <p>Osobné údaje sa spracujú, v elektronickej forme, za účelom poskytnutia notifikacii o COVID-19 vakcinácii
                 na Slovensku. Spracované osobné údaje sa nevyužívajú na žiadne ďalšie účely a nevydávajú sa tretím
                 stranám.</p>
         </div>
     </div>
-    <div class="row">
-        <div class="col-sm-10 mx-auto">
-            <h2>Ostatné</h2>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <h2 class="govuk-heading-l">Ostatné</h2>
             <p>Tento projekt má otvorený zdrojový kód, ktorý nájdete na GitHube <a
-                    href="https://github.com/slovensko-help/vaccination-notify" rel="noopener" target="_blank">slovensko-help/vaccination-notify</a>.
+                    href="https://github.com/slovensko-help/vaccination-notify" rel="noopener" target="_blank" class="govuk-link">slovensko-help/vaccination-notify</a>.
                 V tomto kóde môžete nájsť ako sa Vaše osobné údaje spracúvajú, používajú či odstraňujú.</p>
-            <p>Stránka využíva službu <a href="https://hcaptcha.com" rel="noopener" target="_blank">hCaptcha</a> a aplikujú sa na ňu
-                jej <a href="https://hcaptcha.com/privacy" rel="noopener" target="_blank">podmienky súkromia</a> a
-                <a href="https://hcaptcha.com/terms" rel="noopener" target="_blank">podmienky služby</a>. Služba hCaptcha však nemá
+            <p>Stránka využíva službu <a href="https://hcaptcha.com" rel="noopener" target="_blank" class="govuk-link">hCaptcha</a> a aplikujú sa na ňu
+                jej <a href="https://hcaptcha.com/privacy" rel="noopener" target="_blank" class="govuk-link">podmienky súkromia</a> a
+                <a href="https://hcaptcha.com/terms" rel="noopener" target="_blank" class="govuk-link">podmienky služby</a>. Služba hCaptcha však nemá
                 prístup k osobným údajom spracovávaným na stránke.</p>
         </div>
     </div>

@@ -1,12 +1,12 @@
 {% extends "base.html.jinja2" %}
 {% block content %}
-    <div class="row mt-5">
-        <div class="col-sm-10 mx-auto text-center">
-            <h1><i class="fas fa-check-circle"></i> OK</h1>
-            <p class="lead">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <h1 class="govuk-heading-xl"><i class="fas fa-check-circle"></i> OK</h1>
+            <p class="govuk-body-lead">
                 {{ msg }}
             </p>
-            <a href="{{ url_for('main.index') }}" class="btn btn-primary">Naspäť na domovskú stránku</a>
+            <a href="{{ url_for('main.index') }}" class="govuk-button">Naspäť na domovskú stránku</a>
         </div>
     </div>
 {% endblock %}

@@ -10,34 +10,33 @@
     <meta property="og:locale" content="sk_SK"/>
 {% endblock %}
 {% block content %}
-    <div class="row">
-        <div class="col-sm-10 mx-auto">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
             <h1><i class="fas fa-question fa-fw"></i> Časté otázky</h1>
-            <p class="lead">
-                Pre aktuálne informácie o ochorení COVID-19 a opatreniach na Slovensku choďte na <a
-                    href="https://korona.gov.sk" rel="noopener"
-                    target="_blank">korona.gov.sk</a>.
+            <p class="govuk-body-lead">
+                Pre aktuálne informácie o ochorení COVID-19 a opatreniach na Slovensku choďte na
+                <a href="https://korona.gov.sk" class="govuk-link">korona.gov.sk</a>.
             </p>
             {{ render_alerts(get_alerts()) }}
         </div>
     </div>
-    <div class="row anchor" id="q1">
-        <div class="col-sm-10 mx-auto">
-            <h3>Ako sa zaregistrujem na očkovanie? <a href="#q1" class="text-decoration-none fs-5"
+    <div class="govuk-grid-row" id="q1">
+        <div class="govuk-grid-column-full">
+            <h3 class="govuk-heading-m">Ako sa zaregistrujem na očkovanie? <a href="#q1" class="text-decoration-none fs-5"
                                                       title="Odkaz na otázku" data-toggle="tooltip"><i
                     class="fas fa-hashtag"></i></a></h3>
             <p>
                 Pre registráciu na očkovanie použite <a
-                    href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" rel="noopener" target="_blank">formulár
-                NCZI</a>.
+                    href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" rel="noopener" target="_blank"
+                    class="govuk-link">formulár NCZI</a>.
                 Vo formulári je možná registrácia len ak spadáte do práve otvorených skupín na očkovanie a sú voľné
                 termíny.
             </p>
         </div>
     </div>
-    <div class="row anchor" id="q2">
-        <div class="col-sm-10 mx-auto">
-            <h3>Ešte nie je otvorená moja skupina, ako sa môžem zaregistrovať ako náhradník? <a href="#q2"
+    <div class="govuk-grid-row" id="q2">
+        <div class="govuk-grid-column-full">
+            <h3 class="govuk-heading-m">Ešte nie je otvorená moja skupina, ako sa môžem zaregistrovať ako náhradník? <a href="#q2"
                                                                                                 class="text-decoration-none fs-5"
                                                                                                 title="Odkaz na otázku"
                                                                                                 data-toggle="tooltip"><i
@@ -49,9 +48,9 @@
             </p>
         </div>
     </div>
-    <div class="row anchor" id="q3">
-        <div class="col-sm-10 mx-auto">
-            <h3>Kedy sú rozosielané notifikácie o voľných miestach? <a href="#q3" class="text-decoration-none fs-5"
+    <div class="govuk-grid-row" id="q3">
+        <div class="govuk-grid-column-full">
+            <h3 class="govuk-heading-m">Kedy sú rozosielané notifikácie o voľných miestach? <a href="#q3" class="text-decoration-none fs-5"
                                                                        title="Odkaz na otázku" data-toggle="tooltip"><i
                     class="fas fa-hashtag"></i></a></h3>
             <p>
@@ -61,9 +60,9 @@
             </p>
         </div>
     </div>
-    <div class="row anchor" id="q4">
-        <div class="col-sm-10 mx-auto">
-            <h3>Kedy sú rozosielané notifikácie o novej skupine? <a href="#q4" class="text-decoration-none fs-5"
+    <div class="govuk-grid-row" id="q4">
+        <div class="govuk-grid-column-full">
+            <h3 class="govuk-heading-m">Kedy sú rozosielané notifikácie o novej skupine? <a href="#q4" class="text-decoration-none fs-5"
                                                                     title="Odkaz na otázku" data-toggle="tooltip"><i
                     class="fas fa-hashtag"></i></a></h3>
             <p>
@@ -71,9 +70,9 @@
             </p>
         </div>
     </div>
-    <div class="row anchor" id="q5">
-        <div class="col-sm-10 mx-auto">
-            <h3>Neprišiel mi potvrdzovací email, čo mám robiť? <a href="#q5" class="text-decoration-none fs-5"
+    <div class="govuk-grid-row" id="q5">
+        <div class="govuk-grid-column-full">
+            <h3 class="govuk-heading-m">Neprišiel mi potvrdzovací email, čo mám robiť? <a href="#q5" class="text-decoration-none fs-5"
                                                                   title="Odkaz na otázku" data-toggle="tooltip"><i
                     class="fas fa-hashtag"></i></a></h3>
             <p>
@@ -87,12 +86,13 @@
                 <li>outlook.sk</li>
                 <li>hotmail.com</li>
                 <li>windowslive.com</li>
+                <li>live.com</li>
             </ul>
         </div>
     </div>
-    <div class="row anchor" id="q6">
-        <div class="col-sm-10 mx-auto">
-            <h3>Nechodia mi notifikácie na email, prečo? <a href="#q6" class="text-decoration-none fs-5"
+    <div class="govuk-grid-row" id="q6">
+        <div class="govuk-grid-column-full">
+            <h3 class="govuk-heading-m">Nechodia mi notifikácie na email, prečo? <a href="#q6" class="text-decoration-none fs-5"
                                                             title="Odkaz na otázku" data-toggle="tooltip"><i
                     class="fas fa-hashtag"></i></a></h3>
             <p>
@@ -103,9 +103,9 @@
             </p>
         </div>
     </div>
-    <div class="row anchor" id="q7">
-        <div class="col-sm-10 mx-auto">
-            <h3>Prišla mi notifikácia o voľných termínoch, vo formulári na registráciu som ich však nenašiel, prečo? <a
+    <div class="govuk-grid-row" id="q7">
+        <div class="govuk-grid-column-full">
+            <h3 class="govuk-heading-m">Prišla mi notifikácia o voľných termínoch, vo formulári na registráciu som ich však nenašiel, prečo? <a
                     href="#q7" class="text-decoration-none fs-5" title="Odkaz na otázku" data-toggle="tooltip"><i
                     class="fas fa-hashtag"></i></a></h3>
             <p>
@@ -116,9 +116,9 @@
             </p>
         </div>
     </div>
-    <div class="row anchor" id="q8">
-        <div class="col-sm-10 mx-auto">
-            <h3>Ako si môžem zmeniť výber miest o ktorých dostávam notifikácie? <a href="#q8" class="text-decoration-none fs-5"
+    <div class="govuk-grid-row" id="q8">
+        <div class="govuk-grid-column-full">
+            <h3 class="govuk-heading-m">Ako si môžem zmeniť výber miest o ktorých dostávam notifikácie? <a href="#q8" class="text-decoration-none fs-5"
                                                           title="Odkaz na otázku" data-toggle="tooltip"><i
                     class="fas fa-hashtag"></i></a></h3>
             <p>
@@ -127,9 +127,9 @@
             </p>
         </div>
     </div>
-    <div class="row anchor" id="q9">
-        <div class="col-sm-10 mx-auto">
-            <h3>Ako si môžem zrušiť odber notifikácií? <a href="#q9" class="text-decoration-none fs-5"
+    <div class="govuk-grid-row" id="q9">
+        <div class="govuk-grid-column-full">
+            <h3 class="govuk-heading-m">Ako si môžem zrušiť odber notifikácií? <a href="#q9" class="text-decoration-none fs-5"
                                                           title="Odkaz na otázku" data-toggle="tooltip"><i
                     class="fas fa-hashtag"></i></a></h3>
             <p>
@@ -139,9 +139,9 @@
             </p>
         </div>
     </div>
-    <div class="row anchor" id="q10">
-        <div class="col-sm-10 mx-auto">
-            <h3>Stránka mi nefunguje, čo mám robiť? <a href="#q10" class="text-decoration-none fs-5"
+    <div class="govuk-grid-row" id="q10">
+        <div class="govuk-grid-column-full">
+            <h3 class="govuk-heading-m">Stránka mi nefunguje, čo mám robiť? <a href="#q10" class="text-decoration-none fs-5"
                                                        title="Odkaz na otázku" data-toggle="tooltip"><i
                     class="fas fa-hashtag"></i></a></h3>
             <p>
@@ -152,15 +152,15 @@
             </p>
         </div>
     </div>
-    <div class="row anchor" id="q11">
-        <div class="col-sm-10 mx-auto">
-            <h3>Ďalšie informácie <a href="#q11" class="text-decoration-none fs-5" title="Odkaz na otázku"
+    <div class="govuk-grid-row" id="q11">
+        <div class="govuk-grid-column-full">
+            <h3 class="govuk-heading-m">Ďalšie informácie <a href="#q11" class="text-decoration-none fs-5" title="Odkaz na otázku"
                                      data-toggle="tooltip"><i class="fas fa-hashtag"></i></a></h3>
             <p>
                 Ďalšie informácie o očkovaní nájdete na stránke
-                <a href="https://www.slovenskoproticovidu.sk/" rel="noopener" target="_blank">www.slovenskoproticovidu.sk</a>
+                <a href="https://www.slovenskoproticovidu.sk/" rel="noopener" target="_blank" class="govuk-link">www.slovenskoproticovidu.sk</a>
                 a
-                <a href="https://korona.gov.sk" rel="noopener" target="_blank">korona.gov.sk</a>.
+                <a href="https://korona.gov.sk" class="govuk-link">korona.gov.sk</a>.
             </p>
         </div>
     </div>

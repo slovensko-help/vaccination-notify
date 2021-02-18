@@ -1,14 +1,14 @@
 {% extends "base.html.jinja2" %}
 {% block content %}
-    <div class="row mt-5">
-        <div class="col-sm-10 mx-auto text-center">
-            <h1><i class="fas fa-check-circle"></i> OK</h1>
-            <p class="lead">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <h1 class="govuk-heading-xl"><i class="fas fa-check-circle"></i> OK</h1>
+            <p class="govuk-body-lead">
                 Na email {{ email }} bol zaslaný potvrdzovací email. Potvrdenie žiadosti o notifikácie kliknutím na link v emaili je potrebné na získavanie notifikacii.
                 Na potvrdenie žiadosti máte 7 dní po ktorých jej platnosť vyprší a Vaša žiadosť o odber notifikácii ako aj vaše osobné údaje (emailová adresa) budú vymazané.
-                Skontrolujte aj priečinok <b>SPAM</b> do ktorého sa potvrdzovací email mohol dostať. Email prichádza z adresy <b>{{ config['MAIL_DEFAULT_SENDER']}}</b>.
+                Skontrolujte aj priečinok <strong>SPAM</strong> do ktorého sa potvrdzovací email mohol dostať. Email prichádza z adresy <strong>{{ config['MAIL_DEFAULT_SENDER']}}</strong>.
             </p>
-            <a href="{{ url_for('main.index') }}" class="btn btn-primary">Naspať na domovskú stránku</a>
+            <a href="{{ url_for('main.index') }}" class="govuk-button">Naspať na domovskú stránku</a>
         </div>
     </div>
 {% endblock %}

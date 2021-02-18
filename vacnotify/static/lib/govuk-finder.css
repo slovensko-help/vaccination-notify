@@ -1,0 +1,90 @@
+﻿
+.gem-c-search {position: relative;margin-bottom: 30px;}
+.gem-c-search__label {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-weight: 400;font-size: 16px;line-height: 2.5;display: block;}
+@media (min-width: 40.0625em) {.gem-c-search__label {font-size: 19px;line-height: 2.1052631579;}}
+@media print {.gem-c-search__label {font-size: 14pt;line-height: 40px;}}
+.gem-c-search__label h1 {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-weight: 400;font-size: 16px;line-height: 2.5;margin: 0;}
+@media print {.gem-c-search__label h1 {}}
+@media (min-width: 40.0625em) {.gem-c-search__label h1 {font-size: 19px;line-height: 2.1052631579;}}
+@media print {.gem-c-search__label h1 {font-size: 14pt;line-height: 40px;}}
+.js-enabled .gem-c-search__label {position: absolute;left: 15px;top: 1px;z-index: 1;color: #626a6e;}
+.js-enabled .gem-c-search--separate-label .gem-c-search__label {color: #0b0c0c;}
+.gem-c-search__input[type="search"] {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-weight: 400;font-size: 16px;line-height: 1.4736842105;padding: 6px;margin: 0;width: 100%;height: 40px;border: 2px solid #0b0c0c;background: #fff;border-radius: 0;box-sizing: border-box;-webkit-appearance: none;-moz-appearance: none;appearance: none;}
+@media print {.gem-c-search__input[type="search"] {}}
+@media (min-width: 40.0625em) {.gem-c-search__input[type="search"] {font-size: 19px;line-height: 1.4736842105;}}
+@media print {.gem-c-search__input[type="search"] {font-size: 14pt;line-height: 1.4736842105;}}
+.gem-c-search__input[type="search"]:focus, .gem-c-search__input[type="search"].focus {z-index: 2;}
+.gem-c-search__input[type="search"]:focus {outline: 3px solid #fd0;outline-offset: 0;box-shadow: inset 0 0 0 2px;}
+.gem-c-search__submit {border: 0;cursor: pointer;border-radius: 0;position: relative;padding: 0;width: 40px;height: 40px;background-image: url("../images/govuk-magnifier.png");background-repeat: no-repeat;background-position: 2px 50%;text-indent: -5000px;overflow: hidden;}
+@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2), only screen and (min-resolution: 192dpi), only screen and (min-resolution: 2dppx) {.gem-c-search__submit {background-size: 52.5px auto;background-position: 115% 50%;}}
+.gem-c-search__submit:focus {z-index: 2;outline: 3px solid #fd0;outline-offset: 0;box-shadow: inset 0 0 0 4px #0b0c0c;}
+.gem-c-search__submit::-moz-focus-inner {border: 0;}
+.gem-c-search__item-wrapper {display: table;width: 100%;background: #fff;}
+.gem-c-search__item {position: relative;display: table-cell;vertical-align: top;}
+.gem-c-search__submit-wrapper {width: 1%;}
+.gem-c-search--on-govuk-blue .gem-c-search__label {color: #fff;}
+.gem-c-search--on-govuk-blue .gem-c-search__input {border-width: 0;}
+.gem-c-search--on-govuk-blue .gem-c-search__input:focus {box-shadow: none;}
+.gem-c-search--on-govuk-blue .gem-c-search__submit {background-color: #0b0c0c;color: #fff;}
+.gem-c-search--on-govuk-blue .gem-c-search__submit:hover {background-color: #171919;}
+.js-enabled .gem-c-search--on-govuk-blue .gem-c-search__label {color: #626a6e;}
+.gem-c-search--on-white .gem-c-search__submit {background-color: #1d70b8;color: #fff;}
+.gem-c-search--on-white .gem-c-search__submit:hover {background-color: #207dce;}
+.gem-c-search--on-white .gem-c-search__input[type="search"] {border-right-width: 0;}
+.gem-c-search--on-white .gem-c-search__input[type="search"]:focus {border-right-width: 2px;}
+.gem-c-search--large .gem-c-search__label {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-weight: 400;font-size: 16px;line-height: 3.125;}
+@media print {.gem-c-search--large .gem-c-search__label {}}
+@media (min-width: 40.0625em) {.gem-c-search--large .gem-c-search__label {font-size: 19px;line-height: 2.6315789474;}}
+@media print {.gem-c-search--large .gem-c-search__label {font-size: 14pt;line-height: 50px;}}
+.gem-c-search--large .gem-c-search__input[type="search"] {height: 50px;}
+.gem-c-search--large .gem-c-search__submit {width: 50px;height: 50px;background-position: 8px 50%;}
+@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2), only screen and (min-resolution: 192dpi), only screen and (min-resolution: 2dppx) {.gem-c-search--large .gem-c-search__submit {background-size: 60px auto;background-position: 160% 50%;}}
+.gem-c-search--separate-label .gem-c-search__label {position: relative;left: auto;}
+.js-enabled .app-c-option-select__heading {position: relative;padding: 10px 8px 5px 43px;}
+.js-enabled [aria-expanded="true"] ~ .app-c-option-select__icon--up {display: block;}
+.js-enabled [aria-expanded="false"] ~ .app-c-option-select__icon--down {display: block;}
+.js-enabled .app-c-option-select__container {height: 200px;}
+.js-enabled [data-closed-on-load="true"] .app-c-option-select__container {display: none;}
+.app-c-option-select__selected-counter {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-weight: 400;font-size: 12px;line-height: 1.25;color: #0b0c0c;margin-top: 3px;}
+@media print {.app-c-option-select__selected-counter {}}
+@media (min-width: 40.0625em) {.app-c-option-select__selected-counter {font-size: 14px;line-height: 1.4285714286;}}
+@media print {.app-c-option-select__selected-counter {font-size: 12pt;line-height: 1.2;}}
+.app-c-option-select.js-closed .app-c-option-select__filter, .app-c-option-select.js-closed .app-c-option-select__container {display: none;}
+.app-c-option-select.js-opened .app-c-option-select__filter, .app-c-option-select.js-opened .app-c-option-select__container {display: block;}
+.govuk-select {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-weight: 400;font-size: 16px;line-height: 1.25;box-sizing: border-box;max-width: 100%;height: 40px;padding: 5px;border: 2px solid #0b0c0c;}
+@media print {.govuk-select {}}
+@media (min-width: 40.0625em) {.govuk-select {font-size: 19px;line-height: 1.25;}}
+@media print {.govuk-select {font-size: 14pt;line-height: 1.25;}}
+.govuk-select:focus {outline: 3px solid #fd0;outline-offset: 0;box-shadow: inset 0 0 0 2px;}
+.govuk-select option:active, .govuk-select option:checked, .govuk-select:focus::-ms-value {color: #fff;background-color: #1d70b8;}
+.govuk-select--error {border: 4px solid #d4351c;}
+.govuk-select--error:focus {border-color: #0b0c0c;box-shadow: none;}
+.gem-c-select__select--full-width {width: 100%;}
+.gem-c-select .govuk-select {height: 2.14em;}
+.app-c-option-select {position: relative;padding: 0 0 10px;margin-bottom: 10px;border-bottom: 1px solid #b1b4b6;}
+@media (min-width: 48.0625em) {.app-c-option-select ::-webkit-scrollbar {-webkit-appearance: none;width: 7px;}
+	.app-c-option-select ::-webkit-scrollbar-thumb {border-radius: 4px;background-color: rgba(0,0,0,.5);-webkit-box-shadow: 0 0 1px rgba(255,255,255,.87);}}
+.app-c-option-select .gem-c-checkboxes {margin: 0;}
+.app-c-option-select__title {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-weight: 400;font-size: 16px;line-height: 1.25;margin: 0;}
+@media print {.app-c-option-select__title {}}
+@media (min-width: 40.0625em) {.app-c-option-select__title {font-size: 19px;line-height: 1.3157894737;}}
+@media print {.app-c-option-select__title {font-size: 14pt;line-height: 1.15;}}
+.app-c-option-select__button {z-index: 1;background: none;border: 0;text-align: left;padding: 0;cursor: pointer;color: #1d70b8;}
+.app-c-option-select__button:hover {text-decoration: underline;}
+.app-c-option-select__button::-moz-focus-inner {border: 0;}
+.app-c-option-select__button:focus {outline: 3px solid transparent;color: #0b0c0c;background-color: #fd0;box-shadow: 0 -2px #fd0,0 4px #0b0c0c;text-decoration: none;}
+.app-c-option-select__button[disabled] {background-image: none;color: inherit;}
+.app-c-option-select__button:after {content: "";position: absolute;top: 0;right: 0;bottom: 0;left: 0;z-index: 2;}
+.app-c-option-select__icon {display: none;position: absolute;top: 0;left: 9px;width: 30px;height: 40px;fill: #0b0c0c;}
+.app-c-option-select__container {position: relative;max-height: 200px;overflow-y: auto;overflow-x: hidden;background-color: #fff;}
+.app-c-option-select__container:focus {outline: 0;}
+.app-c-option-select__container-inner {padding: 5px 13px;}
+.app-c-option-select__filter {position: relative;background: #fff;padding: 13px 13px 10px 13px;}
+.app-c-option-select__filter-input {-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-weight: 400;font-size: 16px;line-height: 1.25;padding-left: 33px;background: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 36 36\' width=\'40\' height=\'40\'%3E%3Cpath d=\'M25.7 24.8L21.9 21c.7-1 1.1-2.2 1.1-3.5 0-3.6-2.9-6.5-6.5-6.5S10 13.9 10 17.5s2.9 6.5 6.5 6.5c1.6 0 3-.6 4.1-1.5l3.7 3.7 1.4-1.4zM12 17.5c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5-2 4.5-4.5 4.5-4.5-2-4.5-4.5z\' fill=\'currentColor\'%3E%3C/path%3E%3C/svg%3E") #fff no-repeat -5px -3px;}
+@media print {.app-c-option-select__filter-input {}}
+@media (min-width: 40.0625em) {.app-c-option-select__filter-input {font-size: 19px;line-height: 1.3157894737;}}
+@media print {.app-c-option-select__filter-input {font-size: 14pt;line-height: 1.15;}}
+@media (min-width: 40.0625em) {.app-c-option-select__filter-input {font-family: "nta",Arial,sans-serif;-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-weight: 400;font-size: 14px;line-height: 1.1428571429;}}
+@media print and (min-width: 40.0625em) {.app-c-option-select__filter-input {font-family: sans-serif;}}
+@media (min-width: 40.0625em) and (min-width: 40.0625em) {.app-c-option-select__filter-input {font-size: 16px;line-height: 1.25;}}
+@media print and (min-width: 40.0625em) {.app-c-option-select__filter-input {font-size: 14pt;line-height: 1.2;}}

@@ -12,116 +12,113 @@
     <script src="https://hcaptcha.com/1/api.js?hl=sk&onload=loadCaptcha&render=explicit" async defer></script>
 {% endblock %}
 {% block content %}
-    <div class="row">
-        <div class="col-sm-10 mx-auto">
-            <h1><i class="fas fa-users fa-fw"></i> Notifikácie o novej skupine</h1>
-            <p class="lead">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <h1 class="govuk-heading-xl"><i class="fas fa-users fa-fw"></i> Notifikácie o novej skupine</h1>
+            <p class="govuk-body-lead">
                 Chcem dostávať notifikácie na email o otvorení očkovania pre novú skupinu ľudí.
             </p>
             {{ render_alerts(get_alerts()) }}
             {{ render_bad_browser(get_bad_browser()) }}
         </div>
     </div>
-    <div class="row mt-2 mb-5">
-        <div class="col-sm-10 mx-auto">
-            <div class="card bg-light">
-                <div class="card-body">
-                    <form id="group-form" action="{{ url_for('main.group_subscribe') }}" method="post">
-                        {{ form.csrf_token }}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <div>
+                <form id="group-form" action="{{ url_for('main.group_subscribe') }}" method="post">
+                    {{ form.csrf_token }}
 
-                        <div class="row" style="margin-top: -1.5rem">
-                            <div class="col-sm gx-4 gy-4">
-                                <h3><i class="fas fa-envelope"></i> Email notifikácie</h3>
-                                <p>
-                                    Emailové notifikácie budete dostávať vždy pri otvorení novej skupiny na očkovanie.
-                                    Notifikácie vám nebudú chodiť častejšie ako raz za {{ format_timedelta(config["GROUP_NOTIFICATION_BACKOFF"]) }}.
-                                </p>
-                                <div class="mb-3">
-                                    <label for="email" class="form-label">Email</label>
-                                    {% for err in form.errors["email"] %}
-                                        <p class="text-danger">{{ err }}</p>
-                                    {% endfor %}
-                                    {{ form.email(class_="form-control") }}
-                                    <div class="form-text">Na tento email Vám budú chodiť notifikácie.</div>
-                                </div>
-                                <input id="email-submit" type="submit" class="btn btn-primary" value="Chcem notifikácie na email"/>
+                    <div class="govuk-grid-row govuk-!-margin-top-6">
+                        <div class="govuk-grid-column-one-half">
+                            <h2 class="govuk-heading-l"><i class="fas fa-envelope"></i> Email notifikácie</h2>
+                            <p>
+                                Emailové notifikácie budete dostávať vždy pri otvorení novej skupiny na očkovanie.
+                                Notifikácie vám nebudú chodiť častejšie ako raz za {{ format_timedelta(config["GROUP_NOTIFICATION_BACKOFF"]) }}.
+                            </p>
+                            <div class="govuk-form-group {% if "email" in form.errors %}govuk-form-group--error{% endif %}">
+                                <label for="email" class="govuk-label">Email</label>
+                                {% for err in form.errors["email"] %}
+                                    <p class="govuk-error-message">{{ err }}</p>
+                                {% endfor %}
+                                {{ form.email(class_="govuk-input") }}
+                                <div class="govuk-hint">Na tento email Vám budú chodiť notifikácie.</div>
                             </div>
-                            <div class="col-sm gx-4 gy-4">
-                                <h3><i class="fas fa-bell"></i> PUSH notifikácie</h3>
-                                <p>Push nofitikácie sú upozornenia, ktoré sa zobrazia priamo na vašom mobilnom zariadení či počítači.
-                                    Pri použití push notifikácii nie je potrebný email.</p>
-                                {{ form.push_sub() }}
-                                <p id="push-unsupported" class="d-none"><i class="fas fa-exclamation-triangle"></i> Váš prehliadač nepodporuje PUSH notifikácie.</p>
-                                <input id="push-submit" type="submit" class="btn btn-primary" value="Chcem PUSH notifikácie"/>
-                            </div>
+                            <input id="email-submit" type="submit" class="govuk-button" value="Chcem notifikácie na email"/>
                         </div>
-                        <div id="hcaptcha" class="h-captcha" data-sitekey="{{ config["HCAPTCHA_SITEKEY"] }}" data-callback="onSubmit" data-size="invisible"></div>
-                    </form>
-                    <div class="modal fade" tabindex="-1" id="push-modal">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Potvrdiť notifikácie</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Zatvotiť"></button>
+                        <div class="govuk-grid-column-one-half">
+                            <h2 class="govuk-heading-l"><i class="fas fa-bell"></i> PUSH notifikácie</h2>
+                            <p>Push nofitikácie sú upozornenia, ktoré sa zobrazia priamo na vašom mobilnom zariadení či počítači.
+                                Pri použití push notifikácii nie je potrebný email.</p>
+                            {{ form.push_sub() }}
+                            <p id="push-unsupported" style="display: none"><i class="fas fa-exclamation-triangle"></i> Váš prehliadač nepodporuje PUSH notifikácie.</p>
+                            <input id="push-submit" type="submit" class="govuk-button" value="Chcem PUSH notifikácie"/>
+                        </div>
+                    </div>
+                    <div id="hcaptcha" class="h-captcha" data-sitekey="{{ config["HCAPTCHA_SITEKEY"] }}" data-callback="onSubmit" data-size="invisible"></div>
+                </form>
+                <div class="modal fade" tabindex="-1" id="push-modal" style="display: none">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Potvrdiť notifikácie</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Zatvotiť"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="push-requested">
+                                    <p>Táto strána potrebuje vaše povolenie aby vám mohla zasielať notifikácie. Po kliknitú na
+                                    <b>Odoslať</b> sa vám zobrazí okno podobné tomu nižšie, prosím povoľte v ňom zasielanie notifikácií.</p>
+                                    <img class="img-fluid p-3 border" src="{{ url_for('.static', filename='img/notification_request.png') }}"/>
                                 </div>
-                                <div class="modal-body">
-                                    <div id="push-requested">
-                                        <p>Táto strána potrebuje vaše povolenie aby vám mohla zasielať notifikácie. Po kliknitú na
-                                        <b>Odoslať</b> sa vám zobrazí okno podobné tomu nižšie, prosím povoľte v ňom zasielanie notifikácií.</p>
-                                        <img class="img-fluid p-3 border" src="{{ url_for('.static', filename='img/notification_request.png') }}"/>
-                                    </div>
-                                    <div id="push-denied" style="display: none">
-                                        <p>Váš prehliadač zakazuje stránke zasielať vám notifikácie, prosím povoľte v ňom zasielanie notifikácií
-                                        podľa obrázku nižšie a obnovte stránku.</p>
-                                        <img class="img-fluid p-3 border" src="{{ url_for('.static', filename='img/notification_denied.png') }}"/>
-                                    </div>
+                                <div id="push-denied" style="display: none">
+                                    <p>Váš prehliadač zakazuje stránke zasielať vám notifikácie, prosím povoľte v ňom zasielanie notifikácií
+                                    podľa obrázku nižšie a obnovte stránku.</p>
+                                    <img class="img-fluid p-3 border" src="{{ url_for('.static', filename='img/notification_denied.png') }}"/>
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť</button>
-                                    <button type="button" class="btn btn-primary" id="notification-ask"><i class="fas fa-check"></i> Odoslať</button>
-                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť</button>
+                                <button type="button" class="btn btn-primary" id="notification-ask"><i class="fas fa-check"></i> Odoslať</button>
                             </div>
                         </div>
                     </div>
-                    <script type="text/javascript" src="{{ url_for('static', filename='push.dummy.js') }}"></script>
-                    <script type="text/javascript" src="{{ url_for('static', filename='push.js') }}"></script>
-                    <script type="text/javascript">
-                        if (!("serviceWorker" in navigator) || !("Notification" in window) || noPush) {
-                            $("#push-submit").attr("disabled", "disabled");
-                            $("#push-unsupported").removeClass("d-none");
-                        }
-
-                        function onSubmit(token) {
-                            document.getElementById('group-form').submit();
-                        }
-                        function loadCaptcha() {
-                            hcaptcha.render("hcaptcha", {sitekey: '{{ config["HCAPTCHA_SITEKEY"] }}'})
-                        }
-                        function onEmail(event) {
-                            let elem = $("#email");
-                            let h5elem = elem.get()[0]
-                            elem.attr('required','required');
-                            $("#push_sub").attr("required", null);
-                            if (h5elem.validity.valid) {
-                                hcaptcha.execute();
-                                event.preventDefault();
-                                event.stopPropagation()
-                            }
-                        }
-                        $("#email-submit").click(onEmail);
-                        $("#push-submit").click(onPush);
-                        $("#notification-ask").click(onNotificationRequest);
-                    </script>
                 </div>
+                <script type="text/javascript" src="{{ url_for('static', filename='push.dummy.js') }}"></script>
+                <script type="text/javascript" src="{{ url_for('static', filename='push.js') }}"></script>
+                <script type="text/javascript">
+                    if (!("serviceWorker" in navigator) || !("Notification" in window) || noPush) {
+                        $("#push-submit").attr("disabled", "disabled").addClass("govuk-button--disabled");
+                        $("#push-unsupported").show();
+                    }
+
+                    function onSubmit(token) {
+                        document.getElementById('group-form').submit();
+                    }
+                    function loadCaptcha() {
+                        hcaptcha.render("hcaptcha", {sitekey: '{{ config["HCAPTCHA_SITEKEY"] }}'})
+                    }
+                    function onEmail(event) {
+                        let elem = $("#email");
+                        let h5elem = elem.get()[0]
+                        elem.attr('required','required');
+                        $("#push_sub").attr("required", null);
+                        if (h5elem.validity.valid) {
+                            hcaptcha.execute();
+                            event.preventDefault();
+                            event.stopPropagation()
+                        }
+                    }
+                    $("#email-submit").click(onEmail);
+                    $("#push-submit").click(onPush);
+                </script>
             </div>
         </div>
     </div>
-    <div class="row mb-3 anchor" id="groups-list">
-        <div class="col-sm-10 mx-auto">
-            <h2 class="mb-3"><i class="fas fa-users fa-fw"></i> Momentálne otvorené skupiny na očkovanie</h2>
+    <div class="govuk-grid-row govuk-!-margin-top-4" id="groups-list">
+        <div class="govuk-grid-column-full">
+            <h2 class="govuk-heading-l"><i class="fas fa-users fa-fw"></i> Momentálne otvorené skupiny na očkovanie</h2>
             <b>Posledná aktualizácia</b>: {{ last_stats.datetime.strftime("%d.%m.%Y %H:%M") }}<br/>
-            <ul class="mt-4 list-group">
+            <ul class="govuk-list govuk-list--bullet govuk-!-margin-top-3">
                 {% for group in groups %}
                     <li class="list-group-item">{{ group.item_description }}</li>
                 {% endfor %}

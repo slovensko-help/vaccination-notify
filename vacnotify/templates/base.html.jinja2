@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="govuk-template app-no-canvas-background">
 
 <head>
     {% block head %}
@@ -9,14 +9,15 @@
         {% block title %}<title>{{ title|default("Notifikácie o COVID-19 vakcinácii") }}</title>{% endblock %}
         <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
         <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}"/>
-        <link rel="preload" href="{{ url_for('static', filename='webfonts/fa-regular-400.woff2') }}" as="font" crossorigin>
-        <link rel="preload" href="{{ url_for('static', filename='webfonts/fa-solid-900.woff2') }}" as="font" crossorigin>
-        <link rel="preload" href="{{ url_for('static', filename='webfonts/fa-brands-400.woff2') }}" as="font" crossorigin>
+        <link rel="preload" href="{{ url_for('static', filename='webfonts/fa-regular-400.woff2') }}" as="font"
+              crossorigin>
+        <link rel="preload" href="{{ url_for('static', filename='webfonts/fa-solid-900.woff2') }}" as="font"
+              crossorigin>
+        <link rel="preload" href="{{ url_for('static', filename='webfonts/fa-brands-400.woff2') }}" as="font"
+              crossorigin>
         {% assets "css_libs", "css_mine" %}
             <link rel="stylesheet" href="{{ ASSET_URL }}?{{ get_release() }}">
         {% endassets %}
-        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&display=swap"
-              rel="stylesheet">
         {% assets "js_libs", "js_mine" %}
             <script type="text/javascript" src="{{ ASSET_URL }}?{{ get_release() }}"></script>
         {% endassets %}
@@ -38,70 +39,43 @@
     {% endblock %}
 </head>
 
-<body class="position-relative">
-<div class="d-flex align-items-center mb-5" id="wrapper">
-    <nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light border-bottom fixed-top">
-        <button id="nav-toggle" class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Otvoriť menu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <a class="navbar-brand" href="{{ url_for("main.index") }}"><i class="fas fa-virus"></i> <span class="d-none d-md-inline">Notifikácie o COVID-19 vakcinácii</span><span class="d-sm-none">Domov</span></a>
-
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
-                <li class="nav-item mx-3">
-                    <a class="nav-link" href="{{ url_for('main.spot_subscribe') }}">Voľné miesta</a>
-                </li>
-                <li class="nav-item mx-3">
-                    <a class="nav-link" href="{{ url_for('main.group_subscribe') }}">Nová skupina</a>
-                </li>
-                <li class="nav-item mx-3">
-                    <a class="nav-link" href="{{ url_for('main.substitute_lists') }}">Zoznamy náhradníkov</a>
-                </li>
-                <li class="nav-item mx-3">
-                    <a class="nav-link" href="{{ url_for('main.stats') }}">Štatistiky</a>
-                </li>
-                <li class="nav-item mx-3">
-                    <a class="nav-link" href="{{ url_for('main.faq') }}">Časté otázky</a>
-                </li>
-                <li class="nav-item mx-3">
-                    <a class="nav-link" href="{{ url_for('main.privacy') }}">Zásady ochrany osobných údajov</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-    <div id="page-content-wrapper">
-        <div id="content" class="container">
-            {% block content %}
-            {% endblock %}
-        </div>
-    </div>
-</div>
-<script type="text/javascript">
-    $(function () {
-        $('[data-toggle="tooltip"]').tooltip()
-        $('[data-toggle="collapse"]').collapse()
-    });
-</script>
-<footer>
-    <div class="container">
-        <div class="row mt-5 mb-5">
-            <div class="col-sm-10 mx-auto">
-                <div class="text-center">
-                    <a data-rot13="wbual@arhebznapre.fx" class="mail-href text-decoration-none" title="Predtým než ma budete kontaktovať, prečítajte si prosím sekciu stránky 'Časté otázky'." data-toggle="tooltip"><i class="fas fa-envelope"></i> <span data-rot13="wbual@arhebznapre.fx" class="mail-inner">ENABLE@JAVASCRIPT</span></a> |
-                    <a href="https://github.com/slovensko-help/vaccination-notify" class="text-decoration-none"><i class="fab fa-github"></i> GitHub</a> |
-                    <a href="https://neuromancer.sk" class="text-decoration-none"><i class="far fa-copyright"></i> 2021 Ján Jančár</a>
-                    <br/>
-                    <p class="text-muted">Problémy so službou môžete oznámiť na
-                        <a href="https://github.com/slovensko-help/vaccination-notify/issues" rel="noopener" target="_blank" class="text-decoration-none">githube</a>
-                    alebo na <a data-rot13="wbual@arhebznapre.fx" class="mail-href text-decoration-none">emaili</a>.</p>
-                </div>
+<body class="govuk-template__body">
+{% include "header.html.jinja2" %}
+<div class="app-pane-lgray govuk-!-padding-top-3">
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                <p class="govuk-body">
+                    <strong>Od 17. februára sa menia karanténne povinnosti pre osoby vstupujúce na územie SR.</strong>
+                    Ruší sa aj zoznam menej rizikových krajín. Všetky dôležité zmeny vrátane výnimiek si môžete prečítať
+                    <a href="https://wpkorona.lamer.sk/wp-content/uploads/2021/02/ciastka_26_2021.pdf"
+                       class="govuk-link" target="_self" title=" v novej vyhláške ÚVZ SR č. 64 (PDF, 310 kB)."> v novej
+                        vyhláške ÚVZ SR č. 64 (PDF, 310 kB).</a></p>
             </div>
         </div>
     </div>
-    <a class="btn btn-primary" href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" id="reg-button" rel="noopener" target="_blank" title="Kliknite pre formulár NCZI na registráciu na očkovanie." data-toggle="tooltip">
-        Registrácia<br>na očkovanie <i class="fas fa-external-link-alt"></i>
-    </a>
-</footer>
+</div>
+<div class="govuk-width-container">
+    <div class="govuk-breadcrumbs">
+        <ol class="govuk-breadcrumbs__list"><span><li class="govuk-breadcrumbs__list-item"><a
+                href="/" class="govuk-breadcrumbs__link">Domov</a></li>  <li
+                class="govuk-breadcrumbs__list-item"><a href="/vakcinacne-miesta/"
+                                                        class="govuk-breadcrumbs__link">Vakcinačné miesta</a></li></span>
+        </ol>
+    </div>
+</div>
+<main class="govuk-main-wrapper govuk-!-padding-top-6 govuk-!-padding-bottom-6 govuk-body" id="main-content"
+      role="main">
+    <div class="govuk-width-container">
+        {% block content %}
+        {% endblock %}
+    </div>
+</main>
+{% include "footer.html.jinja2" %}
+
+<script type="text/javascript">
+    window.GOVUKFrontend.initAll();
+</script>
 </body>
 
 </html>

@@ -8,150 +8,182 @@
     <meta property="og:image:alt" content="Obrázok vírusu"/>
     <meta property="og:url" content="{{ url_for('main.spot_subscribe') }}"/>
     <meta property="og:locale" content="sk_SK"/>
-    <meta property="og:description" content="Táto stránka poskytuje notifikácie o voľných miestach na očkovanie proti COVID-19."/>
+    <meta property="og:description" content="Táto stránka poskytuje notifikácie o voľných termínoch na očkovanie proti COVID-19."/>
     <script src="https://hcaptcha.com/1/api.js?hl=sk&onload=loadCaptcha&render=explicit" async defer></script>
 {% endblock %}
 {% block content %}
-    <div class="row">
-        <div class="col-sm-10 mx-auto">
-            <h1><i class="fas fa-calendar fa-fw"></i> Notifikácie o voľných miestach</h1>
-            <p class="lead">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <h1 class="govuk-heading-xl"><i class="fas fa-calendar fa-fw"></i> Notifikácie o voľných termínoch</h1>
+            <p class="govuk-body-lead">
                 Chcem dostávať notifikácie o voľných termínoch na očkovanie vo vybraných očkovacích miestach.
             </p>
             {{ render_alerts(get_alerts()) }}
             {{ render_bad_browser(get_bad_browser()) }}
         </div>
     </div>
-    <div class="row mt-2 mb-5">
-        <div class="col-sm-10 mx-auto">
-            <div class="card bg-light">
-                <div class="card-body">
-                    <form id="spot-form" action="{{ url_for('main.spot_subscribe') }}" method="post">
-                        {{ form.csrf_token }}
-                        <div class="mb-3">
-                            <label class="form-label">Mestá</label>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <div>
+                <form id="spot-form" action="{{ url_for('main.spot_subscribe') }}" method="post">
+                    {{ form.csrf_token }}
+                    <div class="govuk-form-group {% if "cities" in form.errors %}govuk-form-group--error{% endif %}">
+                        <fieldset class="govuk-fieldset">
+                            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                                <h2 class="govuk-fieldset__heading">Mestá</h2>
+                            </legend>
+
                             {% for err in form.errors["cities"] %}
-                                <p class="text-danger">{{ err }}</p>
+                                <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ err }}</span>
                             {% endfor %}
-                            <p class="form-text">Vyberte si mestá pre ktoré chcete dostávať notifikácie.</p>
-                            <div class="mb-3">
-                                <button id="select-all" class="btn btn-secondary"><i class="fas fa-check"></i> Vybrať všetky</button>
-                                <button id="select-none" class="btn btn-secondary"><i class="fas fa-times"></i> Zrušit výber</button>
+                            <span class="govuk-hint">Vyberte si mestá pre ktoré chcete dostávať notifikácie.</span>
+                            <div>
+                                <button id="select-all" class="govuk-button govuk-button--secondary"><i
+                                        class="fas fa-check"></i> Vybrať všetky
+                                </button>
+                                <button id="select-none" class="govuk-button govuk-button--secondary"><i
+                                        class="fas fa-times"></i> Zrušit výber
+                                </button>
                             </div>
-                            {{ form.cities(size=3, field_kwargs={"class_": "form-check-input"}) }}
+                            {{ form.cities(size=3, field_kwargs={"class_": "govuk-checkboxes__input"}) }}
+                        </fieldset>
+                    </div>
+
+                    <div class="govuk-grid-row govuk-!-margin-top-6">
+                        <div class="govuk-grid-column-one-half">
+                            <h2 class="govuk-heading-l"><i class="fas fa-envelope"></i> Email notifikácie</h2>
+                            <p>
+                                Emailové notifikácie budete dostávať vždy pri zmene voľných kapacít na úrovni mesta,
+                                teda napríklad
+                                keď v meste predtým neboli voľné termíny a už sú, alebo keď v meste termíny boli, no
+                                všetky sa minuli.
+                                Notifikácie vám nebudú chodiť častejšie ako raz
+                                za {{ format_timedelta(config["SPOT_NOTIFICATION_BACKOFF"]) }}.
+                            </p>
+                            <div class="govuk-form-group {% if "email" in form.errors %}govuk-form-group--error{% endif %}">
+                                <label for="email" class="govuk-label">Email</label>
+                                {% for err in form.errors["email"] %}
+                                    <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ err }}</span>
+                                {% endfor %}
+                                {{ form.email(class_="govuk-input") }}
+                                <div class="govuk-hint">Na tento email Vám budú chodiť notifikácie.</div>
+                            </div>
+                            <input id="email-submit" type="submit" class="govuk-button"
+                                   value="Chcem notifikácie na email"/>
                         </div>
-                        <div class="row">
-                            <div class="col-sm gx-4 gy-4">
-                                <h3><i class="fas fa-envelope"></i> Email notifikácie</h3>
-                                <p>
-                                    Emailové notifikácie budete dostávať vždy pri zmene voľných kapacít na úrovni mesta, teda napríklad
-                                    keď v meste predtým neboli voľné termíny a už sú, alebo keď v meste termíny boli, no všetky sa minuli.
-                                    Notifikácie vám nebudú chodiť častejšie ako raz za {{ format_timedelta(config["SPOT_NOTIFICATION_BACKOFF"]) }}.
-                                </p>
-                                <div class="mb-3">
-                                    <label for="email" class="form-label">Email</label>
-                                    {% for err in form.errors["email"] %}
-                                        <p class="text-danger">{{ err }}</p>
-                                    {% endfor %}
-                                    {{ form.email(class_="form-control") }}
-                                    <div class="form-text">Na tento email Vám budú chodiť notifikácie.</div>
-                                </div>
-                                <input id="email-submit" type="submit" class="btn btn-primary" value="Chcem notifikácie na email"/>
-                            </div>
-                            <div class="col-sm gx-4 gy-4">
-                                <h3><i class="fas fa-bell"></i> PUSH notifikácie</h3>
-                                <p>Push nofitikácie sú upozornenia, ktoré sa zobrazia priamo na vašom mobilnom zariadení či počítači.
-                                    Pri použití push notifikácii nie je potrebný email.</p>
-                                {{ form.push_sub() }}
-                                <p id="push-unsupported" class="d-none"><i class="fas fa-exclamation-triangle"></i> Váš prehliadač nepodporuje PUSH notifikácie.</p>
-                                <input id="push-submit" type="submit" class="btn btn-primary" value="Chcem PUSH notifikácie"/>
-                            </div>
-                        </div>
-                        <div id="hcaptcha" class="h-captcha" data-sitekey="{{ config["HCAPTCHA_SITEKEY"] }}" data-callback="onSubmit" data-size="invisible"></div>
-                    </form>
-                    <div class="modal fade" tabindex="-1" id="push-modal">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Potvrdiť notifikácie</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Zatvotiť"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div id="push-requested">
-                                        <p>Táto strána potrebuje vaše povolenie aby vám mohla zasielať notifikácie. Po kliknitú na
-                                        <b>Odoslať</b> sa vám zobrazí okno podobné tomu nižšie, prosím povoľte v ňom zasielanie notifikácií.</p>
-                                        <img class="img-fluid p-3 border" src="{{ url_for('.static', filename='img/notification_request.png') }}"/>
-                                    </div>
-                                    <div id="push-denied" style="display: none">
-                                        <p>Váš prehliadač zakazuje stránke zasielať vám notifikácie, prosím povoľte v ňom zasielanie notifikácií
-                                        podľa obrázku nižšie a obnovte stránku.</p>
-                                        <img class="img-fluid p-3 border" src="{{ url_for('.static', filename='img/notification_denied.png') }}"/>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť</button>
-                                    <button type="button" class="btn btn-primary" id="notification-ask"><i class="fas fa-check"></i> Odoslať</button>
-                                </div>
+                        <div class="govuk-grid-column-one-half">
+                            <h2 class="govuk-heading-l"><i class="fas fa-bell"></i> PUSH notifikácie</h2>
+                            <p>Push nofitikácie sú upozornenia, ktoré sa zobrazia priamo na vašom mobilnom zariadení či
+                                počítači.
+                                Pri použití push notifikácii nie je potrebný email.</p>
+                            {{ form.push_sub() }}
+                            <p id="push-unsupported" style="display: none"><i class="fas fa-exclamation-triangle"></i>
+                                Váš prehliadač nepodporuje PUSH notifikácie.</p>
+                            <div class="govuk-form-group">
+                                <input id="push-submit" type="submit" class="govuk-button"
+                                       value="Chcem PUSH notifikácie"/>
                             </div>
                         </div>
                     </div>
-                    <script type="text/javascript" src="{{ url_for('static', filename='push.dummy.js') }}"></script>
-                    <script type="text/javascript" src="{{ url_for('static', filename='push.js') }}"></script>
-                    <script type="text/javascript">
-                        if (!("serviceWorker" in navigator) || !("Notification" in window) || noPush) {
-                            $("#push-submit").attr("disabled", "disabled");
-                            $("#push-unsupported").removeClass("d-none");
-                        }
-                        function onSubmit(token) {
-                            document.getElementById('spot-form').submit();
-                        }
-                        function loadCaptcha() {
-                            hcaptcha.render("hcaptcha", {sitekey: '{{ config["HCAPTCHA_SITEKEY"] }}'})
-                        }
-                        function onSelectAll(event) {
-                            $("#cities input").prop("checked", true);
-                            event.preventDefault();
-                            event.stopPropagation()
-                        }
-                        function onSelectNone(event) {
-                            $("#cities input").prop("checked", false);
-                            event.preventDefault();
-                            event.stopPropagation()
-                        }
-                        function onEmail(event) {
-                            let elem = $("#email");
-                            let h5elem = elem.get()[0]
-                            elem.attr('required','required');
-                            $("#push_sub").attr("required", null);
-                            if (h5elem.validity.valid) {
-                                hcaptcha.execute();
-                                event.preventDefault();
-                                event.stopPropagation()
-                            }
-                        }
-                        $("#select-all").click(onSelectAll);
-                        $("#select-none").click(onSelectNone);
-                        $("#email-submit").click(onEmail);
-                        $("#push-submit").click(onPush);
-                        $("#notification-ask").click(onNotificationRequest);
-                    </script>
+                    <div id="hcaptcha" class="h-captcha" data-sitekey="{{ config["HCAPTCHA_SITEKEY"] }}"
+                         data-callback="onSubmit" data-size="invisible"></div>
+                </form>
+                <div class="modal fade" tabindex="-1" id="push-modal" style="display: none">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Potvrdiť notifikácie</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Zatvotiť"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="push-requested">
+                                    <p>Táto strána potrebuje vaše povolenie aby vám mohla zasielať notifikácie. Po
+                                        kliknitú na
+                                        <b>Odoslať</b> sa vám zobrazí okno podobné tomu nižšie, prosím povoľte v ňom
+                                        zasielanie notifikácií.</p>
+                                    <img class="img-fluid govuk-!-padding-3"
+                                         src="{{ url_for('.static', filename='img/notification_request.png') }}"/>
+                                </div>
+                                <div id="push-denied" style="display: none">
+                                    <p>Váš prehliadač zakazuje stránke zasielať vám notifikácie, prosím povoľte v ňom
+                                        zasielanie notifikácií
+                                        podľa obrázku nižšie a obnovte stránku.</p>
+                                    <img class="img-fluid govuk-!-padding-3"
+                                         src="{{ url_for('.static', filename='img/notification_denied.png') }}"/>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="govuk-button govuk-button--secondary"
+                                        data-bs-dismiss="modal">Zatvoriť
+                                </button>
+                                <button type="button" class="govuk-button" id="notification-ask"><i
+                                        class="fas fa-check"></i> Odoslať
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                <script type="text/javascript" src="{{ url_for('static', filename='push.dummy.js') }}"></script>
+                <script type="text/javascript" src="{{ url_for('static', filename='push.js') }}"></script>
+                <script type="text/javascript">
+                    if (!("serviceWorker" in navigator) || !("Notification" in window) || noPush) {
+                        $("#push-submit").attr("disabled", "disabled").addClass("idsk-button--disabled");
+                        $("#push-unsupported").show();
+                    }
+
+                    function onSubmit(token) {
+                        document.getElementById('spot-form').submit();
+                    }
+
+                    function loadCaptcha() {
+                        hcaptcha.render("hcaptcha", {sitekey: '{{ config["HCAPTCHA_SITEKEY"] }}'})
+                    }
+
+                    function onSelectAll(event) {
+                        $("#cities input").prop("checked", true);
+                        event.preventDefault();
+                        event.stopPropagation()
+                    }
+
+                    function onSelectNone(event) {
+                        $("#cities input").prop("checked", false);
+                        event.preventDefault();
+                        event.stopPropagation()
+                    }
+
+                    function onEmail(event) {
+                        let elem = $("#email");
+                        let h5elem = elem.get()[0]
+                        elem.attr('required', 'required');
+                        $("#push_sub").attr("required", null);
+                        if (h5elem.validity.valid) {
+                            hcaptcha.execute();
+                            event.preventDefault();
+                            event.stopPropagation()
+                        }
+                    }
+
+                    $("#select-all").click(onSelectAll);
+                    $("#select-none").click(onSelectNone);
+                    $("#email-submit").click(onEmail);
+                    $("#push-submit").click(onPush);
+                </script>
             </div>
         </div>
     </div>
-     <div class="row mb-3 anchor" id="places-table">
-        <div class="col-sm-10 mx-auto">
-            <h2 class="mb-3"><i class="fas fa-map-marker fa-fw"></i> Momentálne voľné očkovacie miesta</h2>
+     <div class="govuk-grid-row govuk-!-margin-top-4" id="places-table">
+        <div class="govuk-grid-column-full">
+            <h2 class="govuk-heading-l"><i class="fas fa-map-marker fa-fw"></i> Momentálne voľné očkovacie miesta</h2>
             <b>Posledná aktualizácia</b>: {{ last_stats.datetime.strftime("%d.%m.%Y %H:%M") }}<br/>
 
-            <div class="overflow-auto mt-4">
-            <table class="table">
-                <thead>
+            <div style="overflow: auto">
+            <table class="govuk-table govuk-!-margin-top-3">
+                <thead class="govuk-table__head">
                 <tr>
-                    <th scope="col" rowspan="2" style="border-bottom-color: currentColor;">Očkovacie miesto</th>
+                    <th scope="col" rowspan="2" class="govuk-table__header" style="border-bottom-color: currentColor;">Očkovacie miesto</th>
                     {% for month, days in dates | groupby("month") %}
-                        <th scope="col" colspan="{{ days | length }}">{{ days[0].strftime("%B") }}</th>
+                        <th scope="col" class="govuk-table__header" colspan="{{ days | length }}">{{ days[0].strftime("%B") }}</th>
                     {% endfor %}
                 </tr>
                 <tr style="background-color: white">
@@ -160,19 +192,18 @@
                     {% endfor %}
                 </tr>
                 </thead>
+                <tbody class="govuk-table__body">
                 {% for place in places %}
-                    <tr>
-                        <td>{{ place.title }}{% if not place.online %}
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell">{{ place.title }}{% if not place.online %}
                             <i class="fas fa-exclamation-triangle" title="Očkovacie miesto nieje dostupné."
-                               data-toggle="tooltip"></i>{% endif %}{% if "Preočkovanie" in place.title %}
-                            <i class="fas fa-exclamation" title="Očkovacie miesto na preočkovanie." data-toggle="tooltip"></i>
-                        {% endif %}</td>
+                               data-toggle="tooltip"></i>{% endif %}</td>
                         {% for day in place.days %}
-                            <td class="{{ 'table-success' if place.online and day.capacity > 0 and day.open else 'table-danger' }} text-center">
+                            <td class="govuk-table__cell govuk-table__cell--numeric" style="text-align: center">
                             {% if not day.open %}
-                                <i class="fas fa-ban fa-sm text-danger"></i>
+                                <i class="fas fa-ban fa-sm" style="color: #9E1912"></i>
                             {% elif day.capacity > 0 %}
-                                {{ day.capacity }}
+                                <span style="color: #00703C" class="govuk-!-font-weight-bold">{{ day.capacity }}</span>
                             {% elif day.capacity < 0 %}
                                 <span class="text-muted" title="Počet termínov reportovaný od NCZI je záporný ({{ day.capacity }})." data-toggle="tooltip">0*</span>
                             {% else %}
@@ -182,6 +213,7 @@
                         {% endfor %}
                     </tr>
                 {% endfor %}
+            </tbody>
             </table>
             </div>
         </div>
