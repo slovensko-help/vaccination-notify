@@ -15,9 +15,6 @@ from requests.utils import default_user_agent
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
-from stem import Signal
-from stem.control import Controller
-from stem.util.log import get_logger as get_stem_logger
 
 from vacnotify import celery
 from vacnotify.database import transaction
@@ -28,7 +25,6 @@ from vacnotify.tasks.push import push_notification_group, push_notification_spot
 from vacnotify.utils import remove_pii
 
 logging = get_task_logger(__name__)
-get_stem_logger().propagate = False
 
 
 class RetrySession(object):
@@ -40,13 +36,6 @@ class RetrySession(object):
 
     def reset_session(self):
         self.sess = requests.Session()
-        if current_app.config["TOR_USE"]:
-            self.sess.proxies = {"http": current_app.config["TOR_SOCKS"],
-                                 "https": current_app.config["TOR_SOCKS"]}
-            with Controller.from_port(address=current_app.config["TOR_CONTROL_ADDRESS"],
-                                      port=current_app.config["TOR_CONTROL_PORT"]) as controller:
-                controller.authenticate(password=current_app.config["TOR_CONTROL_PASSWORD"])
-                controller.signal(Signal.NEWNYM)
         self.sess.headers["User-Agent"] = f"vaccination-notify/{current_app.env} {default_user_agent()} Python/{'.'.join(map(str, sys.version_info[:3]))}"
         logging.info("Restarted session.")
 

@@ -16,8 +16,14 @@
 
 {% macro render_bad_browser(bad_browser) %}
     {% if bad_browser %}
-        <div class="alert alert-danger">
-            <i class="fas fa-exclamation-triangle"></i> {{ bad_browser }}
+        <div class="app-pane-red">
+            <div class="govuk-width-container govuk-!-padding-top-3">
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-full">
+                        <i class="fas fa-exclamation-triangle"></i> {{ bad_browser }}
+                    </div>
+                </div>
+            </div>
         </div>
     {% endif %}
 {% endmacro %}
