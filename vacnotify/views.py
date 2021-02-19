@@ -18,20 +18,23 @@ from vacnotify.models import EligibilityGroup, VaccinationPlace, GroupSubscripti
     VaccinationStats, VaccinationCity, SubscriptionStats
 from vacnotify.forms import GroupSubscriptionForm, SpotSubscriptionForm
 from vacnotify.tasks.email import email_confirmation
-from vacnotify.utils import hcaptcha_required, sentry_untraced
+from vacnotify.utils import hcaptcha_required, sentry_untraced, embedable
 
 
 @main.route("/")
+@embedable
 def index():
     return render_template("index.html.jinja2")
 
 
 @main.route("/privacy")
+@embedable
 def privacy():
     return render_template("privacy_policy.html.jinja2")
 
 
 @main.route("/faq")
+@embedable
 def faq():
     return render_template("faq.html.jinja2")
 
@@ -80,6 +83,7 @@ def substitute_lists():
 
 
 @main.route("/stats")
+@embedable
 def stats():
     vaccination_stats = VaccinationStats.query.filter(VaccinationStats.datetime > (datetime.now() - timedelta(days=7))).order_by(VaccinationStats.id.desc()).all()
     subscription_stats = SubscriptionStats.query.filter(SubscriptionStats.datetime > (datetime.now() - timedelta(days=7))).order_by(SubscriptionStats.id.desc()).all()
@@ -90,6 +94,7 @@ def stats():
 
 @main.route("/groups/subscribe", methods=["GET", "POST"])
 @hcaptcha_required("push_sub")
+@embedable
 def group_subscribe():
     frm = GroupSubscriptionForm()
     if request.method == "GET" or not frm.validate_on_submit():
@@ -173,6 +178,7 @@ def group_confirm(secret):
 
 @main.route("/spots/subscribe", methods=["GET", "POST"])
 @hcaptcha_required("push_sub")
+@embedable
 def spot_subscribe():
     frm = SpotSubscriptionForm()
 
@@ -318,3 +324,9 @@ def service_worker():
 @sentry_untraced
 def vapid_pubkey():
     return pubkey
+
+
+@main.route("/embed")
+def embed():
+    url = request.args.get("url", url_for(".index"))
+    return render_template("embed.html.jinja2", url=url)

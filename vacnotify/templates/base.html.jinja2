@@ -21,6 +21,9 @@
         {% assets "js_libs", "js_mine" %}
             <script type="text/javascript" src="{{ ASSET_URL }}?{{ get_release() }}"></script>
         {% endassets %}
+        {% if g.embed %}
+            <script type="text/javascript" src="{{ url_for("static", filename="lib/iframeResizer.contentWindow.min.js") }}?{{ get_release() }}"></script>
+        {% endif %}
         <script type="text/javascript">
             let envs = {
                 "covid-dev.neuromancer.sk": "staging",
@@ -40,37 +43,17 @@
 </head>
 
 <body class="govuk-template__body">
-{% include "header.html.jinja2" %}
-<div class="app-pane-lgray govuk-!-padding-top-3">
-    <div class="govuk-width-container">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-full">
-                <p class="govuk-body">
-                    <strong>Od 17. februára sa menia karanténne povinnosti pre osoby vstupujúce na územie SR.</strong>
-                    Ruší sa aj zoznam menej rizikových krajín. Všetky dôležité zmeny vrátane výnimiek si môžete prečítať
-                    <a href="https://wpkorona.lamer.sk/wp-content/uploads/2021/02/ciastka_26_2021.pdf"
-                       class="govuk-link" target="_self" title=" v novej vyhláške ÚVZ SR č. 64 (PDF, 310 kB)."> v novej
-                        vyhláške ÚVZ SR č. 64 (PDF, 310 kB).</a></p>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="govuk-width-container">
-    <div class="govuk-breadcrumbs">
-        <ol class="govuk-breadcrumbs__list"><span><li class="govuk-breadcrumbs__list-item"><a
-                href="/" class="govuk-breadcrumbs__link">Domov</a></li>  <li
-                class="govuk-breadcrumbs__list-item"><a href="/vakcinacne-miesta/"
-                                                        class="govuk-breadcrumbs__link">Vakcinačné miesta</a></li></span>
-        </ol>
-    </div>
-</div>
-<main class="govuk-main-wrapper govuk-!-padding-top-6 govuk-!-padding-bottom-6 govuk-body" id="main-content"
+{% if not g.embed %}
+    {% include "header.html.jinja2" %}
+{% endif %}
+<main class="govuk-main-wrapper govuk-!-padding-top-6 govuk-!-padding-bottom-6 govuk-body govuk-!-margin-bottom-0" id="main-content"
       role="main">
     {% block content %}
     {% endblock %}
 </main>
-{% include "footer.html.jinja2" %}
-
+{% if not g.embed %}
+    {% include "footer.html.jinja2" %}
+{% endif %}
 <script type="text/javascript">
     window.GOVUKFrontend.initAll();
 </script>

@@ -1,0 +1,11 @@
+{% extends "base.html.jinja2" %}
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript" src="{{ url_for("static", filename="lib/iframeResizer.min.js") }}?{{ get_release() }}"></script>
+{% endblock %}
+{% block content %}
+    <iframe id="vacnotify" src="{{ url }}" style="border: 0; width: 1px; min-width: 100%"></iframe>
+    <script>
+        iFrameResize({log: true}, "#vacnotify");
+    </script>
+{% endblock %}

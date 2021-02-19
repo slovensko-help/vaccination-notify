@@ -6,7 +6,7 @@ import sentry_sdk
 from flask.json import JSONEncoder
 from typing import Any
 from functools import wraps
-from flask import request, abort, current_app
+from flask import request, abort, current_app, g
 
 
 class CustomEncoder(JSONEncoder):
@@ -62,3 +62,11 @@ def remove_pii(*args):
         elif isinstance(arg, bytes):
             h.update(arg)
     return h.hexdigest()
+
+
+def embedable(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        g.embed = True
+        return f(*args, **kwargs)
+    return wrapper
