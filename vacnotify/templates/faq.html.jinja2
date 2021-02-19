@@ -10,158 +10,180 @@
     <meta property="og:locale" content="sk_SK"/>
 {% endblock %}
 {% block content %}
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-full">
-            <h1><i class="fas fa-question fa-fw"></i> Časté otázky</h1>
-            <p class="govuk-body-lead">
-                Pre aktuálne informácie o ochorení COVID-19 a opatreniach na Slovensku choďte na
-                <a href="https://korona.gov.sk" class="govuk-link">korona.gov.sk</a>.
-            </p>
-            {{ render_alerts(get_alerts()) }}
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                <h1><i class="fas fa-question fa-fw"></i> Časté otázky</h1>
+                <p class="govuk-body-lead">
+                    Pre aktuálne informácie o ochorení COVID-19 a opatreniach na Slovensku choďte na
+                    <a href="https://korona.gov.sk" class="govuk-link">korona.gov.sk</a>.
+                </p>
+                {{ render_alerts(get_alerts()) }}
+            </div>
         </div>
     </div>
-    <div class="govuk-grid-row" id="q1">
-        <div class="govuk-grid-column-full">
-            <h3 class="govuk-heading-m">Ako sa zaregistrujem na očkovanie? <a href="#q1" class="text-decoration-none fs-5"
-                                                      title="Odkaz na otázku" data-toggle="tooltip"><i
-                    class="fas fa-hashtag"></i></a></h3>
-            <p>
-                Pre registráciu na očkovanie použite <a
-                    href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" rel="noopener" target="_blank"
-                    class="govuk-link">formulár NCZI</a>.
-                Vo formulári je možná registrácia len ak spadáte do práve otvorených skupín na očkovanie a sú voľné
-                termíny.
-            </p>
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row" id="q1">
+            <div class="govuk-grid-column-full">
+                <h3 class="govuk-heading-m">Ako sa zaregistrujem na očkovanie? <a href="#q1" class="text-decoration-none fs-5"
+                                                          title="Odkaz na otázku"><i
+                        class="fas fa-hashtag"></i></a></h3>
+                <p class="govuk-body">
+                    Pre registráciu na očkovanie použite <a
+                        href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" rel="noopener" target="_blank"
+                        class="govuk-link">formulár NCZI</a>.
+                    Vo formulári je možná registrácia len ak spadáte do práve otvorených skupín na očkovanie a sú voľné
+                    termíny.
+                </p>
+            </div>
         </div>
     </div>
-    <div class="govuk-grid-row" id="q2">
-        <div class="govuk-grid-column-full">
-            <h3 class="govuk-heading-m">Ešte nie je otvorená moja skupina, ako sa môžem zaregistrovať ako náhradník? <a href="#q2"
-                                                                                                class="text-decoration-none fs-5"
-                                                                                                title="Odkaz na otázku"
-                                                                                                data-toggle="tooltip"><i
-                    class="fas fa-hashtag"></i></a></h3>
-            <p>
-                Proces registrácie ako náhradník je špecifický na konkrétne očkovacie miesto. Kontaktujte preto Vaše
-                očkovacie miesto ktoré bude mať informácie o zozname náhradníkov. Zoznamy náhradníkov však sú vo veľa
-                očkovacích miestach plné.
-            </p>
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row" id="q2">
+            <div class="govuk-grid-column-full">
+                <h3 class="govuk-heading-m">Ešte nie je otvorená moja skupina, ako sa môžem zaregistrovať ako náhradník? <a href="#q2"
+                                                                                                    class="text-decoration-none fs-5"
+                                                                                                    title="Odkaz na otázku"><i
+                        class="fas fa-hashtag"></i></a></h3>
+                <p class="govuk-body">
+                    Proces registrácie ako náhradník je špecifický na konkrétne očkovacie miesto. Kontaktujte preto Vaše
+                    očkovacie miesto ktoré bude mať informácie o zozname náhradníkov. Zoznamy náhradníkov však sú vo veľa
+                    očkovacích miestach plné.
+                </p>
+            </div>
         </div>
     </div>
-    <div class="govuk-grid-row" id="q3">
-        <div class="govuk-grid-column-full">
-            <h3 class="govuk-heading-m">Kedy sú rozosielané notifikácie o voľných miestach? <a href="#q3" class="text-decoration-none fs-5"
-                                                                       title="Odkaz na otázku" data-toggle="tooltip"><i
-                    class="fas fa-hashtag"></i></a></h3>
-            <p>
-                Notifikácie, na email a push, sú rozosielané vždy, keď dôjde k zmene voľných termínov na úrovni mesta.
-                Teda vtedy, keď v nejakom meste voľné termíny neboli a už sú, alebo keď voľné termíny boli a už nie sú.
-                Notifikácie o tom, že voľné termíny nie sú voľné v žiadnom meste sa nerozosielajú.
-            </p>
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row" id="q3">
+            <div class="govuk-grid-column-full">
+                <h3 class="govuk-heading-m">Kedy sú rozosielané notifikácie o voľných miestach? <a href="#q3" class="text-decoration-none fs-5"
+                                                                           title="Odkaz na otázku"><i
+                        class="fas fa-hashtag"></i></a></h3>
+                <p class="govuk-body">
+                    Notifikácie, na email a push, sú rozosielané vždy, keď dôjde k zmene voľných termínov na úrovni mesta.
+                    Teda vtedy, keď v nejakom meste voľné termíny neboli a už sú, alebo keď voľné termíny boli a už nie sú.
+                    Notifikácie o tom, že voľné termíny nie sú voľné v žiadnom meste sa nerozosielajú.
+                </p>
+            </div>
         </div>
     </div>
-    <div class="govuk-grid-row" id="q4">
-        <div class="govuk-grid-column-full">
-            <h3 class="govuk-heading-m">Kedy sú rozosielané notifikácie o novej skupine? <a href="#q4" class="text-decoration-none fs-5"
-                                                                    title="Odkaz na otázku" data-toggle="tooltip"><i
-                    class="fas fa-hashtag"></i></a></h3>
-            <p>
-                Notifikácie, na email a push, sú rozosielané vždy keď sa otvorí nová skupina na očkovanie.
-            </p>
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row" id="q4">
+            <div class="govuk-grid-column-full">
+                <h3 class="govuk-heading-m">Kedy sú rozosielané notifikácie o novej skupine? <a href="#q4" class="text-decoration-none fs-5"
+                                                                        title="Odkaz na otázku"><i
+                        class="fas fa-hashtag"></i></a></h3>
+                <p class="govuk-body">
+                    Notifikácie, na email a push, sú rozosielané vždy keď sa otvorí nová skupina na očkovanie.
+                </p>
+            </div>
         </div>
     </div>
-    <div class="govuk-grid-row" id="q5">
-        <div class="govuk-grid-column-full">
-            <h3 class="govuk-heading-m">Neprišiel mi potvrdzovací email, čo mám robiť? <a href="#q5" class="text-decoration-none fs-5"
-                                                                  title="Odkaz na otázku" data-toggle="tooltip"><i
-                    class="fas fa-hashtag"></i></a></h3>
-            <p>
-                Je možné, že Vám email prišiel do priečinku SPAM, pozrite sa preto aj doňho. Ak ste potvrdzovací email
-                nenašli ani tam, je pravdepodobné, že ho zablokoval Váš poskytovateľ emailovej schránky. Niektorí
-                poskytovatelia bohužiaľ blokujú emaily z tejto stránky. Využite na zaregistrovanie prosím inú emailovú
-                adresu. Momentálne je známe, že emaily blokujú:
-            </p>
-            <ul>
-                <li>outlook.com</li>
-                <li>outlook.sk</li>
-                <li>hotmail.com</li>
-                <li>windowslive.com</li>
-                <li>live.com</li>
-            </ul>
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row" id="q5">
+            <div class="govuk-grid-column-full">
+                <h3 class="govuk-heading-m">Neprišiel mi potvrdzovací email, čo mám robiť? <a href="#q5" class="text-decoration-none fs-5"
+                                                                      title="Odkaz na otázku"><i
+                        class="fas fa-hashtag"></i></a></h3>
+                <p class="govuk-body">
+                    Je možné, že Vám email prišiel do priečinku SPAM, pozrite sa preto aj doňho. Ak ste potvrdzovací email
+                    nenašli ani tam, je pravdepodobné, že ho zablokoval Váš poskytovateľ emailovej schránky. Niektorí
+                    poskytovatelia bohužiaľ blokujú emaily z tejto stránky. Využite na zaregistrovanie prosím inú emailovú
+                    adresu. Momentálne je známe, že emaily blokujú:
+                </p>
+                <ul>
+                    <li>outlook.com</li>
+                    <li>outlook.sk</li>
+                    <li>hotmail.com</li>
+                    <li>windowslive.com</li>
+                    <li>live.com</li>
+                </ul>
+            </div>
         </div>
     </div>
-    <div class="govuk-grid-row" id="q6">
-        <div class="govuk-grid-column-full">
-            <h3 class="govuk-heading-m">Nechodia mi notifikácie na email, prečo? <a href="#q6" class="text-decoration-none fs-5"
-                                                            title="Odkaz na otázku" data-toggle="tooltip"><i
-                    class="fas fa-hashtag"></i></a></h3>
-            <p>
-                Notifikácie Vám nebudú rozosielané, ak ste nepotvrdili potvrdzovací email. Notifikácie môžu skončiť v
-                priečinku SPAM. Je možné že notifikácie blokuje Váš poskytovateľ emailovej schránky, viď
-                <a href="#q5">predošlú otázku</a>. Je takisto možné, že jednoducho nie sú dôvody na notifikáciu, viď
-                <a href="#q3">otázky</a> <a href="#q4">vyššie</a>.
-            </p>
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row" id="q6">
+            <div class="govuk-grid-column-full">
+                <h3 class="govuk-heading-m">Nechodia mi notifikácie na email, prečo? <a href="#q6" class="text-decoration-none fs-5"
+                                                                title="Odkaz na otázku"><i
+                        class="fas fa-hashtag"></i></a></h3>
+                <p class="govuk-body">
+                    Notifikácie Vám nebudú rozosielané, ak ste nepotvrdili potvrdzovací email. Notifikácie môžu skončiť v
+                    priečinku SPAM. Je možné že notifikácie blokuje Váš poskytovateľ emailovej schránky, viď
+                    <a href="#q5">predošlú otázku</a>. Je takisto možné, že jednoducho nie sú dôvody na notifikáciu, viď
+                    <a href="#q3">otázky</a> <a href="#q4">vyššie</a>.
+                </p>
+            </div>
         </div>
     </div>
-    <div class="govuk-grid-row" id="q7">
-        <div class="govuk-grid-column-full">
-            <h3 class="govuk-heading-m">Prišla mi notifikácia o voľných termínoch, vo formulári na registráciu som ich však nenašiel, prečo? <a
-                    href="#q7" class="text-decoration-none fs-5" title="Odkaz na otázku" data-toggle="tooltip"><i
-                    class="fas fa-hashtag"></i></a></h3>
-            <p>
-                Je možné, že miesta sa medzi časom odoslania notifikácie a skontrolovaním formulára minuli. Toto je
-                veľmi pravdepoboné v prípade notifikácie o nízkom počte voľných termínov (1 - 10 termínov), ktoré sa minú veľmi
-                rýchlo. Takisto je možné, že miesta do formulára pribudli, avšak neskôr boli z formulára stiahnuté a už
-                sú nedostupné. Z dát je viditeľné, že toto sa deje hlavne v noci.
-            </p>
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row" id="q7">
+            <div class="govuk-grid-column-full">
+                <h3 class="govuk-heading-m">Prišla mi notifikácia o voľných termínoch, vo formulári na registráciu som ich však nenašiel, prečo? <a
+                        href="#q7" class="text-decoration-none fs-5" title="Odkaz na otázku"><i
+                        class="fas fa-hashtag"></i></a></h3>
+                <p class="govuk-body">
+                    Je možné, že miesta sa medzi časom odoslania notifikácie a skontrolovaním formulára minuli. Toto je
+                    veľmi pravdepoboné v prípade notifikácie o nízkom počte voľných termínov (1 - 10 termínov), ktoré sa minú veľmi
+                    rýchlo. Takisto je možné, že miesta do formulára pribudli, avšak neskôr boli z formulára stiahnuté a už
+                    sú nedostupné. Z dát je viditeľné, že toto sa deje hlavne v noci.
+                </p>
+            </div>
         </div>
     </div>
-    <div class="govuk-grid-row" id="q8">
-        <div class="govuk-grid-column-full">
-            <h3 class="govuk-heading-m">Ako si môžem zmeniť výber miest o ktorých dostávam notifikácie? <a href="#q8" class="text-decoration-none fs-5"
-                                                          title="Odkaz na otázku" data-toggle="tooltip"><i
-                    class="fas fa-hashtag"></i></a></h3>
-            <p>
-                V prípade emailových notifikácii je potrebné odber notifikácii zrušiť a následne znovu vytvoriť
-                so zmeneným výberom miest. V prípade PUSH notifikácií táto funkcionalita ešte nieje dostupná.
-            </p>
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row" id="q8">
+            <div class="govuk-grid-column-full">
+                <h3 class="govuk-heading-m">Ako si môžem zmeniť výber miest o ktorých dostávam notifikácie? <a href="#q8" class="text-decoration-none fs-5"
+                                                              title="Odkaz na otázku"><i
+                        class="fas fa-hashtag"></i></a></h3>
+                <p class="govuk-body">
+                    V prípade emailových notifikácii je potrebné odber notifikácii zrušiť a následne znovu vytvoriť
+                    so zmeneným výberom miest. V prípade PUSH notifikácií táto funkcionalita ešte nieje dostupná.
+                </p>
+            </div>
         </div>
     </div>
-    <div class="govuk-grid-row" id="q9">
-        <div class="govuk-grid-column-full">
-            <h3 class="govuk-heading-m">Ako si môžem zrušiť odber notifikácií? <a href="#q9" class="text-decoration-none fs-5"
-                                                          title="Odkaz na otázku" data-toggle="tooltip"><i
-                    class="fas fa-hashtag"></i></a></h3>
-            <p>
-                V prípade emailových notifikácii nájdete link na zrušenie odberu na konci každého emailu (notifikačného
-                aj potvrdzovacieho). V prípade push notifikácii je možné zrušiť odber v nastaveniach stránky
-                pomocou webového prehliadača.
-            </p>
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row" id="q9">
+            <div class="govuk-grid-column-full">
+                <h3 class="govuk-heading-m">Ako si môžem zrušiť odber notifikácií? <a href="#q9" class="text-decoration-none fs-5"
+                                                              title="Odkaz na otázku"><i
+                        class="fas fa-hashtag"></i></a></h3>
+                <p class="govuk-body">
+                    V prípade emailových notifikácii nájdete link na zrušenie odberu na konci každého emailu (notifikačného
+                    aj potvrdzovacieho). V prípade push notifikácii je možné zrušiť odber v nastaveniach stránky
+                    pomocou webového prehliadača.
+                </p>
+            </div>
         </div>
     </div>
-    <div class="govuk-grid-row" id="q10">
-        <div class="govuk-grid-column-full">
-            <h3 class="govuk-heading-m">Stránka mi nefunguje, čo mám robiť? <a href="#q10" class="text-decoration-none fs-5"
-                                                       title="Odkaz na otázku" data-toggle="tooltip"><i
-                    class="fas fa-hashtag"></i></a></h3>
-            <p>
-                Na nastavenie odberu notifikácií stránka potrebuje určité verzie webových prehliadačov. Push notifikácie
-                vyžadujú pomerne nové prehliadače a nie sú dostupné v Safari prehliadači. Ak Vám nastavenie odberu na
-                stránke nefunguje, skúste novšiu verziu webového prehliadača, alebo iný prehliadač.
-                <span id="browser"></span>
-            </p>
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row" id="q10">
+            <div class="govuk-grid-column-full">
+                <h3 class="govuk-heading-m">Stránka mi nefunguje, čo mám robiť? <a href="#q10" class="text-decoration-none fs-5"
+                                                           title="Odkaz na otázku"><i
+                        class="fas fa-hashtag"></i></a></h3>
+                <p class="govuk-body">
+                    Na nastavenie odberu notifikácií stránka potrebuje určité verzie webových prehliadačov. Push notifikácie
+                    vyžadujú pomerne nové prehliadače a nie sú dostupné v Safari prehliadači. Ak Vám nastavenie odberu na
+                    stránke nefunguje, skúste novšiu verziu webového prehliadača, alebo iný prehliadač.
+                    <span id="browser"></span>
+                </p>
+            </div>
         </div>
     </div>
-    <div class="govuk-grid-row" id="q11">
-        <div class="govuk-grid-column-full">
-            <h3 class="govuk-heading-m">Ďalšie informácie <a href="#q11" class="text-decoration-none fs-5" title="Odkaz na otázku"
-                                     data-toggle="tooltip"><i class="fas fa-hashtag"></i></a></h3>
-            <p>
-                Ďalšie informácie o očkovaní nájdete na stránke
-                <a href="https://www.slovenskoproticovidu.sk/" rel="noopener" target="_blank" class="govuk-link">www.slovenskoproticovidu.sk</a>
-                a
-                <a href="https://korona.gov.sk" class="govuk-link">korona.gov.sk</a>.
-            </p>
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row" id="q11">
+            <div class="govuk-grid-column-full">
+                <h3 class="govuk-heading-m">Ďalšie informácie <a href="#q11" class="text-decoration-none fs-5" title="Odkaz na otázku"><i class="fas fa-hashtag"></i></a></h3>
+                <p class="govuk-body">
+                    Ďalšie informácie o očkovaní nájdete na stránke
+                    <a href="https://www.slovenskoproticovidu.sk/" rel="noopener" target="_blank" class="govuk-link">www.slovenskoproticovidu.sk</a>
+                    a
+                    <a href="https://korona.gov.sk" class="govuk-link">korona.gov.sk</a>.
+                </p>
+            </div>
         </div>
     </div>
     <script type="text/javascript">

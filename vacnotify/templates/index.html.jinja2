@@ -14,53 +14,64 @@
           content="Táto stránka poskytuje notifikácie o voľných miestach na očkovanie proti COVID-19 a tiež o momente otvorenia očkovacieho formuláru pre nové skupiny obyvateľov."/>
 {% endblock %}
 {% block content %}
-    <h1 class="govuk-heading-xl govuk-!-margin-bottom-6">Notifikácie o COVID-19 vakcinácii</h1>
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-full">
-            <p class="govuk-body-l">Táto stránka poskytuje notifikácie na Váš email o voľných miestach na očkovanie
-                proti
-                ochoreniu COVID-19 a tiež o momente otvorenia očkovacieho formulára pre nové skupiny obyvateľov. Stránka
-                používa informácie od NCZI. Stránka neslúži na registrovanie na očkovanie, pre registráciu na očkovanie
-                použite <a class="govuk-link" href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php">formulár</a>.</p>
-            {{ render_alerts(get_alerts()) }}
-        </div>
-    </div>
-    <div class="govuk-grid-row govuk-!-margin-top-2 govuk-!-margin-bottom-5">
-        <div class="govuk-grid-column-one-half">
-            <div>
-                <h2 class="govuk-heading-l">Voľné termíny</h2>
-                <p>Chcem dostávať notifikácie o voľných termínoch na&nbsp;očkovanie
-                    vo vybraných očkovacích miestach.</p>
-                <a href="{{ url_for('main.spot_subscribe') }}" class="govuk-button">Ďalej</a>
-                <a href="{{ url_for('main.spot_subscribe', _anchor="places-table") }}"
-                   class="govuk-button govuk-button--secondary">Prehľad voľných termínov</a>
-            </div>
-        </div>
-        <div class="govuk-grid-column-one-half">
-            <div>
-                <h2 class="govuk-heading-l">Nová skupina</h2>
-                <p>Chcem dostávať notifikácie o otvorení očkovania pre novú
-                    skupinu ľudí.</p>
-                <a href="{{ url_for('main.group_subscribe') }}" class="govuk-button">Ďalej</a>
-                <a href="{{ url_for('main.group_subscribe', _anchor="groups-list") }}"
-                   class="govuk-button govuk-button--secondary">Prehľad skupín</a>
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                <h1 class="govuk-heading-xl govuk-!-margin-bottom-6">Notifikácie o COVID-19 vakcinácii</h1>
+                <p class="govuk-body-l">Táto stránka poskytuje notifikácie na Váš email o voľných miestach na očkovanie
+                    proti ochoreniu COVID-19 a tiež o momente otvorenia očkovacieho formulára pre nové skupiny obyvateľov.
+                    Stránka používa informácie od NCZI. Stránka neslúži na registrovanie na očkovanie, pre registráciu na
+                    očkovanie použite <a class="govuk-link" href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php">formulár</a>.</p>
             </div>
         </div>
     </div>
-
-    <div class="govuk-grid-row govuk-!-margin-top-2 govuk-!-margin-bottom-5 gx-4 gy-4">
-        <div class="govuk-grid-column-full">
-            <div>
-                <h2 class="govuk-heading-l">Štatistiky</h2>
-                <p>Chcem vidieť grafy s počtom dostupných termínov na očkovanie a
-                    dostupných očkovacích miest.</p>
-                <a href="{{ url_for('main.stats') }}" class="govuk-button">Ďalej</a>
-                <a href="{{ url_for('main.stats', _anchor="vaccinations") }}"
-                   class="govuk-button govuk-button--secondary">Prehľad očkovania</a>
-                <a href="{{ url_for('main.stats', _anchor="subscriptions") }}"
-                   class="govuk-button govuk-button--secondary">Prehľad odberov notifikácii</a>
+    {{ render_alerts(get_alerts()) }}
+    <div>
+        <div class="govuk-width-container">
+            <div class="govuk-grid-row govuk-!-margin-top-2 govuk-!-padding-top-6 govuk-!-padding-bottom-4 govuk-!-margin-bottom-5">
+                <div class="govuk-grid-column-one-half">
+                    <div>
+                        <h2 class="govuk-heading-l">Voľné termíny</h2>
+                        <p class="govuk-body">Chcem dostávať notifikácie o voľných termínoch na&nbsp;očkovanie
+                            vo vybraných očkovacích miestach.</p>
+                        <a href="{{ url_for('main.spot_subscribe') }}" class="govuk-button">Ďalej <i class="fas fa-chevron-right"></i></a>
+                        <a href="{{ url_for('main.spot_subscribe', _anchor="places-table") }}"
+                           class="govuk-button govuk-button--secondary">Prehľad voľných termínov</a>
+                    </div>
+                </div>
+                <div class="govuk-grid-column-one-half">
+                    <div>
+                        <h2 class="govuk-heading-l">Nová skupina</h2>
+                        <p class="govuk-body">Chcem dostávať notifikácie o otvorení očkovania pre novú
+                            skupinu ľudí.</p>
+                        <a href="{{ url_for('main.group_subscribe') }}" class="govuk-button">Ďalej <i class="fas fa-chevron-right"></i></a>
+                        <a href="{{ url_for('main.group_subscribe', _anchor="groups-list") }}"
+                           class="govuk-button govuk-button--secondary">Prehľad skupín</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row govuk-!-margin-top-2 govuk-!-margin-bottom-5 gx-4 gy-4">
+            <div class="govuk-grid-column-one-half">
+                <div>
+                    <h2 class="govuk-heading-l">Štatistiky</h2>
+                    <p class="govuk-body">Chcem vidieť grafy s počtom dostupných termínov na očkovanie a
+                        dostupných očkovacích miest.</p>
+                    <a href="{{ url_for('main.stats', _anchor="vaccinations") }}"
+                       class="govuk-button govuk-button--secondary">Prehľad očkovania</a>
+                    <a href="{{ url_for('main.stats', _anchor="subscriptions") }}"
+                       class="govuk-button govuk-button--secondary">Prehľad odberov notifikácii</a>
+                </div>
+            </div>
+            <div class="govuk-grid-column-one-half">
+                <div>
+                    <h2 class="govuk-heading-l">Časté otázky o registrácii</h2>
+                    <p class="govuk-body">Mám otázky ohľadom notifikácii alebo registrácie na očkovanie.</p>
+                    <a href="{{ url_for('main.faq') }}" class="govuk-button govuk-button--secondary">Prehľad</a>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

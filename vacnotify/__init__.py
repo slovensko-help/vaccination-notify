@@ -28,6 +28,7 @@ from vacnotify.utils import CustomEncoder, remove_pii
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile("config.py", silent=True)
 app.json_encoder = CustomEncoder
+app.jinja_env.autoescape = True
 
 
 def before_send(event, hint):

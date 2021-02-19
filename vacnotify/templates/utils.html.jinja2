@@ -1,9 +1,17 @@
 {% macro render_alerts(alerts) %}
-    {% for alert in alerts %}
-        <div class="alert alert-{{ alert['class'] }}">
-            <i class="fas fa-{{ alert['icon'] }}"></i> {{ alert['text'] }}
-        </div>
-    {% endfor %}
+    {% if alerts %}
+        {% for alert in alerts %}
+            <div class="app-pane-{{ alert['class'] }}">
+                <div class="govuk-width-container govuk-!-padding-top-3">
+                    <div class="govuk-grid-row">
+                        <div class="govuk-grid-column-full">
+                            <p class="govuk-body"><i class="fas fa-{{ alert['icon'] }}"></i> {{ alert['text']|safe }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
 {% endmacro %}
 
 {% macro render_bad_browser(bad_browser) %}
