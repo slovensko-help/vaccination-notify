@@ -1,12 +1,13 @@
 import json
-from binascii import hexlify
 from typing import Mapping, List
 
+import sentry_sdk
 from flask import url_for
 from pywebpush import webpush, WebPushException
 from celery.utils.log import get_task_logger
 from vacnotify import celery, vapid_privkey, vapid_claims
 from vacnotify.tasks.maintenance import clear_db_push
+from vacnotify.utils import remove_pii
 
 
 logging = get_task_logger(__name__)
@@ -14,6 +15,7 @@ logging = get_task_logger(__name__)
 
 @celery.task(ignore_result=True)
 def push_notification(subscription_info, body: str):
+    sentry_sdk.set_user({"id": remove_pii(subscription_info["endpoint"])})
     try:
         webpush(subscription_info=subscription_info,
                 data=json.dumps({"action": "notify",
@@ -31,6 +33,7 @@ def push_notification(subscription_info, body: str):
 
 @celery.task(ignore_result=True)
 def push_confirmation(subscription_info, secret: str, subscription_type: str):
+    sentry_sdk.set_user({"id": remove_pii(subscription_info["endpoint"])})
     endpoint_map = {
         "group": "main.group_confirm",
         "spot": "main.spot_confirm",
@@ -52,6 +55,7 @@ def push_confirmation(subscription_info, secret: str, subscription_type: str):
 
 @celery.task(ignore_result=True)
 def push_notification_spot(subscription_info, secret: str, cities_free: Mapping):
+    sentry_sdk.set_user({"id": remove_pii(subscription_info["endpoint"])})
     actions = [
         {"action": "register",
          "title": "Zaregistrovať sa",
@@ -87,6 +91,7 @@ def push_notification_spot(subscription_info, secret: str, cities_free: Mapping)
 
 @celery.task(ignore_result=True)
 def push_notification_group(subscription_info, secret: str, new_groups: List[str]):
+    sentry_sdk.set_user({"id": remove_pii(subscription_info["endpoint"])})
     text = "Vo formulári na registráciu na očkovanie"
     if len(new_groups) > 1:
         text += " pribudli nové skupiny"

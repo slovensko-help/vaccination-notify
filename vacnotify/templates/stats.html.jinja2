@@ -31,15 +31,15 @@
                     <div class="card bg-light h-100">
                         <div class="card-body">
                             <h5 class="card-title fs-4 fw-bold">{{ current_vstats.online_places }} <i class="fas fa-map-marker"></i></h5>
-                            <p class="card-text">Dostupné očkovacie miesta</p>
+                            <p class="card-text">Očkovacie miesta</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-sm gy-4">
                     <div class="card bg-light h-100">
                         <div class="card-body">
-                            <h5 class="card-title fs-4 fw-bold">{{ current_vstats.total_places }} <i class="fas fa-map-marker"></i></h5>
-                            <p class="card-text">Očkovacie miesta</p>
+                            <h5 class="card-title fs-4 fw-bold">{{ current_vstats.online_cities }} <i class="fas fa-building"></i></h5>
+                            <p class="card-text">Mestá s očkovacím miestom</p>
                         </div>
                     </div>
                 </div>
@@ -333,7 +333,13 @@
                 param: "online_places",
                 max_offset: 0,
                 color: "#0d6efd",
-                label: "Dostupné očkovacie miesta"
+                label: "Očkovacie miesta"
+            },
+            {
+                param: "online_cities",
+                max_offset: 0,
+                color: "#ac1313",
+                label: "Mestá s očkovacím miestom"
             }
         ], "#vaccination-stats-places");
 

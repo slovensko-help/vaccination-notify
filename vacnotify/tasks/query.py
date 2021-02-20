@@ -252,6 +252,7 @@ def query_places_all(s):
 def query_places_aggregate(s):
     # Update the places and free spots using the aggregate API
     current_places = VaccinationPlace.query.all()
+    current_cities = VaccinationCity.query.all()
     total_free = 0
     total_free_online = 0
     places_resp = s.get_places_full()
@@ -260,7 +261,6 @@ def query_places_aggregate(s):
     else:
         places_payload = places_resp.json()["payload"]
         # Add new cities if any.
-        current_cities = VaccinationCity.query.all()
         city_map = {city.name: city for city in current_cities}
         current_city_names: Set[str] = set(map(attrgetter("name"), current_cities))
         city_names: Set[str] = set(map(itemgetter("city"), places_payload))
@@ -314,7 +314,7 @@ def query_places_aggregate(s):
                     off_place.online = False
         else:
             logging.info("All current places are online")
-
+        current_cities = VaccinationCity.query.options(joinedload(VaccinationCity.places)).all()
         current_places = VaccinationPlace.query.options(joinedload(VaccinationPlace.days)).all()
         for place in current_places:
             if place.nczi_id not in place_map:
@@ -352,12 +352,16 @@ def query_places_aggregate(s):
     logging.info(f"Total free spots (online): {total_free} ({total_free_online})")
     total_places = len(current_places)
     online_places = len(list(filter(attrgetter("online"), current_places)))
+    online_cities = len(list(filter(lambda city: any(place.online for place in city.places), current_cities)))
+    total_cities = len(current_cities)
     logging.info(f"Total places (online): {total_places} ({online_places})")
     return {
         "total_free_spots": total_free,
         "total_free_online_spots": total_free_online,
         "total_places": total_places,
-        "online_places": online_places
+        "online_places": online_places,
+        "total_cities": total_cities,
+        "online_cities": online_cities
     }
 
 
