@@ -28,7 +28,8 @@
             let envs = {
                 "covid-dev.neuromancer.sk": "staging",
                 "covid.neuromancer.sk": "production",
-                "localhost.localdomain": "development"
+                "localhost.localdomain": "development",
+                "korona.gov.sk": "production"
             }
             Sentry.init({
                 dsn: "{{ config['SENTRY_INGEST'] }}",

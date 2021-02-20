@@ -1,0 +1,39 @@
+{% extends "base.html.jinja2" %}
+{% block content %}
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                <h1 class="govuk-heading-xl"><i class="fas fa-check-circle"></i> OK</h1>
+                <p class="govuk-body-lead">
+                    {{ msg }}
+                </p>
+                <form id="feedback-form" action="{{ url_for('main.feedback') }}" method="post">
+                    {{ form.csrf_token }}
+                    {{ form.secret }}
+                    {{ form.id }}
+                    <div class="govuk-form-group {% if "reasons" in form.errors %}govuk-form-group--error{% endif %}">
+                        <fieldset class="govuk-fieldset">
+                            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                                <h2 class="govuk-fieldset__heading">Dôvody</h2>
+                            </legend>
+
+                            {% for err in form.errors["reasons"] %}
+                                <span class="govuk-error-message">
+                                    <span class="govuk-visually-hidden">Error:</span> {{ err }}
+                                </span>
+                            {% endfor %}
+                            <span class="govuk-hint">Uveďte prosím dôvody pre zrušenie odberu.</span>
+                            {{ form.reasons(size=1, field_kwargs={"class_": "govuk-checkboxes__input"}) }}
+                        </fieldset>
+                    </div>
+                    <div class="govuk-form-group {% if "feedback" in form.errors %}govuk-form-group--error{% endif %}">
+                        <label for="feedback" class="govuk-label">Spätná väzba</label>
+                        {{ form.feedback(class_="govuk-input", rows=5) }}
+                    </div>
+                    <input id="submit" type="submit" class="govuk-button"
+                           value="Odoslať"/>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

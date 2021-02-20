@@ -15,8 +15,8 @@ from vacnotify import vapid_pubkey as pubkey, vapid_privkey as privkey, vapid_cl
 from vacnotify.blueprint import main
 from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, GroupSubscription, Status, SpotSubscription, \
-    VaccinationStats, VaccinationCity, SubscriptionStats
-from vacnotify.forms import GroupSubscriptionForm, SpotSubscriptionForm
+    VaccinationStats, VaccinationCity, SubscriptionStats, UserFeedback
+from vacnotify.forms import GroupSubscriptionForm, SpotSubscriptionForm, UnsubscriptionForm
 from vacnotify.tasks.email import email_confirmation
 from vacnotify.utils import hcaptcha_required, sentry_untraced, embedable
 
@@ -159,7 +159,12 @@ def group_unsubscribe(secret):
         return render_template("error.html.jinja2", error="Odber notifikácii sa nenašiel, buď neexistuje alebo bol už zrušený."), 404
     with transaction() as t:
         t.delete(subscription)
-    return render_template("ok.html.jinja2", msg="Odber notifikácii bol úspešne zrušený a Váše osobné údaje (email) boli odstránené.")
+        fb = UserFeedback(secret_bytes)
+        t.add(fb)
+    form = UnsubscriptionForm()
+    form.secret.data = secret
+    form.id.data = str(fb.id)
+    return render_template("unsubscribe.html.jinja2", msg="Odber notifikácii bol úspešne zrušený a Váše osobné údaje (email) boli odstránené.", form=form)
 
 
 @main.route("/groups/confirm/<string(length=32):secret>")
@@ -256,7 +261,12 @@ def spot_unsubscribe(secret):
         return render_template("error.html.jinja2", error="Odber notifikácii sa nenašiel, buď neexistuje alebo bol už zrušený."), 404
     with transaction() as t:
         t.delete(subscription)
-    return render_template("ok.html.jinja2", msg="Odber notifikácii bol úspešne zrušený a Váše osobné údaje (email) boli odstránené.")
+        fb = UserFeedback(secret_bytes)
+        t.add(fb)
+    form = UnsubscriptionForm()
+    form.secret.data = secret
+    form.id.data = str(fb.id)
+    return render_template("unsubscribe.html.jinja2", msg="Odber notifikácii bol úspešne zrušený a Váše osobné údaje (email) boli odstránené.", form=form)
 
 
 @main.route("/spots/confirm/<string(length=32):secret>")
@@ -312,6 +322,26 @@ def both_confirm(secret):
         return render_template("ok.html.jinja2", msg="Odber notifikácii bol potvrdený.")
     else:
         abort(404)
+
+
+@main.route("/feedback", methods=["POST"])
+def feedback():
+    form = UnsubscriptionForm()
+    if form.validate_on_submit():
+        try:
+            secret = unhexlify(form.secret.data)
+        except ValueError:
+            abort(400)
+        user_feedback = UserFeedback.query.filter(UserFeedback.id == int(form.id.data), UserFeedback.secret == secret).first()
+        if not user_feedback:
+            abort(400)
+        if user_feedback.given:
+            return render_template("error.html.jinja2", error="Spätnú väzbu je možné odoslať len raz.")
+        with transaction():
+            user_feedback.give(form.reasons.data, form.feedback.data)
+        return render_template("ok.html.jinja2", msg="Spätná väzba bola úspešne odoslaná. Ďakujeme.")
+    else:
+        abort(400)
 
 
 @main.route("/sw.js")

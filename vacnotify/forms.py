@@ -1,16 +1,17 @@
 import math
 
 from markupsafe import Markup
-from wtforms import validators, SelectMultipleField, Label, HiddenField, ValidationError
+from wtforms import validators, SelectMultipleField, Label, HiddenField, ValidationError, TextAreaField
 from wtforms.fields.html5 import EmailField
 from flask_wtf import FlaskForm
 from wtforms.widgets import CheckboxInput, html_params
 from werkzeug.utils import escape
 
 
-class CityListWidget(object):
-    def __init__(self, prefix_label=True):
-        self.prefix_label = prefix_label
+class CheckBoxListWidget(object):
+
+    def __init__(self, labeler):
+        self._labeler = labeler
 
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
@@ -38,23 +39,34 @@ class CityListWidget(object):
                 if idx >= total:
                     break
                 id, data, subfield = fields[idx]
-                city = choice_map[data]
-                label_content = escape(city.name)
-                if city.free_online:
-                    label_content += Markup(' <i class="fas fa-check-circle fa-xs" title="Mesto má voľné termíny."></i>')
+                choice = choice_map[data]
+                label_content = self._labeler(choice)
                 label = Label(id, label_content)
-                if self.prefix_label:
-                    html.append(f'<div class="govuk-checkboxes__item">{label(class_="govuk-label govuk-checkboxes__label")} {subfield}</div>')
-                else:
-                    html.append(f'<div class="govuk-checkboxes__item">{subfield} {label(class_="govuk-label govuk-checkboxes__label")}</div>')
+                html.append(f'<div class="govuk-checkboxes__item">{subfield} {label(class_="govuk-label govuk-checkboxes__label")}</div>')
             html.append(f'</div>')
             html.append("</div>")
         html.append("</div>")
         return Markup(''.join(html))
 
 
+class CityListWidget(CheckBoxListWidget):
+
+    def __init__(self):
+        def city_label(city):
+            label_content = escape(city.name)
+            if city.free_online:
+                label_content += Markup(' <i class="fas fa-check-circle fa-xs" title="Mesto má voľné termíny."></i>')
+            return label_content
+        super().__init__(city_label)
+
+
 class MultiCheckboxField(SelectMultipleField):
-    widget = CityListWidget(prefix_label=False)
+    widget = CheckBoxListWidget(str)
+    option_widget = CheckboxInput()
+
+
+class CityMultiCheckboxField(SelectMultipleField):
+    widget = CityListWidget()
     option_widget = CheckboxInput()
 
 
@@ -87,8 +99,19 @@ class SubscriptionForm(FlaskForm):
 
 
 class SpotSubscriptionForm(SubscriptionForm):
-    cities = MultiCheckboxField("cities", [validators.DataRequired(message="Výber miest je povinný.")], coerce=int)
+    cities = CityMultiCheckboxField("cities", [validators.DataRequired(message="Výber miest je povinný.")], coerce=int)
 
 
 class GroupSubscriptionForm(SubscriptionForm):
     pass
+
+
+class UnsubscriptionForm(FlaskForm):
+    id = HiddenField("id", [validators.DataRequired()])
+    secret = HiddenField("secret", [validators.DataRequired()])
+    reasons = MultiCheckboxField("reasons", [validators.DataRequired()],
+                                 choices=[("found-here", "Vďaka notifikácii som našiel miesto/skupinu."),
+                                          ("found-elsewhere", "Našiel som miesto/skupinu inde."),
+                                          ("too-many", "Notifikáciǐ je príliš."),
+                                          ("other", "Iné.")])
+    feedback = TextAreaField("feedback", [validators.Length(max=1000)])

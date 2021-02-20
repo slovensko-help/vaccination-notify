@@ -176,6 +176,23 @@ class SpotSubscription(db.Model):
             return SubscriptionType.PUSH
 
 
+class UserFeedback(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    secret = db.Column(db.LargeBinary(16))
+    given = db.Column(db.Boolean)
+    reasons = db.Column(db.String(128))
+    feedback = db.Column(db.Text)
+
+    def __init__(self, secret):
+        self.secret = secret
+        self.given = False
+
+    def give(self, reasons, feedback):
+        self.given = True
+        self.reasons = ",".join(reasons)
+        self.feedback = feedback
+
+
 class JSONable(object):
 
     def __json__(self):

@@ -9,7 +9,7 @@
     <meta property="og:url" content="{{ url_for('main.spot_subscribe') }}"/>
     <meta property="og:locale" content="sk_SK"/>
     <meta property="og:description" content="Táto stránka poskytuje notifikácie o voľných termínoch na očkovanie proti COVID-19."/>
-    <script src="https://hcaptcha.com/1/api.js?hl=sk&onload=loadCaptcha&render=explicit" async defer></script>
+    <script src="https://hcaptcha.com/1/api.js?hl=sk" async defer></script>
 {% endblock %}
 {% block content %}
     <div class="govuk-width-container">
@@ -137,10 +137,6 @@
 
                         function onSubmit(token) {
                             document.getElementById('spot-form').submit();
-                        }
-
-                        function loadCaptcha() {
-                            hcaptcha.render("hcaptcha", {sitekey: '{{ config["HCAPTCHA_SITEKEY"] }}'})
                         }
 
                         function onSelectAll(event) {
