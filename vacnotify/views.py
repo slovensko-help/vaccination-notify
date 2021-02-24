@@ -9,7 +9,7 @@ from flask import render_template, request, abort, current_app, jsonify, url_for
 from sqlalchemy.orm import joinedload
 from pywebpush import webpush, WebPushException
 
-from vacnotify import vapid_pubkey as pubkey, vapid_privkey as privkey, vapid_claims as claims
+from vacnotify import vapid_pubkey as pubkey, vapid_privkey as privkey, vapid_claims as claims, substitutes
 from vacnotify.blueprint import main
 from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, GroupSubscription, Status, SpotSubscription, \
@@ -32,6 +32,11 @@ def privacy():
 @main.route("/faq")
 def faq():
     return render_template("faq.html.jinja2")
+
+
+@main.route("/substitutes")
+def substitute_lists():
+    return render_template("substitute_lists.html.jinja2", substitutes=substitutes)
 
 
 @main.route("/stats")

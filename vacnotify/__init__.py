@@ -1,5 +1,7 @@
 import json
 import locale
+from operator import itemgetter
+
 import sentry_sdk
 import subprocess
 
@@ -57,6 +59,17 @@ try:
         alerts = json.load(f)
 except FileNotFoundError:
     alerts = []
+
+try:
+    with app.open_instance_resource("substitutes.json") as f:
+        substitutes = json.load(f)
+    substitutes.sort(key=itemgetter("name"))
+    for region in substitutes:
+        region["places"].sort(key=itemgetter("city"))
+        for i, place in enumerate(region["places"]):
+            place["id"] = str(i)
+except FileNotFoundError:
+    substitutes = []
 
 with app.open_instance_resource("claims.json") as f:
     vapid_claims = json.load(f)

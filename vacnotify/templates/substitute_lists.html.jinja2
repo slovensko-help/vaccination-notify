@@ -1,0 +1,143 @@
+{% extends "base.html.jinja2" %}
+{% from "utils.html.jinja2" import render_alerts %}
+{% block head %}
+    {{ super() }}
+    <meta property="og:title" content="Notifikácie o COVID-19 vakcinácii"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content="{{ url_for('static', filename='img/virus.svg', _external=True) }}"/>
+    <meta property="og:image:alt" content="Obrázok vírusu"/>
+    <meta property="og:url" content="{{ url_for('main.faq') }}"/>
+    <meta property="og:locale" content="sk_SK"/>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-10 mx-auto">
+            <h1><i class="fas fa-file-alt fa-fw"></i> Zoznamy náhradníkov</h1>
+            <p class="lead">
+                Pre aktuálne informácie o ochorení COVID-19 a opatreniach na Slovensku choďte na <a
+                    href="https://korona.gov.sk" rel="noopener"
+                    target="_blank">korona.gov.sk</a>.
+            </p>
+            {{ render_alerts(get_alerts()) }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-10 mx-auto">
+            <div class="row mb-2">
+                <div class="col-sm gy-4">
+                    <a href="#k-bb" class="text-decoration-none">
+                        <div class="card bg-light h-100">
+                            <div class="card-body">
+                                <h5 class="card-title fs-5 fw-bold">Banskobystrický kraj</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-sm gy-4">
+                    <a href="#k-ba" class="text-decoration-none">
+                        <div class="card bg-light h-100">
+                            <div class="card-body">
+                                <h5 class="card-title fs-5 fw-bold">Bratislavský kraj</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-sm gy-4">
+                    <a href="#k-ke" class="text-decoration-none">
+                        <div class="card bg-light h-100">
+                            <div class="card-body">
+                                <h5 class="card-title fs-5 fw-bold">Košický kraj</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-sm gy-4">
+                    <a href="#k-nr" class="text-decoration-none">
+                        <div class="card bg-light h-100">
+                            <div class="card-body">
+                                <h5 class="card-title fs-5 fw-bold">Nitriansky kraj</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-sm gy-4">
+                    <a href="#k-po" class="text-decoration-none">
+                        <div class="card bg-light h-100">
+                            <div class="card-body">
+                                <h5 class="card-title fs-5 fw-bold">Prešovský kraj</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-sm gy-4">
+                    <a href="#k-tt" class="text-decoration-none">
+                        <div class="card bg-light h-100">
+                            <div class="card-body">
+                                <h5 class="card-title fs-5 fw-bold">Trnavský kraj</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-sm gy-4">
+                    <a href="#k-tn" class="text-decoration-none">
+                        <div class="card bg-light h-100">
+                            <div class="card-body">
+                                <h5 class="card-title fs-5 fw-bold">Trenčiansky kraj</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-sm gy-4">
+                    <a href="#k-za" class="text-decoration-none">
+                        <div class="card bg-light h-100">
+                            <div class="card-body">
+                                <h5 class="card-title fs-5 fw-bold">Žilinský kraj</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% for region in substitutes%}
+        <div class="row mt-5">
+            <div class="col-sm-10 mx-auto">
+                <h2 class="mb-3 anchor" id="k-{{ region['id'] }}">{{ region["name"] }}</h2>
+                <div class="accordion" id="r-{{ region['id'] }}">
+                    {% for place in region["places"] %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="h-{{ region['id'] }}-{{ place['id'] }}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#c-{{ region['id'] }}-{{ place['id'] }}" aria-expanded="false" aria-controls="c-{{ region['id'] }}-{{ place['id'] }}">
+                                    {{ place["name"] }}
+                                </button>
+                            </h2>
+                            <div id="c-{{ region['id'] }}-{{ place['id'] }}" class="accordion-collapse collapse" aria-labelledby="h-{{ region['id'] }}-{{ place['id'] }}"
+                                 data-bs-parent="#r-{{ region['id'] }}">
+                                <div class="accordion-body">
+                                    {% if place["link"] %}
+                                        Informácie o zozname náhradníkov nájdete na: <a href="{{ place['link'] }}" rel="noopener" target="_blank">{{ place['link'] }}</a>.<br/>
+                                    {% endif %}
+                                    {% if place["email"] %}
+                                        <b>Email:</b> <a href="mailto:{{ place['email'] }}">{{ place["email"] }}</a>
+                                        <br/>
+                                    {% endif %}
+                                    {% if place["phone"] %}
+                                        <b>Telefonický kontakt:</b> {% for phone in place["phone"] %}<a href="tel:{{ phone }}">{{ phone }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
+                                        {% if place["note"] %}
+                                            , {{ place["note"] }}
+                                        {% endif %}
+                                        <br/>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+{% endblock %}
