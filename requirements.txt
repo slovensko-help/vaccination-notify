@@ -15,6 +15,7 @@ flask-sqlalchemy
 Flask-Migrate
 Flask-Mail
 Flask-Assets
+Flask-Caching
 email_validator
 wtforms
 pywebpush

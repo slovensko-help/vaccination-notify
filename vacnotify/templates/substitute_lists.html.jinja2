@@ -23,117 +23,62 @@
     </div>
     <div class="row">
         <div class="col-sm-10 mx-auto">
-            <div class="row mb-2">
-                <div class="col-sm gy-4">
-                    <a href="#k-bb" class="text-decoration-none">
-                        <div class="card bg-light h-100">
-                            <div class="card-body">
-                                <h5 class="card-title fs-5 fw-bold">Banskobystrický kraj</h5>
+            {% for row in substitutes|batch(4) %}
+                {% if loop.last %}
+                    <div class="row mb-4">
+                {% else %}
+                    <div class="row mb-2">
+                {% endif %}
+                    {% for region in row %}
+                    <div class="col-sm gy-4">
+                        <a href="#k-{{ region['id'] }}" class="text-decoration-none">
+                            <div class="card bg-light h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title fs-5 fw-bold">{{ region["title"] }} kraj</h5>
+                                </div>
                             </div>
-                        </div>
-                    </a>
+                        </a>
+                    </div>
+                    {% endfor %}
                 </div>
-                <div class="col-sm gy-4">
-                    <a href="#k-ba" class="text-decoration-none">
-                        <div class="card bg-light h-100">
-                            <div class="card-body">
-                                <h5 class="card-title fs-5 fw-bold">Bratislavský kraj</h5>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-sm gy-4">
-                    <a href="#k-ke" class="text-decoration-none">
-                        <div class="card bg-light h-100">
-                            <div class="card-body">
-                                <h5 class="card-title fs-5 fw-bold">Košický kraj</h5>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-sm gy-4">
-                    <a href="#k-nr" class="text-decoration-none">
-                        <div class="card bg-light h-100">
-                            <div class="card-body">
-                                <h5 class="card-title fs-5 fw-bold">Nitriansky kraj</h5>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-            <div class="row mb-4">
-                <div class="col-sm gy-4">
-                    <a href="#k-po" class="text-decoration-none">
-                        <div class="card bg-light h-100">
-                            <div class="card-body">
-                                <h5 class="card-title fs-5 fw-bold">Prešovský kraj</h5>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-sm gy-4">
-                    <a href="#k-tt" class="text-decoration-none">
-                        <div class="card bg-light h-100">
-                            <div class="card-body">
-                                <h5 class="card-title fs-5 fw-bold">Trnavský kraj</h5>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-sm gy-4">
-                    <a href="#k-tn" class="text-decoration-none">
-                        <div class="card bg-light h-100">
-                            <div class="card-body">
-                                <h5 class="card-title fs-5 fw-bold">Trenčiansky kraj</h5>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-sm gy-4">
-                    <a href="#k-za" class="text-decoration-none">
-                        <div class="card bg-light h-100">
-                            <div class="card-body">
-                                <h5 class="card-title fs-5 fw-bold">Žilinský kraj</h5>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
     {% for region in substitutes%}
         <div class="row mt-5">
             <div class="col-sm-10 mx-auto">
-                <h2 class="mb-3 anchor" id="k-{{ region['id'] }}">{{ region["name"] }}</h2>
+                <h2 class="mb-3 anchor" id="k-{{ region['id'] }}">{{ region["title"] }} kraj</h2>
                 <div class="accordion" id="r-{{ region['id'] }}">
-                    {% for place in region["places"] %}
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="h-{{ region['id'] }}-{{ place['id'] }}">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                        data-bs-target="#c-{{ region['id'] }}-{{ place['id'] }}" aria-expanded="false" aria-controls="c-{{ region['id'] }}-{{ place['id'] }}">
-                                    {{ place["name"] }}
-                                </button>
-                            </h2>
-                            <div id="c-{{ region['id'] }}-{{ place['id'] }}" class="accordion-collapse collapse" aria-labelledby="h-{{ region['id'] }}-{{ place['id'] }}"
-                                 data-bs-parent="#r-{{ region['id'] }}">
-                                <div class="accordion-body">
-                                    {% if place["link"] %}
-                                        Informácie o zozname náhradníkov nájdete na: <a href="{{ place['link'] }}" rel="noopener" target="_blank">{{ place['link'] }}</a>.<br/>
-                                    {% endif %}
-                                    {% if place["email"] %}
-                                        <b>Email:</b> <a href="mailto:{{ place['email'] }}">{{ place["email"] }}</a>
-                                        <br/>
-                                    {% endif %}
-                                    {% if place["phone"] %}
-                                        <b>Telefonický kontakt:</b> {% for phone in place["phone"] %}<a href="tel:{{ phone }}">{{ phone }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
-                                        {% if place["note"] %}
-                                            , {{ place["note"] }}
+                    {% for hospital in region["hospitals"] %}
+                        {% if hospital["contacts"] and hospital["contacts"]["is_accepting_new_registrations"] %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="h-{{ region['id'] }}-{{ hospital['id'] }}">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#c-{{ region['id'] }}-{{ hospital['id'] }}" aria-expanded="false" aria-controls="c-{{ region['id'] }}-{{ hospital['id'] }}">
+                                        {{ hospital["title"] }}
+                                    </button>
+                                </h2>
+                                <div id="c-{{ region['id'] }}-{{ hospital['id'] }}" class="accordion-collapse collapse" aria-labelledby="h-{{ region['id'] }}-{{ hospital['id'] }}"
+                                     data-bs-parent="#r-{{ region['id'] }}">
+                                    <div class="accordion-body">
+                                        {% if hospital["contacts"] %}
+                                            {% if hospital["contacts"]["substitutes_link"] %}
+                                                Informácie o zozname náhradníkov nájdete na: <a href="{{ hospital["contacts"]["substitutes_link"] }}" rel="noopener" target="_blank">{{ hospital["contacts"]["substitutes_link"] }}</a>.<br/>
+                                            {% endif %}
+                                            {% if hospital["contacts"]["substitutes_emails"] %}
+                                                <b>Email:</b> {% for email in hospital["contacts"]["substitutes_emails"] %}<a href="mailto:{{ email }}">{{ email }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
+                                                <br/>
+                                            {% endif %}
+                                            {% if hospital["contacts"]["substitutes_phones"] %}
+                                                <b>Telefonický kontakt:</b> {% for phone in hospital["contacts"]["substitutes_phones"] %}<a href="tel:{{ phone }}">{{ phone }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
+                                                {% if hospital["contacts"]["substitutes_note"] %}, {{ hospital["contacts"]["substitutes_note"] }}{% endif %}
+                                                <br/>
+                                            {% endif %}
                                         {% endif %}
-                                        <br/>
-                                    {% endif %}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        {% endif %}
                     {% endfor %}
                 </div>
             </div>

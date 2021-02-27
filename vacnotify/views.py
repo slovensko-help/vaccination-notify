@@ -1,15 +1,17 @@
 import hashlib
 import json
 import locale
+import requests
 from binascii import unhexlify, hexlify
 from datetime import datetime, timedelta
-from operator import attrgetter
+from json import JSONDecodeError
+from operator import attrgetter, itemgetter
 
 from flask import render_template, request, abort, current_app, jsonify, url_for
 from sqlalchemy.orm import joinedload
 from pywebpush import webpush, WebPushException
 
-from vacnotify import vapid_pubkey as pubkey, vapid_privkey as privkey, vapid_claims as claims, substitutes
+from vacnotify import vapid_pubkey as pubkey, vapid_privkey as privkey, vapid_claims as claims, cache
 from vacnotify.blueprint import main
 from vacnotify.database import transaction
 from vacnotify.models import EligibilityGroup, VaccinationPlace, GroupSubscription, Status, SpotSubscription, \
@@ -34,9 +36,47 @@ def faq():
     return render_template("faq.html.jinja2")
 
 
+@cache.cached(1800, "substitutes", response_filter=lambda resp: resp is not None)
+def get_substitutes():
+    def get_data(s, url):
+        resp = s.get(url)
+        if not resp:
+            return None
+        try:
+            return resp.json()
+        except JSONDecodeError:
+            return None
+    with requests.session() as s:
+        if not (subs := get_data(s, "https://data.korona.gov.sk/api/vaccination/contacts")) or not subs["success"]:
+            return None
+        if not (hospitals := get_data(s, "https://data.korona.gov.sk/api/hospitals")):
+            return None
+        if not (cities := get_data(s, "https://data.korona.gov.sk/api/cities")):
+            return None
+        if not (districts := get_data(s, "https://data.korona.gov.sk/api/districts")):
+            return None
+        if not (regions := get_data(s, "https://data.korona.gov.sk/api/regions")):
+            return None
+    for region in regions:
+        region_district_ids = [district["id"] for district in districts if district["region_id"] == region["id"]]
+        region_city_ids = [city["id"] for city in cities if city["district_id"] in region_district_ids]
+        region_hospitals = [hospital for hospital in hospitals if hospital["city_id"] in region_city_ids]
+        region_hospitals.sort(key=itemgetter("title"))
+        for hospital in region_hospitals:
+            for sub in subs["page"]:
+                if sub["hospital_id"] == hospital["id"]:
+                    hospital["contacts"] = sub
+                    break
+            else:
+                hospital["contacts"] = None
+        region["hospitals"] = region_hospitals
+    regions.sort(key=itemgetter("title"))
+    return regions
+
+
 @main.route("/substitutes")
 def substitute_lists():
-    return render_template("substitute_lists.html.jinja2", substitutes=substitutes)
+    return render_template("substitute_lists.html.jinja2", substitutes=get_substitutes())
 
 
 @main.route("/stats")

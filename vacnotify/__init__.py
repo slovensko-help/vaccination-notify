@@ -5,8 +5,7 @@ from operator import itemgetter
 import sentry_sdk
 import subprocess
 
-from flask_assets import Environment
-from flask_wtf.csrf import CSRFError
+
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.celery import CeleryIntegration
@@ -17,8 +16,10 @@ from flask_migrate import Migrate
 from flask_redis import FlaskRedis
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
+from flask_wtf.csrf import CSRFError
 from flask_mail import Mail
-from flask_assets import Bundle
+from flask_assets import Bundle, Environment
+from flask_caching import Cache
 from ua_parser import user_agent_parser
 
 from vacnotify.utils import CustomEncoder, remove_pii
@@ -59,17 +60,6 @@ try:
         alerts = json.load(f)
 except FileNotFoundError:
     alerts = []
-
-try:
-    with app.open_instance_resource("substitutes.json") as f:
-        substitutes = json.load(f)
-    substitutes.sort(key=itemgetter("name"))
-    for region in substitutes:
-        region["places"].sort(key=itemgetter("city"))
-        for i, place in enumerate(region["places"]):
-            place["id"] = str(i)
-except FileNotFoundError:
-    substitutes = []
 
 with app.open_instance_resource("claims.json") as f:
     vapid_claims = json.load(f)
@@ -128,6 +118,9 @@ celery = make_celery(app)
 
 # Redis
 rds = FlaskRedis(app)
+
+# Cache
+cache = Cache(app)
 
 # CSRF protection
 csrf = CSRFProtect(app)
