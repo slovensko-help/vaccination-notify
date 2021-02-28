@@ -228,11 +228,14 @@ def spot_subscribe():
                         raise ValueError
                 except Exception:
                     abort(400)
-                endpoint_exists = SpotSubscription.query.filter_by(push_sub_endpoint=sub_data["endpoint"]).first() is not None
-                if endpoint_exists:
-                    return render_template("ok.html.jinja2", msg="PUSH notifikácie už máte nastavené.")
+                existing_subscription = SpotSubscription.query.filter_by(push_sub_endpoint=sub_data["endpoint"]).first()
+                selected_cities = list(map(lambda city_id: cities_map[city_id], frm.cities.data))
+                if existing_subscription is not None:
+                    with transaction():
+                        existing_subscription.cities = selected_cities
+                        existing_subscription.known_cities = list(set(existing_subscription.known_cities).intersection(selected_cities))
+                    return render_template("ok.html.jinja2", msg="Vaše nastavenie PUSH notifikácii bolo aktualizované.")
                 else:
-                    selected_cities = list(map(lambda city_id: cities_map[city_id], frm.cities.data))
                     h = hashlib.blake2b(key=current_app.config["APP_SECRET"].encode(), digest_size=16)
                     h.update(sub_data["endpoint"].encode())
                     secret = h.digest()

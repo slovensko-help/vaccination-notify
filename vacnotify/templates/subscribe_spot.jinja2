@@ -40,6 +40,10 @@
                                     <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ err }}</span>
                                 {% endfor %}
                                 <span class="govuk-hint">Vyberte si mestá pre ktoré chcete dostávať upozornenia.</span>
+                                <span class="govuk-hint" id="push-filled-in" style="display: none">
+                                    Mestá pre ktoré máte nastavené PUSH notifikácie sú označené, ak chcete svoj odber
+                                    zmeniť, označte nové mestá a kliknite na "Aktualizovať PUSH notifikácie".
+                                </span>
                                 <div>
                                     <button id="select-all" class="govuk-button govuk-button--secondary"><i
                                             class="fas fa-check"></i> Vybrať všetky
@@ -76,9 +80,8 @@
                             </div>
                             <div class="govuk-grid-column-one-half">
                                 <h2 class="govuk-heading-l"><i class="fas fa-bell"></i> PUSH notifikácie</h2>
-                                <p>Push nofitikácie sú upozornenia, ktoré sa zobrazia priamo na vašom mobilnom zariadení či
-                                    počítači.
-                                    Pri použití push notifikácii nie je potrebný email.</p>
+                                <p>Push notifikácie sú upozornenia, ktoré sa zobrazia priamo na vašom mobilnom zariadení či
+                                    počítači. Pri použití push notifikácii nie je potrebný email.</p>
                                 {{ form.push_sub() }}
                                 <p id="push-unsupported" style="display: none"><i class="fas fa-exclamation-triangle"></i>
                                     Váš prehliadač nepodporuje PUSH notifikácie.</p>
@@ -91,8 +94,8 @@
                         <div id="hcaptcha" class="h-captcha" data-sitekey="{{ config["HCAPTCHA_SITEKEY"] }}"
                              data-callback="onSubmit" data-size="invisible"></div>
                     </form>
-                    <script type="text/javascript" src="{{ url_for('static', filename='push.dummy.js') }}"></script>
-                    <script type="text/javascript" src="{{ url_for('static', filename='push.js') }}"></script>
+                    <script type="text/javascript" src="{{ url_for('static', filename='push.dummy.js') }}?{{ get_release() }}"></script>
+                    <script type="text/javascript" src="{{ url_for('static', filename='push.js') }}?{{ get_release() }}"></script>
                     <script type="text/javascript">
                         if (!("serviceWorker" in navigator) || !("Notification" in window) || noPush) {
                             $("#push-submit").attr("disabled", "disabled").addClass("idsk-button--disabled");
@@ -131,6 +134,16 @@
                         $("#select-none").click(onSelectNone);
                         $("#email-submit").click(onEmail);
                         $("#push-submit").click(onPush);
+                        if (window.localStorage.selectedCities) {
+                            let selectedCities = JSON.parse(window.localStorage.selectedCities);
+                            $("#cities input").each(function (i, elem) {
+                                if (selectedCities.includes($(elem).val())) {
+                                    $(elem).prop("checked", "checked");
+                                }
+                            });
+                            $("#push-filled-in").show();
+                            $("#push-submit").value("Aktualizovať PUSH notifikácie");
+                        }
                     </script>
                 </div>
             </div>

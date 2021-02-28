@@ -50,7 +50,7 @@
                             </div>
                             <div class="govuk-grid-column-one-half">
                                 <h2 class="govuk-heading-l"><i class="fas fa-bell"></i> PUSH notifikácie</h2>
-                                <p>Push nofitikácie sú upozornenia, ktoré sa zobrazia priamo na vašom mobilnom zariadení či počítači.
+                                <p>Push notifikácie sú upozornenia, ktoré sa zobrazia priamo na vašom mobilnom zariadení či počítači.
                                     Pri použití push notifikácii nie je potrebný email.</p>
                                 {{ form.push_sub() }}
                                 <p id="push-unsupported" style="display: none"><i class="fas fa-exclamation-triangle"></i> Váš prehliadač nepodporuje PUSH notifikácie.</p>
@@ -59,8 +59,8 @@
                         </div>
                         <div id="hcaptcha" class="h-captcha" data-sitekey="{{ config["HCAPTCHA_SITEKEY"] }}" data-callback="onSubmit" data-size="invisible"></div>
                     </form>
-                    <script type="text/javascript" src="{{ url_for('static', filename='push.dummy.js') }}"></script>
-                    <script type="text/javascript" src="{{ url_for('static', filename='push.js') }}"></script>
+                    <script type="text/javascript" src="{{ url_for('static', filename='push.dummy.js') }}?{{ get_release() }}"></script>
+                    <script type="text/javascript" src="{{ url_for('static', filename='push.js') }}?{{ get_release() }}"></script>
                     <script type="text/javascript">
                         if (!("serviceWorker" in navigator) || !("Notification" in window) || noPush) {
                             $("#push-submit").attr("disabled", "disabled").addClass("govuk-button--disabled");

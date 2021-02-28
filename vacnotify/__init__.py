@@ -1,6 +1,5 @@
 import json
 import locale
-from operator import itemgetter
 
 import sentry_sdk
 import subprocess
@@ -9,7 +8,7 @@ import subprocess
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.celery import CeleryIntegration
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, g
 from celery import Celery, Task
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -22,7 +21,7 @@ from flask_assets import Bundle, Environment
 from flask_caching import Cache
 from ua_parser import user_agent_parser
 
-from vacnotify.utils import CustomEncoder, remove_pii
+from vacnotify.utils import CustomEncoder, remove_pii, embedable
 
 
 app = Flask(__name__, instance_relative_config=True)
@@ -160,21 +159,25 @@ def set_sentry_user():
 
 
 @app.errorhandler(404)
+@embedable
 def errorhandler_notfound(error):
     return render_template("error.html.jinja2", error="Stránka neexistuje."), 404
 
 
 @app.errorhandler(CSRFError)
+@embedable
 def errorhandler_csrf(error):
     return render_template("error.html.jinja2", error="Nepodarilo sa overiť CSRF token. Skúste prosím použiť iný webový prehliadač alebo okno inkognito."), 400
 
 
 @app.errorhandler(403)
+@embedable
 def errorhandler_hcaptcha(error):
     return render_template("error.html.jinja2", error="Prístup zamietnutý."), 403
 
 
 @app.errorhandler(Exception)
+@embedable
 def errorhandler_exc(error: Exception):
     sentry_sdk.capture_exception(error)
     return render_template("error.html.jinja2", error="Chyba servera, pravdepodobne som niečo pokazil. Skúste znova."), 500

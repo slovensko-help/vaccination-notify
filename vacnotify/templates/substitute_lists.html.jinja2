@@ -13,7 +13,7 @@
     <div class="govuk-width-container">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
-                <h1 class="govuk-heading-xl"><i class="fas fa-file-alt fa-fw"></i> Zoznamy náhradníkov</h1>
+                <h1 class="govuk-heading-xl"><i class="fas fa-file-alt fa-fw"></i> Registrácia náhradníkov</h1>
                 <p class="govuk-body-lead">
                     Nemocnice volajú náhradníkov v prípade, že sa nenaplnia všetky voľné miesta na očkovanie v danom termíne, alebo keď sa nedostaví niekto, kto bol zaregistrovaný na konkrétny termín.
                     Je to spôsob, ako sa môžete rýchlejšie dostať k vakcíne vy alebo vaši blízki a zároveň to umožňuje plynulejší postup očkovania, kedy nemocnice dokážu zapĺňať voľné termíny.
@@ -22,17 +22,19 @@
         </div>
     </div>
     {{ render_alerts(get_alerts()) }}
-    <div class="govuk-width-container">
-        <div class="govuk-grid-row govuk-!-margin-bottom-4">
-            <div class="govuk-grid-column-full">
-                <p class="govuk-body">
-                    Aktuálne sa môžu za náhradníkov hlásiť tieto skupiny:
-                </p>
-                <ul class="govuk-list govuk-list--bullet">
-                    <li>ľudia nad 65 rokov</li>
-                    <li>osoby so zdravotnými indikáciami (ochorením podľa bodu F písm. b) prvého bodu alebo bodu H písm. b) druhého bodu <a href="https://www.epi.sk/zz/2021-58#prilohy" rel="noopener" target="_blank">https://www.epi.sk/zz/2021-58#prilohy</a>)</li>
-                    <li>osoby s ťažkým zdravotným postihnutím.</li>
-                </ul>
+    <div class="app-pane-blue govuk-!-padding-top-4 govuk-!-padding-bottom-1 govuk-!-margin-bottom-6">
+        <div class="govuk-width-container">
+            <div class="govuk-grid-row govuk-!-margin-bottom-4">
+                <div class="govuk-grid-column-full">
+                    <p class="govuk-body">
+                        Aktuálne sa môžu za náhradníkov hlásiť tieto skupiny:
+                    </p>
+                    <ul class="govuk-list govuk-list--bullet">
+                        <li>ľudia nad 65 rokov</li>
+                        <li>osoby so zdravotnými indikáciami (ochorením podľa bodu H písm. b) prvého alebo druhého bodu alebo bodu G písm. b) <a href="https://www.epi.sk/zz/2021-93#prilohy" rel="noopener" target="_blank">https://www.epi.sk/zz/2021-93#prilohy</a>)</li>
+                        <li>osoby s ťažkým zdravotným postihnutím.</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -40,11 +42,7 @@
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
                 {% for row in substitutes|batch(4) %}
-                    {% if loop.last %}
-                        <div class="govuk-grid-row row-with-gray-boxes govuk-!-margin-bottom-2">
-                    {% else %}
-                        <div class="govuk-grid-row row-with-gray-boxes govuk-!-margin-bottom-4">
-                    {% endif %}
+                    <div class="govuk-grid-row row-with-gray-boxes {% if loop.last %}govuk-!-margin-bottom-2{% else %}govuk-!-margin-bottom-4{% endif %}">
                         {% for region in row %}
                         <div class="govuk-grid-column-one-quarter">
                             <div class="govuk-!-margin-bottom-6 app-pane-gray govuk-!-padding-top-4 govuk-!-padding-bottom-2 govuk-!-padding-right-4 govuk-!-padding-left-4">
@@ -101,5 +99,4 @@
             </div>
         </div>
     {% endfor %}
-
 {% endblock %}
