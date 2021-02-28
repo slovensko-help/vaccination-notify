@@ -8,16 +8,16 @@
     <meta property="og:image:alt" content="Obrázok vírusu"/>
     <meta property="og:url" content="{{ url_for('main.spot_subscribe') }}"/>
     <meta property="og:locale" content="sk_SK"/>
-    <meta property="og:description" content="Táto stránka poskytuje notifikácie o voľných termínoch na očkovanie proti COVID-19."/>
+    <meta property="og:description" content="Táto stránka poskytuje upozornenia o voľných termínoch na očkovanie proti COVID-19."/>
     <script src="https://hcaptcha.com/1/api.js?hl=sk" async defer></script>
 {% endblock %}
 {% block content %}
     <div class="govuk-width-container">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
-                <h1 class="govuk-heading-xl"><i class="fas fa-calendar fa-fw"></i> Notifikácie o voľných termínoch</h1>
+                <h1 class="govuk-heading-xl"><i class="fas fa-calendar fa-fw"></i> Upozornenia o voľných termínoch</h1>
                 <p class="govuk-body-lead">
-                    Chcem dostávať notifikácie o voľných termínoch na očkovanie vo vybraných očkovacích miestach.
+                    Chcem dostávať upozornenia o voľných termínoch na očkovanie vo vybraných očkovacích miestach.
                 </p>
             </div>
         </div>
@@ -39,7 +39,7 @@
                                 {% for err in form.errors["cities"] %}
                                     <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ err }}</span>
                                 {% endfor %}
-                                <span class="govuk-hint">Vyberte si mestá pre ktoré chcete dostávať notifikácie.</span>
+                                <span class="govuk-hint">Vyberte si mestá pre ktoré chcete dostávať upozornenia.</span>
                                 <div>
                                     <button id="select-all" class="govuk-button govuk-button--secondary"><i
                                             class="fas fa-check"></i> Vybrať všetky
@@ -56,11 +56,11 @@
                             <div class="govuk-grid-column-one-half">
                                 <h2 class="govuk-heading-l"><i class="fas fa-envelope"></i> Email notifikácie</h2>
                                 <p>
-                                    Emailové notifikácie budete dostávať vždy pri zmene voľných kapacít na úrovni mesta,
+                                    Emailové upozornenia budete dostávať vždy pri zmene voľných kapacít na úrovni mesta,
                                     teda napríklad
                                     keď v meste predtým neboli voľné termíny a už sú, alebo keď v meste termíny boli, no
                                     všetky sa minuli.
-                                    Notifikácie vám nebudú chodiť častejšie ako raz
+                                    Upozornenia vám nebudú chodiť častejšie ako raz
                                     za {{ format_timedelta(config["SPOT_NOTIFICATION_BACKOFF"]) }}.
                                 </p>
                                 <div class="govuk-form-group {% if "email" in form.errors %}govuk-form-group--error{% endif %}">
@@ -69,7 +69,7 @@
                                         <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ err }}</span>
                                     {% endfor %}
                                     {{ form.email(class_="govuk-input") }}
-                                    <div class="govuk-hint">Na tento email Vám budú chodiť notifikácie.</div>
+                                    <div class="govuk-hint">Na tento email Vám budú chodiť upozornenia.</div>
                                 </div>
                                 <input id="email-submit" type="submit" class="govuk-button"
                                        value="Chcem notifikácie na email"/>
@@ -91,42 +91,6 @@
                         <div id="hcaptcha" class="h-captcha" data-sitekey="{{ config["HCAPTCHA_SITEKEY"] }}"
                              data-callback="onSubmit" data-size="invisible"></div>
                     </form>
-                    <div class="modal fade" tabindex="-1" id="push-modal" style="display: none">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Potvrdiť notifikácie</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Zatvotiť"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div id="push-requested">
-                                        <p>Táto strána potrebuje vaše povolenie aby vám mohla zasielať notifikácie. Po
-                                            kliknitú na
-                                            <b>Odoslať</b> sa vám zobrazí okno podobné tomu nižšie, prosím povoľte v ňom
-                                            zasielanie notifikácií.</p>
-                                        <img class="img-fluid govuk-!-padding-3"
-                                             src="{{ url_for('.static', filename='img/notification_request.png') }}"/>
-                                    </div>
-                                    <div id="push-denied" style="display: none">
-                                        <p>Váš prehliadač zakazuje stránke zasielať vám notifikácie, prosím povoľte v ňom
-                                            zasielanie notifikácií
-                                            podľa obrázku nižšie a obnovte stránku.</p>
-                                        <img class="img-fluid govuk-!-padding-3"
-                                             src="{{ url_for('.static', filename='img/notification_denied.png') }}"/>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="govuk-button govuk-button--secondary"
-                                            data-bs-dismiss="modal">Zatvoriť
-                                    </button>
-                                    <button type="button" class="govuk-button" id="notification-ask"><i
-                                            class="fas fa-check"></i> Odoslať
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     <script type="text/javascript" src="{{ url_for('static', filename='push.dummy.js') }}"></script>
                     <script type="text/javascript" src="{{ url_for('static', filename='push.js') }}"></script>
                     <script type="text/javascript">
@@ -175,9 +139,22 @@
     <div class="govuk-width-container">
         <div class="govuk-grid-row govuk-!-margin-top-4" id="places-table">
             <div class="govuk-grid-column-full">
-                <h2 class="govuk-heading-l"><i class="fas fa-map-marker fa-fw"></i> Momentálne voľné očkovacie miesta</h2>
-                <b>Posledná aktualizácia</b>: {{ last_stats.datetime.strftime("%d.%m.%Y %H:%M") }}<br/>
+                <h2 class="govuk-heading-l"><i class="fas fa-map-marker fa-fw"></i> Momentálne dostupné očkovacie miesta</h2>
+                <p class="govuk-body">
+                    Nasledujúci zoznam obsahuje momentálne dostupné očkovacie miesta.<br/>
+                    <b>Posledná aktualizácia</b>: {{ last_stats.datetime.strftime("%d.%m.%Y %H:%M") }}<br/>
+                </p>
 
+                <div>
+                    <div class="govuk-checkboxes">
+                        <div class="govuk-checkboxes__item">
+                            <input class="govuk-checkboxes__input" id="show-available" name="show" type="checkbox" value="show" checked/>
+                            <label class="govuk-label govuk-checkboxes__label" for="show-available">
+                                Zobraziť miesta s volnými termínami
+                            </label>
+                        </div>
+                    </div>
+                </div>
                 <div style="overflow: auto">
                 <table class="govuk-table govuk-!-margin-top-3">
                     <thead class="govuk-table__head">
@@ -195,10 +172,8 @@
                     </thead>
                     <tbody class="govuk-table__body">
                     {% for place in places %}
-                        <tr class="govuk-table__row">
-                            <td class="govuk-table__cell">{{ place.title }}{% if not place.online %}
-                                <i class="fas fa-exclamation-triangle" title="Očkovacie miesto nieje dostupné."
-                                   data-toggle="tooltip"></i>{% endif %}</td>
+                        <tr class="govuk-table__row {% if place.free %}place-free{% else %}place-empty{% endif %}" style="{% if not place.free %}display: none{% endif %}">
+                            <td class="govuk-table__cell">{{ place.title }}</td>
                             {% for day in place.days %}
                                 <td class="govuk-table__cell govuk-table__cell--numeric" style="text-align: center">
                                 {% if not day.open %}
@@ -216,7 +191,19 @@
                     {% endfor %}
                 </tbody>
                 </table>
+                {% if not any_free %}
+                    <p id="no-free" class="govuk-body">Momentálne nie sú dostupné žiadne miesta s voľnými termínmi.</p>
+                {% endif %}
                 </div>
+                <script type="text/javascript">
+                    $("#show-available").change((e) => {
+                        $(".place-empty").toggle(800);
+                        let noFree = $("#no-free");
+                        if (noFree.length !== 0) {
+                            noFree.toggle(800);
+                        }
+                    });
+                </script>
             </div>
         </div>
     </div>

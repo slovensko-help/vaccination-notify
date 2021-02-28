@@ -199,9 +199,10 @@ def spot_subscribe():
         places.sort(key=lambda place: locale.strxfrm(place.city.name))
         dates = list(map(attrgetter("date"), places[0].days))
         dates.sort()
+        any_free = any(place.free > 0 for place in places)
 
         last_stats = VaccinationStats.query.order_by(VaccinationStats.id.desc()).first()
-        return render_template("subscribe_spot.jinja2", form=frm, places=places, dates=dates, last_stats=last_stats)
+        return render_template("subscribe_spot.jinja2", form=frm, places=places, dates=dates, last_stats=last_stats, any_free=any_free)
     else:
         if frm.validate_on_submit():
             if frm.email.data:

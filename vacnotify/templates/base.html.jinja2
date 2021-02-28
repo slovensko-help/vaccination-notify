@@ -44,6 +44,7 @@
 </head>
 
 <body class="govuk-template__body">
+<script>document.body.className = ((document.body.className) ? document.body.className + ' js-enabled' : 'js-enabled');</script>
 {% if not g.embed %}
     {% include "header.html.jinja2" %}
 {% endif %}

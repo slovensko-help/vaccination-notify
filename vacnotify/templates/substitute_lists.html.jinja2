@@ -62,36 +62,38 @@
     {% for region in substitutes%}
         <div class="govuk-width-container">
             <div class="govuk-grid-row govuk-!-margin-top-5">
-                <div class="govuk-grid-column-full">
+                <div class="govuk-grid-column-two-thirds">
                     <h2 class="govuk-heading-l anchor" id="k-{{ region['id'] }}">{{ region["title"] }} kraj</h2>
-                    <div class="govuk-accordion" id="r-{{ region['id'] }}" data-module="govuk-accordion">
+                    <div class="govuk-accordion" id="r-{{ region['id'] }}" data-module="govuk-accordion" data-attribute="value">
+                        {% set hid = 1 %}
                         {% for hospital in region["hospitals"] %}
                             {% if hospital["contacts"] and hospital["contacts"]["is_accepting_new_registrations"] %}
                                 <div class="govuk-accordion__section">
                                     <div class="govuk-accordion__section-header">
                                         <h2 class="govuk-accordion__section-heading" >
-                                            <span class="govuk-accordion__section-button" id="h-{{ region['id'] }}-{{ hospital['id'] }}">
+                                            <span class="govuk-accordion__section-button" id="h-{{ region['id'] }}-{{ hid }}">
                                                 {{ hospital["title"] }}
                                             </span>
                                         </h2>
                                     </div>
-                                    <div id="c-{{ region['id'] }}-{{ hospital['id'] }}" class="govuk-accordion__section-content" aria-labelledby="h-{{ region['id'] }}-{{ hospital['id'] }}">
+                                    <div id="r-{{ region['id'] }}-content-{{ hid }}" class="govuk-accordion__section-content" aria-labelledby="h-{{ region['id'] }}-{{ hid }}">
                                         {% if hospital["contacts"] %}
                                             {% if hospital["contacts"]["substitutes_link"] %}
-                                                Informácie o zozname náhradníkov nájdete na: <a href="{{ hospital["contacts"]["substitutes_link"] }}" rel="noopener" target="_blank">{{ hospital["contacts"]["substitutes_link"] }}</a>.<br/>
+                                                Informácie o zozname náhradníkov nájdete na: <a href="{{ hospital["contacts"]["substitutes_link"] }}" rel="noopener" target="_blank" class="govuk-link">{{ hospital["contacts"]["substitutes_link"] }}</a>.<br/>
                                             {% endif %}
                                             {% if hospital["contacts"]["substitutes_emails"] %}
-                                                <b>Email:</b> {% for email in hospital["contacts"]["substitutes_emails"] %}<a href="mailto:{{ email }}">{{ email }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
+                                                <b>Email:</b> {% for email in hospital["contacts"]["substitutes_emails"] %}<a href="mailto:{{ email }}" class="govuk-link">{{ email }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
                                                 <br/>
                                             {% endif %}
                                             {% if hospital["contacts"]["substitutes_phones"] %}
-                                                <b>Telefonický kontakt:</b> {% for phone in hospital["contacts"]["substitutes_phones"] %}<a href="tel:{{ phone }}">{{ phone }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
+                                                <b>Telefonický kontakt:</b> {% for phone in hospital["contacts"]["substitutes_phones"] %}<a href="tel:{{ phone }}" class="govuk-link">{{ phone }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
                                                 {% if hospital["contacts"]["substitutes_note"] %}, {{ hospital["contacts"]["substitutes_note"] }}{% endif %}
                                                 <br/>
                                             {% endif %}
                                         {% endif %}
                                     </div>
                                 </div>
+                                {% set hid = hid + 1 %}
                             {% endif %}
                         {% endfor %}
                     </div>

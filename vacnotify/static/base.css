@@ -67,11 +67,6 @@
     padding: 0 0.4em 0 0;
 }
 
-.anchor {
-    padding-top: 57px;
-    margin-top: -57px;
-}
-
 #content .listing {
     padding: 1em;
     border-radius: 0.5em;
@@ -81,12 +76,4 @@
 
 tr:nth-child(even) {
     background-color: #f2f2f2;
-}
-
-body {
-    font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";;
-}
-
-.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
-    font-weight: 600;
 }

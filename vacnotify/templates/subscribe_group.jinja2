@@ -8,16 +8,16 @@
     <meta property="og:image:alt" content="Obrázok vírusu"/>
     <meta property="og:url" content="{{ url_for('main.spot_subscribe') }}"/>
     <meta property="og:locale" content="sk_SK"/>
-    <meta property="og:description" content="Táto stránka poskytuje notifikácie o momente otvorenia očkovacieho formuláru pre nové skupiny obyvateľov."/>
+    <meta property="og:description" content="Táto stránka poskytuje upozornenia o momente otvorenia očkovacieho formuláru pre nové skupiny obyvateľov."/>
     <script src="https://hcaptcha.com/1/api.js?hl=sk" async defer></script>
 {% endblock %}
 {% block content %}
     <div class="govuk-width-container">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
-                <h1 class="govuk-heading-xl"><i class="fas fa-users fa-fw"></i> Notifikácie o novej skupine</h1>
+                <h1 class="govuk-heading-xl"><i class="fas fa-users fa-fw"></i> Upozornenia o novej skupine</h1>
                 <p class="govuk-body-lead">
-                    Chcem dostávať notifikácie na email o otvorení očkovania pre novú skupinu ľudí.
+                    Chcem dostávať upozornenia o otvorení očkovania pre novú skupinu ľudí.
                 </p>
             </div>
         </div>
@@ -35,8 +35,8 @@
                             <div class="govuk-grid-column-one-half">
                                 <h2 class="govuk-heading-l"><i class="fas fa-envelope"></i> Email notifikácie</h2>
                                 <p>
-                                    Emailové notifikácie budete dostávať vždy pri otvorení novej skupiny na očkovanie.
-                                    Notifikácie vám nebudú chodiť častejšie ako raz za {{ format_timedelta(config["GROUP_NOTIFICATION_BACKOFF"]) }}.
+                                    Emailové upozornenia budete dostávať vždy pri otvorení novej skupiny na očkovanie.
+                                    Upozornenia vám nebudú chodiť častejšie ako raz za {{ format_timedelta(config["GROUP_NOTIFICATION_BACKOFF"]) }}.
                                 </p>
                                 <div class="govuk-form-group {% if "email" in form.errors %}govuk-form-group--error{% endif %}">
                                     <label for="email" class="govuk-label">Email</label>
@@ -44,9 +44,9 @@
                                         <p class="govuk-error-message">{{ err }}</p>
                                     {% endfor %}
                                     {{ form.email(class_="govuk-input") }}
-                                    <div class="govuk-hint">Na tento email Vám budú chodiť notifikácie.</div>
+                                    <div class="govuk-hint">Na tento email Vám budú chodiť upozornenia.</div>
                                 </div>
-                                <input id="email-submit" type="submit" class="govuk-button" value="Chcem notifikácie na email"/>
+                                <input id="email-submit" type="submit" class="govuk-button" value="Chcem upozornenia na email"/>
                             </div>
                             <div class="govuk-grid-column-one-half">
                                 <h2 class="govuk-heading-l"><i class="fas fa-bell"></i> PUSH notifikácie</h2>
@@ -59,33 +59,6 @@
                         </div>
                         <div id="hcaptcha" class="h-captcha" data-sitekey="{{ config["HCAPTCHA_SITEKEY"] }}" data-callback="onSubmit" data-size="invisible"></div>
                     </form>
-                    <div class="modal fade" tabindex="-1" id="push-modal" style="display: none">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Potvrdiť notifikácie</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Zatvotiť"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div id="push-requested">
-                                        <p>Táto strána potrebuje vaše povolenie aby vám mohla zasielať notifikácie. Po kliknitú na
-                                        <b>Odoslať</b> sa vám zobrazí okno podobné tomu nižšie, prosím povoľte v ňom zasielanie notifikácií.</p>
-                                        <img class="img-fluid p-3 border" src="{{ url_for('.static', filename='img/notification_request.png') }}"/>
-                                    </div>
-                                    <div id="push-denied" style="display: none">
-                                        <p>Váš prehliadač zakazuje stránke zasielať vám notifikácie, prosím povoľte v ňom zasielanie notifikácií
-                                        podľa obrázku nižšie a obnovte stránku.</p>
-                                        <img class="img-fluid p-3 border" src="{{ url_for('.static', filename='img/notification_denied.png') }}"/>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvoriť</button>
-                                    <button type="button" class="btn btn-primary" id="notification-ask"><i class="fas fa-check"></i> Odoslať</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     <script type="text/javascript" src="{{ url_for('static', filename='push.dummy.js') }}"></script>
                     <script type="text/javascript" src="{{ url_for('static', filename='push.js') }}"></script>
                     <script type="text/javascript">
@@ -120,10 +93,15 @@
         <div class="govuk-grid-row govuk-!-margin-top-4" id="groups-list">
             <div class="govuk-grid-column-full">
                 <h2 class="govuk-heading-l"><i class="fas fa-users fa-fw"></i> Momentálne otvorené skupiny na očkovanie</h2>
-                <b>Posledná aktualizácia</b>: {{ last_stats.datetime.strftime("%d.%m.%Y %H:%M") }}<br/>
+                <p class="govuk-body">
+                    Nasledujúci zoznam obsahuje momentálne otvorené skupiny na očkovanie v hlavnom očkovaciom fomulári,
+                    a neobsahuje iné otvorené skupiny v špeciálnych formulároch.<br/>
+                    <b>Posledná aktualizácia</b>: {{ last_stats.datetime.strftime("%d.%m.%Y %H:%M") }}<br/>
+                </p>
+
                 <ul class="govuk-list govuk-list--bullet govuk-!-margin-top-3">
                     {% for group in groups %}
-                        <li class="list-group-item">{{ group.item_description }}</li>
+                        <li>{{ group.item_description }}</li>
                     {% endfor %}
                 </ul>
             </div>
