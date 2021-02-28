@@ -6,61 +6,76 @@
     <meta property="og:type" content="website"/>
     <meta property="og:image" content="{{ url_for('static', filename='img/virus.svg', _external=True) }}"/>
     <meta property="og:image:alt" content="Obrázok vírusu"/>
-    <meta property="og:url" content="{{ url_for('main.faq') }}"/>
+    <meta property="og:url" content="{{ url_for('main.substitute_lists') }}"/>
     <meta property="og:locale" content="sk_SK"/>
 {% endblock %}
 {% block content %}
-    <div class="row">
-        <div class="col-sm-10 mx-auto">
-            <h1><i class="fas fa-file-alt fa-fw"></i> Zoznamy náhradníkov</h1>
-            <p class="lead">
-                Pre aktuálne informácie o ochorení COVID-19 a opatreniach na Slovensku choďte na <a
-                    href="https://korona.gov.sk" rel="noopener"
-                    target="_blank">korona.gov.sk</a>.
-            </p>
-            {{ render_alerts(get_alerts()) }}
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                <h1 class="govuk-heading-xl"><i class="fas fa-file-alt fa-fw"></i> Zoznamy náhradníkov</h1>
+                <p class="govuk-body-lead">
+                    Nemocnice volajú náhradníkov v prípade, že sa nenaplnia všetky voľné miesta na očkovanie v danom termíne, alebo keď sa nedostaví niekto, kto bol zaregistrovaný na konkrétny termín.
+                    Je to spôsob, ako sa môžete rýchlejšie dostať k vakcíne vy alebo vaši blízki a zároveň to umožňuje plynulejší postup očkovania, kedy nemocnice dokážu zapĺňať voľné termíny.
+                </p>
+            </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-sm-10 mx-auto">
-            {% for row in substitutes|batch(4) %}
-                {% if loop.last %}
-                    <div class="row mb-4">
-                {% else %}
-                    <div class="row mb-2">
-                {% endif %}
-                    {% for region in row %}
-                    <div class="col-sm gy-4">
-                        <a href="#k-{{ region['id'] }}" class="text-decoration-none">
-                            <div class="card bg-light h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title fs-5 fw-bold">{{ region["title"] }} kraj</h5>
-                                </div>
+    {{ render_alerts(get_alerts()) }}
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row govuk-!-margin-bottom-4">
+            <div class="govuk-grid-column-full">
+                <p class="govuk-body">
+                    Aktuálne sa môžu za náhradníkov hlásiť tieto skupiny:
+                </p>
+                <ul class="govuk-list govuk-list--bullet">
+                    <li>ľudia nad 65 rokov</li>
+                    <li>osoby so zdravotnými indikáciami (ochorením podľa bodu F písm. b) prvého bodu alebo bodu H písm. b) druhého bodu <a href="https://www.epi.sk/zz/2021-58#prilohy" rel="noopener" target="_blank">https://www.epi.sk/zz/2021-58#prilohy</a>)</li>
+                    <li>osoby s ťažkým zdravotným postihnutím.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="govuk-width-container">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                {% for row in substitutes|batch(4) %}
+                    {% if loop.last %}
+                        <div class="govuk-grid-row row-with-gray-boxes govuk-!-margin-bottom-2">
+                    {% else %}
+                        <div class="govuk-grid-row row-with-gray-boxes govuk-!-margin-bottom-4">
+                    {% endif %}
+                        {% for region in row %}
+                        <div class="govuk-grid-column-one-quarter">
+                            <div class="govuk-!-margin-bottom-6 app-pane-gray govuk-!-padding-top-4 govuk-!-padding-bottom-2 govuk-!-padding-right-4 govuk-!-padding-left-4">
+                                <a href="#k-{{ region['id'] }}" style="text-decoration: none">
+                                    <h3 class="govuk-heading-m">{{ region["title"] }} kraj</h3>
+                                </a>
                             </div>
-                        </a>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
     </div>
     {% for region in substitutes%}
-        <div class="row mt-5">
-            <div class="col-sm-10 mx-auto">
-                <h2 class="mb-3 anchor" id="k-{{ region['id'] }}">{{ region["title"] }} kraj</h2>
-                <div class="accordion" id="r-{{ region['id'] }}">
-                    {% for hospital in region["hospitals"] %}
-                        {% if hospital["contacts"] and hospital["contacts"]["is_accepting_new_registrations"] %}
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="h-{{ region['id'] }}-{{ hospital['id'] }}">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                            data-bs-target="#c-{{ region['id'] }}-{{ hospital['id'] }}" aria-expanded="false" aria-controls="c-{{ region['id'] }}-{{ hospital['id'] }}">
-                                        {{ hospital["title"] }}
-                                    </button>
-                                </h2>
-                                <div id="c-{{ region['id'] }}-{{ hospital['id'] }}" class="accordion-collapse collapse" aria-labelledby="h-{{ region['id'] }}-{{ hospital['id'] }}"
-                                     data-bs-parent="#r-{{ region['id'] }}">
-                                    <div class="accordion-body">
+        <div class="govuk-width-container">
+            <div class="govuk-grid-row govuk-!-margin-top-5">
+                <div class="govuk-grid-column-full">
+                    <h2 class="govuk-heading-l anchor" id="k-{{ region['id'] }}">{{ region["title"] }} kraj</h2>
+                    <div class="govuk-accordion" id="r-{{ region['id'] }}" data-module="govuk-accordion">
+                        {% for hospital in region["hospitals"] %}
+                            {% if hospital["contacts"] and hospital["contacts"]["is_accepting_new_registrations"] %}
+                                <div class="govuk-accordion__section">
+                                    <div class="govuk-accordion__section-header">
+                                        <h2 class="govuk-accordion__section-heading" >
+                                            <span class="govuk-accordion__section-button" id="h-{{ region['id'] }}-{{ hospital['id'] }}">
+                                                {{ hospital["title"] }}
+                                            </span>
+                                        </h2>
+                                    </div>
+                                    <div id="c-{{ region['id'] }}-{{ hospital['id'] }}" class="govuk-accordion__section-content" aria-labelledby="h-{{ region['id'] }}-{{ hospital['id'] }}">
                                         {% if hospital["contacts"] %}
                                             {% if hospital["contacts"]["substitutes_link"] %}
                                                 Informácie o zozname náhradníkov nájdete na: <a href="{{ hospital["contacts"]["substitutes_link"] }}" rel="noopener" target="_blank">{{ hospital["contacts"]["substitutes_link"] }}</a>.<br/>
@@ -77,9 +92,9 @@
                                         {% endif %}
                                     </div>
                                 </div>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>

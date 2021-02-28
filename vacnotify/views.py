@@ -78,6 +78,7 @@ def get_substitutes():
 
 
 @main.route("/substitutes")
+@embedable
 def substitute_lists():
     return render_template("substitute_lists.html.jinja2", substitutes=get_substitutes())
 
