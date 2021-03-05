@@ -54,7 +54,10 @@
                                     Pri použití push notifikácii nie je potrebný email.</p>
                                 {{ form.push_sub() }}
                                 <p id="push-unsupported" style="display: none"><i class="fas fa-exclamation-triangle"></i> Váš prehliadač nepodporuje PUSH notifikácie.</p>
-                                <input id="push-submit" type="submit" class="govuk-button" value="Chcem PUSH notifikácie"/>
+                                <div class="govuk-form-group">
+                                    <input id="push-submit" type="submit" class="govuk-button" value="Chcem PUSH notifikácie"/>
+                                    <input id="push-unsubscribe" style="display: none" type="submit" class="govuk-button govuk-button--warning" value="Zrušiť PUSH notifikácie"/>
+                                </div>
                             </div>
                         </div>
                         <div id="hcaptcha" class="h-captcha" data-sitekey="{{ config["HCAPTCHA_SITEKEY"] }}" data-callback="onSubmit" data-size="invisible"></div>
@@ -64,6 +67,7 @@
                     <script type="text/javascript">
                         if (!("serviceWorker" in navigator) || !("Notification" in window) || noPush) {
                             $("#push-submit").attr("disabled", "disabled").addClass("govuk-button--disabled");
+                            $("#push-unsubscribe").attr("disabled", "disabled").addClass("govuk-button--disabled");
                             $("#push-unsupported").show();
                         }
 
@@ -84,6 +88,28 @@
                         }
                         $("#email-submit").click(onEmail);
                         $("#push-submit").click(onPush);
+
+                        sendMessage({
+                            action: "getSubscription"
+                        }).then(function (data) {
+                            if (data.groupSubscription) {
+                                $("#push-submit").hide();
+                                $("#push-unsubscribe").click(function (event) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    let unsubLink = data.groupUnsubscribe;
+                                    data.groupSubscription = false;
+                                    data.groupUnsubscribe = null;
+                                    sendMessage({
+                                        action: "setSubscription",
+                                        sub: data
+                                    }).then(function () {
+                                        window.location = unsubLink;
+                                    })
+                                });
+                                $("#push-unsubscribe").show();
+                            }
+                        });
                     </script>
                 </div>
             </div>

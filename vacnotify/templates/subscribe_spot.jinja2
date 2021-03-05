@@ -86,8 +86,8 @@
                                 <p id="push-unsupported" style="display: none"><i class="fas fa-exclamation-triangle"></i>
                                     Váš prehliadač nepodporuje PUSH notifikácie.</p>
                                 <div class="govuk-form-group">
-                                    <input id="push-submit" type="submit" class="govuk-button"
-                                           value="Chcem PUSH notifikácie"/>
+                                    <input id="push-submit" type="submit" class="govuk-button" value="Chcem PUSH notifikácie"/>
+                                    <input id="push-unsubscribe" style="display: none" type="submit" class="govuk-button govuk-button--warning" value="Zrušiť PUSH notifikácie"/>
                                 </div>
                             </div>
                         </div>
@@ -99,6 +99,7 @@
                     <script type="text/javascript">
                         if (!("serviceWorker" in navigator) || !("Notification" in window) || noPush) {
                             $("#push-submit").attr("disabled", "disabled").addClass("idsk-button--disabled");
+                            $("#push-unsubscribe").attr("disabled", "disabled").addClass("govuk-button--disabled");
                             $("#push-unsupported").show();
                         }
 
@@ -134,16 +135,44 @@
                         $("#select-none").click(onSelectNone);
                         $("#email-submit").click(onEmail);
                         $("#push-submit").click(onPush);
-                        if (window.localStorage.selectedCities) {
-                            let selectedCities = JSON.parse(window.localStorage.selectedCities);
-                            $("#cities input").each(function (i, elem) {
-                                if (selectedCities.includes($(elem).val())) {
-                                    $(elem).prop("checked", "checked");
-                                }
-                            });
-                            $("#push-filled-in").show();
-                            $("#push-submit").value("Aktualizovať PUSH notifikácie");
-                        }
+
+
+                        sendMessage({
+                            action: "getSubscription"
+                        }).then(function (data) {
+                            if (data.spotSubscription) {
+                                sendMessage({
+                                    action: "getCities"
+                                }).then(function (data) {
+                                    if (data.cities !== undefined) {
+                                        let selectedCities = data.cities.map(function (city) {return city.id.toString()});
+                                        $("#cities input").each(function (i, elem) {
+                                            if (selectedCities.includes($(elem).val())) {
+                                                $(elem).prop("checked", "checked");
+                                            }
+                                        });
+                                    }
+                                }).catch(function (err) {
+                                   console.log(err);
+                                });
+                                $("#push-filled-in").show();
+                                $("#push-submit").val("Aktualizovať PUSH notifikácie");
+                                $("#push-unsubscribe").click(function (event) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    let unsubLink = data.spotUnsubscribe;
+                                    data.spotSubscription = false;
+                                    data.spotUnsubscribe = null;
+                                    sendMessage({
+                                        action: "setSubscription",
+                                        sub: data
+                                    }).then(function () {
+                                        window.location = unsubLink;
+                                    })
+                                });
+                                $("#push-unsubscribe").show();
+                            }
+                        });
                     </script>
                 </div>
             </div>

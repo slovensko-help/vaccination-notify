@@ -112,6 +112,6 @@ class UnsubscriptionForm(FlaskForm):
     reasons = MultiCheckboxField("reasons", [validators.DataRequired()],
                                  choices=[("found-here", "Vďaka notifikácii som našiel miesto/skupinu."),
                                           ("found-elsewhere", "Našiel som miesto/skupinu inde."),
-                                          ("too-many", "Notifikáciǐ je príliš."),
+                                          ("too-many", "Notifikácií je príliš."),
                                           ("other", "Iné.")])
     feedback = TextAreaField("feedback", [validators.Length(max=1000)])

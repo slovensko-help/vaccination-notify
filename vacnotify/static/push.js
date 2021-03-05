@@ -1,9 +1,24 @@
+function sendMessage(message) {
+  return new Promise(function(resolve, reject) {
+    var messageChannel = new MessageChannel();
+    messageChannel.port1.onmessage = function(event) {
+      if (event.data.error) {
+        reject(event.data.error);
+      } else {
+        resolve(event.data);
+      }
+    };
+
+    navigator.serviceWorker.controller.postMessage(message,
+      [messageChannel.port2]);
+  });
+}
+
+
 async function onPush(event) {
-    console.log("HERE");
     let elem = $("#push_sub")
     elem.attr('required', 'required');
     $("#email").attr("required", null);
-    let selectedCities = $.makeArray($("#cities input:checked").map((i, elem) => {return $(elem).val()}));
     event.preventDefault();
     event.stopPropagation()
     await navigator.serviceWorker.getRegistration().then((registration) => {
@@ -22,7 +37,6 @@ async function onPush(event) {
                 }
             }).then((subscription) => {
                 elem.val(JSON.stringify(subscription));
-                window.localStorage.selectedCities = JSON.stringify(selectedCities);
                 onSubmit(null);
             }).catch((error) => {
                 console.log(error);

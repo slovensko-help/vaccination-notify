@@ -165,7 +165,11 @@ def group_unsubscribe(secret):
     form = UnsubscriptionForm()
     form.secret.data = secret
     form.id.data = str(fb.id)
-    return render_template("unsubscribe.html.jinja2", msg="Odber notifikácii bol úspešne zrušený a Váše osobné údaje (email) boli odstránené.", form=form)
+    if "push" in request.args:
+        msg = "Odber notifikácii bol úspešne zrušený."
+    else:
+        msg = "Odber notifikácii bol úspešne zrušený a Vaše osobné údaje (email) boli odstránené."
+    return render_template("unsubscribe.html.jinja2", msg=msg, form=form)
 
 
 @main.route("/groups/confirm/<string(length=32):secret>")
@@ -178,7 +182,9 @@ def group_confirm(secret):
     with transaction():
         subscription.status = Status.CONFIRMED
     if "push" in request.args:
-        return jsonify({"msg": "Odber notifikácii bol potvrdený."})
+        return jsonify({"msg": "Odber notifikácii bol potvrdený.",
+                        "type": "group",
+                        "unsubscribe": url_for("main.group_unsubscribe", secret=secret, _external=True)})
     return render_template("ok.html.jinja2", msg="Odber notifikácii bol potvrdený.")
 
 
@@ -234,6 +240,14 @@ def spot_subscribe():
                     with transaction():
                         existing_subscription.cities = selected_cities
                         existing_subscription.known_cities = list(set(existing_subscription.known_cities).intersection(selected_cities))
+                    try:
+                        webpush(subscription_info=sub_data,
+                                data=json.dumps({"action": "confirm",
+                                                 "endpoint": url_for(".spot_confirm", secret=hexlify(existing_subscription.secret).decode(), push=1)}),
+                                vapid_private_key=privkey,
+                                vapid_claims=claims)
+                    except WebPushException:
+                        return render_template("error.html.jinja2", error="Odber notifikácii sa nepodarilo aktualizovať.")
                     return render_template("ok.html.jinja2", msg="Vaše nastavenie PUSH notifikácii bolo aktualizované.")
                 else:
                     h = hashlib.blake2b(key=current_app.config["APP_SECRET"].encode(), digest_size=16)
@@ -271,7 +285,11 @@ def spot_unsubscribe(secret):
     form = UnsubscriptionForm()
     form.secret.data = secret
     form.id.data = str(fb.id)
-    return render_template("unsubscribe.html.jinja2", msg="Odber notifikácii bol úspešne zrušený a Váše osobné údaje (email) boli odstránené.", form=form)
+    if "push" in request.args:
+        msg = "Odber notifikácii bol úspešne zrušený."
+    else:
+        msg = "Odber notifikácii bol úspešne zrušený a Vaše osobné údaje (email) boli odstránené."
+    return render_template("unsubscribe.html.jinja2", msg=msg, form=form)
 
 
 @main.route("/spots/confirm/<string(length=32):secret>")
@@ -284,7 +302,10 @@ def spot_confirm(secret):
     with transaction():
         subscription.status = Status.CONFIRMED
     if "push" in request.args:
-        return jsonify({"msg": "Odber notifikácii bol potvrdený."})
+        return jsonify({"msg": "Odber notifikácii bol potvrdený.",
+                        "cities": [{"id": city.id, "name": city.name} for city in subscription.cities],
+                        "type": "spot",
+                        "unsubscribe": url_for("main.spot_unsubscribe", secret=secret, _external=True)})
     return render_template("ok.html.jinja2", msg="Odber notifikácii bol potvrdený.")
 
 
@@ -302,8 +323,11 @@ def both_unsubscribe(secret):
                 t.delete(spot_subscription)
             if group_subscription is not None:
                 t.delete(group_subscription)
-        return render_template("ok.html.jinja2",
-                               msg="Odber notifikácii bol úspešne zrušený a Váše osobné údaje (email) boli odstránené.")
+        if "push" in request.args:
+            msg = "Odber notifikácii bol úspešne zrušený."
+        else:
+            msg = "Odber notifikácii bol úspešne zrušený a Vaše osobné údaje (email) boli odstránené."
+        return render_template("ok.html.jinja2", msg=msg)
     else:
         return render_template("error.html.jinja2", error="Odber notifikácii sa nenašiel, buď neexistuje alebo bol už zrušený."), 404
 
@@ -323,7 +347,9 @@ def both_confirm(secret):
             if group_subscription is not None:
                 group_subscription.status = Status.CONFIRMED
         if "push" in request.args:
-            return jsonify({"msg": "Odber notifikácii bol potvrdený."})
+            return jsonify({"msg": "Odber notifikácii bol potvrdený.",
+                            "type": "both",
+                            "unsubscribe": url_for("main.both_unsubscribe", secret=secret, _external=True)})
         return render_template("ok.html.jinja2", msg="Odber notifikácii bol potvrdený.")
     else:
         abort(404)
