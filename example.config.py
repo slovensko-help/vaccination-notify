@@ -41,6 +41,9 @@ QUERY_DELAY = 2                                 # How much to sleep between requ
 GROUP_NOTIFICATION_BACKOFF = 1800               # The back-off time between consecutive notifications to the same user about free spots (in seconds)
 SPOT_NOTIFICATION_BACKOFF = 1800                # The back-off time between consecutive notifications to the same user about new groups (in seconds)
 
+EMAIL_ENABLED = True                            # Whether to allow email notifications
+PUSH_ENABLED = True                             # Whether to allow PUSH notifications
+
 API_USE = "proxy"  # or "nczi"                  # Whether to call the NCZI API directly or through the data.korona.gov.sk proxy
 API_USE_AGGREGATE = True                        # Whether to use the get_all aggregate API
 

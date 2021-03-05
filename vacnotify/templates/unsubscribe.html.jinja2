@@ -7,7 +7,7 @@
                 <p class="govuk-body-lead">
                     {{ msg }}
                 </p>
-                <form id="feedback-form" action="{{ url_for('main.feedback') }}" method="post">
+                <form id="feedback-form" action="{% if g.embed %}{{ url_for('main.feedback', embed=1) }}{% else %}{{ url_for('main.feedback') }}{% endif %}" method="post">
                     {{ form.csrf_token }}
                     {{ form.secret }}
                     {{ form.id }}

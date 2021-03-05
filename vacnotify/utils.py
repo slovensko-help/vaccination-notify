@@ -64,9 +64,18 @@ def remove_pii(*args):
     return h.hexdigest()
 
 
-def embedable(f):
+def embedded(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         g.embed = True
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def embeddable(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if "embed" in request.args:
+            g.embed = True
         return f(*args, **kwargs)
     return wrapper

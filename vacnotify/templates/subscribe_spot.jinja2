@@ -57,9 +57,18 @@
                         </div>
 
                         <div class="govuk-grid-row govuk-!-margin-top-6">
-                            <div class="govuk-grid-column-one-half">
-                                <h2 class="govuk-heading-l"><i class="fas fa-envelope"></i> Email notifikácie</h2>
-                                <p>
+                            <div class="govuk-grid-column-one-half" {% if not config['EMAIL_ENABLED'] %}style="color: #909090"{% endif %}>
+                                <h2 class="govuk-heading-l" {% if not config['EMAIL_ENABLED'] %}style="color: #909090"{% endif %}><i class="fas fa-envelope"></i> Email notifikácie</h2>
+                                {% if not config['EMAIL_ENABLED'] %}
+                                    <div class="govuk-warning-text">
+                                        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                        <strong class="govuk-warning-text__text">
+                                            <span class="govuk-warning-text__assistive">Upozornenie</span>
+                                            Emailové notifikácie ešte nie sú v prevádzke.
+                                        </strong>
+                                    </div>
+                                {% endif %}
+                                <p class="govuk-body" {% if not config['EMAIL_ENABLED'] %}style="color: #909090"{% endif %}>
                                     Emailové upozornenia budete dostávať vždy pri zmene voľných kapacít na úrovni mesta,
                                     teda napríklad
                                     keď v meste predtým neboli voľné termíny a už sú, alebo keď v meste termíny boli, no
@@ -68,25 +77,37 @@
                                     za {{ format_timedelta(config["SPOT_NOTIFICATION_BACKOFF"]) }}.
                                 </p>
                                 <div class="govuk-form-group {% if "email" in form.errors %}govuk-form-group--error{% endif %}">
-                                    <label for="email" class="govuk-label">Email</label>
+                                    <label for="email" class="govuk-label" {% if not config['EMAIL_ENABLED'] %}style="color: #909090"{% endif %}>Email</label>
                                     {% for err in form.errors["email"] %}
                                         <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ err }}</span>
                                     {% endfor %}
                                     {{ form.email(class_="govuk-input") }}
                                     <div class="govuk-hint">Na tento email Vám budú chodiť upozornenia.</div>
                                 </div>
-                                <input id="email-submit" type="submit" class="govuk-button"
-                                       value="Chcem notifikácie na email"/>
+                                <input id="email-submit" type="submit"
+                                       class="govuk-button {% if not config['EMAIL_ENABLED'] %}govuk-button--disabled{% endif %}" value="Chcem notifikácie na email"
+                                       {% if not config['EMAIL_ENABLED'] %}disabled{% endif %}/>
                             </div>
-                            <div class="govuk-grid-column-one-half">
-                                <h2 class="govuk-heading-l"><i class="fas fa-bell"></i> PUSH notifikácie</h2>
-                                <p>Push notifikácie sú upozornenia, ktoré sa zobrazia priamo na vašom mobilnom zariadení či
-                                    počítači. Pri použití push notifikácii nie je potrebný email.</p>
+                            <div class="govuk-grid-column-one-half" {% if not config['PUSH_ENABLED'] %}style="color: #909090"{% endif %}>
+                                <h2 class="govuk-heading-l" {% if not config['PUSH_ENABLED'] %}style="color: #909090"{% endif %}><i class="fas fa-bell"></i> PUSH notifikácie</h2>
+                                {% if not config['PUSH_ENABLED'] %}
+                                    <div class="govuk-warning-text">
+                                        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                        <strong class="govuk-warning-text__text">
+                                            <span class="govuk-warning-text__assistive">Upozornenie</span>
+                                            PUSH notifikácie nie sú v prevádzke.
+                                        </strong>
+                                    </div>
+                                {% endif %}
+                                <p class="govuk-body" {% if not config['PUSH_ENABLED'] %}style="color: #909090"{% endif %}>
+                                    Push notifikácie sú upozornenia, ktoré sa zobrazia priamo na vašom mobilnom zariadení či
+                                    počítači. Pri použití push notifikácii nie je potrebný email.
+                                </p>
                                 {{ form.push_sub() }}
                                 <p id="push-unsupported" style="display: none"><i class="fas fa-exclamation-triangle"></i>
                                     Váš prehliadač nepodporuje PUSH notifikácie.</p>
                                 <div class="govuk-form-group">
-                                    <input id="push-submit" type="submit" class="govuk-button" value="Chcem PUSH notifikácie"/>
+                                    <input id="push-submit" type="submit" class="govuk-button {% if not config['PUSH_ENABLED'] %}govuk-button--disabled{% endif %}" value="Chcem PUSH notifikácie" {% if not config['PUSH_ENABLED'] %}disabled{% endif %}/>
                                     <input id="push-unsubscribe" style="display: none" type="submit" class="govuk-button govuk-button--warning" value="Zrušiť PUSH notifikácie"/>
                                 </div>
                             </div>
@@ -98,7 +119,7 @@
                     <script type="text/javascript" src="{{ url_for('static', filename='push.js') }}?{{ get_release() }}"></script>
                     <script type="text/javascript">
                         if (!("serviceWorker" in navigator) || !("Notification" in window) || noPush) {
-                            $("#push-submit").attr("disabled", "disabled").addClass("idsk-button--disabled");
+                            $("#push-submit").attr("disabled", "disabled").addClass("govuk-button--disabled");
                             $("#push-unsubscribe").attr("disabled", "disabled").addClass("govuk-button--disabled");
                             $("#push-unsupported").show();
                         }
@@ -167,7 +188,7 @@
                                         action: "setSubscription",
                                         sub: data
                                     }).then(function () {
-                                        window.location = unsubLink;
+                                        window.location = unsubLink + "?push&embed";
                                     })
                                 });
                                 $("#push-unsubscribe").show();
@@ -192,7 +213,7 @@
                         <div class="govuk-checkboxes__item">
                             <input class="govuk-checkboxes__input" id="show-available" name="show" type="checkbox" value="show" checked/>
                             <label class="govuk-label govuk-checkboxes__label" for="show-available">
-                                Zobraziť miesta s volnými termínami
+                                Zobraziť len miesta s volnými termínami
                             </label>
                         </div>
                     </div>

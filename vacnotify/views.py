@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from json import JSONDecodeError
 from operator import attrgetter, itemgetter
 
-from flask import render_template, request, abort, current_app, jsonify, url_for
+from flask import render_template, request, abort, current_app, jsonify, url_for, g
 from sqlalchemy.orm import joinedload
 from pywebpush import webpush, WebPushException
 
@@ -18,23 +18,23 @@ from vacnotify.models import EligibilityGroup, VaccinationPlace, GroupSubscripti
     VaccinationStats, VaccinationCity, SubscriptionStats, UserFeedback
 from vacnotify.forms import GroupSubscriptionForm, SpotSubscriptionForm, UnsubscriptionForm
 from vacnotify.tasks.email import email_confirmation
-from vacnotify.utils import hcaptcha_required, sentry_untraced, embedable
+from vacnotify.utils import hcaptcha_required, sentry_untraced, embedded, embeddable
 
 
 @main.route("/")
-@embedable
+@embedded
 def index():
     return render_template("index.html.jinja2")
 
 
 @main.route("/privacy")
-@embedable
+@embedded
 def privacy():
     return render_template("privacy_policy.html.jinja2")
 
 
 @main.route("/faq")
-@embedable
+@embedded
 def faq():
     return render_template("faq.html.jinja2")
 
@@ -78,13 +78,13 @@ def get_substitutes():
 
 
 @main.route("/substitutes")
-@embedable
+@embedded
 def substitute_lists():
     return render_template("substitute_lists.html.jinja2", substitutes=get_substitutes())
 
 
 @main.route("/stats")
-@embedable
+@embedded
 def stats():
     vaccination_stats = VaccinationStats.query.filter(VaccinationStats.datetime > (datetime.now() - timedelta(days=7))).order_by(VaccinationStats.id.desc()).all()
     subscription_stats = SubscriptionStats.query.filter(SubscriptionStats.datetime > (datetime.now() - timedelta(days=7))).order_by(SubscriptionStats.id.desc()).all()
@@ -95,7 +95,7 @@ def stats():
 
 @main.route("/groups/subscribe", methods=["GET", "POST"])
 @hcaptcha_required("push_sub")
-@embedable
+@embedded
 def group_subscribe():
     frm = GroupSubscriptionForm()
     if request.method == "GET" or not frm.validate_on_submit():
@@ -105,6 +105,8 @@ def group_subscribe():
         if frm.validate_on_submit():
             if frm.email.data:
                 # Email subscription
+                if not current_app.config["EMAIL_ENABLED"]:
+                    return render_template("error.html.jinja2", error="Emailové notifikácie nie sú v prevádzke."), 400
                 email_exists = GroupSubscription.query.filter_by(email=frm.email.data).first() is not None
                 if email_exists:
                     return render_template("error.html.jinja2", error="Na daný email už je nastavená notifikácia.")
@@ -119,6 +121,8 @@ def group_subscribe():
                     return render_template("confirmation_sent.jinja2", email=subscription.email)
             if frm.push_sub.data:
                 # PUSH subscription
+                if not current_app.config["PUSH_ENABLED"]:
+                    return render_template("error.html.jinja2", error="PUSH notifikácie nie sú v prevádzke."), 400
                 try:
                     sub_data = json.loads(frm.push_sub.data)
                     if not isinstance(sub_data, dict) or "endpoint" not in sub_data:
@@ -150,6 +154,7 @@ def group_subscribe():
 
 
 @main.route("/groups/unsubscribe/<string(length=32):secret>", methods=["GET", "POST"])
+@embeddable
 def group_unsubscribe(secret):
     try:
         secret_bytes = unhexlify(secret)
@@ -190,7 +195,7 @@ def group_confirm(secret):
 
 @main.route("/spots/subscribe", methods=["GET", "POST"])
 @hcaptcha_required("push_sub")
-@embedable
+@embedded
 def spot_subscribe():
     frm = SpotSubscriptionForm()
 
@@ -213,6 +218,8 @@ def spot_subscribe():
         if frm.validate_on_submit():
             if frm.email.data:
                 # Email subscription
+                if not current_app.config["EMAIL_ENABLED"]:
+                    return render_template("error.html.jinja2", error="Emailové notifikácie nie sú v prevádzke."), 400
                 email_exists = SpotSubscription.query.filter_by(email=frm.email.data).first() is not None
                 if email_exists:
                     return render_template("error.html.jinja2", error="Na daný email už je nastavená notifikácia.")
@@ -228,6 +235,8 @@ def spot_subscribe():
                     return render_template("confirmation_sent.jinja2", email=frm.email.data)
             if frm.push_sub.data:
                 # PUSH subscription
+                if not current_app.config["PUSH_ENABLED"]:
+                    return render_template("error.html.jinja2", error="PUSH notifikácie nie sú v prevádzke."), 400
                 try:
                     sub_data = json.loads(frm.push_sub.data)
                     if not isinstance(sub_data, dict) or "endpoint" not in sub_data:
@@ -270,6 +279,7 @@ def spot_subscribe():
 
 
 @main.route("/spots/unsubscribe/<string(length=32):secret>", methods=["GET", "POST"])
+@embeddable
 def spot_unsubscribe(secret):
     try:
         secret_bytes = unhexlify(secret)
@@ -310,6 +320,7 @@ def spot_confirm(secret):
 
 
 @main.route("/both/unsubscribe/<string(length=32):secret>", methods=["GET", "POST"])
+@embeddable
 def both_unsubscribe(secret):
     try:
         secret_bytes = unhexlify(secret)
@@ -356,6 +367,7 @@ def both_confirm(secret):
 
 
 @main.route("/feedback", methods=["POST"])
+@embeddable
 def feedback():
     form = UnsubscriptionForm()
     if form.validate_on_submit():
