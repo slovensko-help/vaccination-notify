@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from json import JSONDecodeError
 from operator import attrgetter, itemgetter
 
-from flask import render_template, request, abort, current_app, jsonify, url_for, g
+from flask import render_template, request, abort, current_app, jsonify, url_for
 from sqlalchemy.orm import joinedload
 from pywebpush import webpush, WebPushException
 
@@ -27,10 +27,10 @@ def index():
     return render_template("index.html.jinja2")
 
 
-@main.route("/privacy")
-@embedded
-def privacy():
-    return render_template("privacy_policy.html.jinja2")
+# @main.route("/privacy")
+# @embedded
+# def privacy():
+#     return render_template("privacy_policy.html.jinja2")
 
 
 @main.route("/faq")

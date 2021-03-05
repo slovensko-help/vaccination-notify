@@ -15,7 +15,7 @@
     <div class="govuk-width-container">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
-                <h1 class="govuk-heading-xl"><i class="fas fa-calendar fa-fw"></i> Upozornenia o voľných termínoch</h1>
+                <h1 class="govuk-heading-xl">Upozornenia o voľných termínoch</h1>
                 <p class="govuk-body-lead">
                     Chcem dostávať upozornenia o voľných termínoch na očkovanie vo vybraných očkovacích miestach.
                 </p>
@@ -57,37 +57,6 @@
                         </div>
 
                         <div class="govuk-grid-row govuk-!-margin-top-6">
-                            <div class="govuk-grid-column-one-half" {% if not config['EMAIL_ENABLED'] %}style="color: #909090"{% endif %}>
-                                <h2 class="govuk-heading-l" {% if not config['EMAIL_ENABLED'] %}style="color: #909090"{% endif %}><i class="fas fa-envelope"></i> Email notifikácie</h2>
-                                {% if not config['EMAIL_ENABLED'] %}
-                                    <div class="govuk-warning-text">
-                                        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                                        <strong class="govuk-warning-text__text">
-                                            <span class="govuk-warning-text__assistive">Upozornenie</span>
-                                            Emailové notifikácie ešte nie sú v prevádzke.
-                                        </strong>
-                                    </div>
-                                {% endif %}
-                                <p class="govuk-body" {% if not config['EMAIL_ENABLED'] %}style="color: #909090"{% endif %}>
-                                    Emailové upozornenia budete dostávať vždy pri zmene voľných kapacít na úrovni mesta,
-                                    teda napríklad
-                                    keď v meste predtým neboli voľné termíny a už sú, alebo keď v meste termíny boli, no
-                                    všetky sa minuli.
-                                    Upozornenia vám nebudú chodiť častejšie ako raz
-                                    za {{ format_timedelta(config["SPOT_NOTIFICATION_BACKOFF"]) }}.
-                                </p>
-                                <div class="govuk-form-group {% if "email" in form.errors %}govuk-form-group--error{% endif %}">
-                                    <label for="email" class="govuk-label" {% if not config['EMAIL_ENABLED'] %}style="color: #909090"{% endif %}>Email</label>
-                                    {% for err in form.errors["email"] %}
-                                        <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ err }}</span>
-                                    {% endfor %}
-                                    {{ form.email(class_="govuk-input") }}
-                                    <div class="govuk-hint">Na tento email Vám budú chodiť upozornenia.</div>
-                                </div>
-                                <input id="email-submit" type="submit"
-                                       class="govuk-button {% if not config['EMAIL_ENABLED'] %}govuk-button--disabled{% endif %}" value="Chcem notifikácie na email"
-                                       {% if not config['EMAIL_ENABLED'] %}disabled{% endif %}/>
-                            </div>
                             <div class="govuk-grid-column-one-half" {% if not config['PUSH_ENABLED'] %}style="color: #909090"{% endif %}>
                                 <h2 class="govuk-heading-l" {% if not config['PUSH_ENABLED'] %}style="color: #909090"{% endif %}><i class="fas fa-bell"></i> PUSH notifikácie</h2>
                                 {% if not config['PUSH_ENABLED'] %}
@@ -110,6 +79,37 @@
                                     <input id="push-submit" type="submit" class="govuk-button {% if not config['PUSH_ENABLED'] %}govuk-button--disabled{% endif %}" value="Chcem PUSH notifikácie" {% if not config['PUSH_ENABLED'] %}disabled{% endif %}/>
                                     <input id="push-unsubscribe" style="display: none" type="submit" class="govuk-button govuk-button--warning" value="Zrušiť PUSH notifikácie"/>
                                 </div>
+                            </div>
+                            <div class="govuk-grid-column-one-half" {% if not config['EMAIL_ENABLED'] %}style="color: #909090"{% endif %}>
+                                <h2 class="govuk-heading-l" {% if not config['EMAIL_ENABLED'] %}style="color: #909090"{% endif %}><i class="fas fa-envelope"></i> Email notifikácie</h2>
+                                <p class="govuk-body" {% if not config['EMAIL_ENABLED'] %}style="color: #909090"{% endif %}>
+                                    Emailové upozornenia budete dostávať vždy pri zmene voľných kapacít na úrovni mesta,
+                                    teda napríklad
+                                    keď v meste predtým neboli voľné termíny a už sú, alebo keď v meste termíny boli, no
+                                    všetky sa minuli.
+                                    Upozornenia vám nebudú chodiť častejšie ako raz
+                                    za {{ format_timedelta(config["SPOT_NOTIFICATION_BACKOFF"]) }}.
+                                </p>
+                                {% if not config['EMAIL_ENABLED'] %}
+                                    <div class="govuk-warning-text">
+                                        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                                        <strong class="govuk-warning-text__text">
+                                            <span class="govuk-warning-text__assistive">Upozornenie</span>
+                                            Emailové notifikácie ešte nie sú v prevádzke.
+                                        </strong>
+                                    </div>
+                                {% endif %}
+                                <div class="govuk-form-group {% if "email" in form.errors %}govuk-form-group--error{% endif %}" {% if not config['EMAIL_ENABLED'] %}style="display: none"{% endif %}>
+                                    <label for="email" class="govuk-label">Email</label>
+                                    {% for err in form.errors["email"] %}
+                                        <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ err }}</span>
+                                    {% endfor %}
+                                    {{ form.email(class_="govuk-input") }}
+                                    <div class="govuk-hint">Na tento email Vám budú chodiť upozornenia.</div>
+                                </div>
+                                <input id="email-submit" type="submit"
+                                       class="govuk-button" value="Chcem notifikácie na email"
+                                       {% if not config['EMAIL_ENABLED'] %}disabled style="display: none"{% endif %}/>
                             </div>
                         </div>
                         <div id="hcaptcha" class="h-captcha" data-sitekey="{{ config["HCAPTCHA_SITEKEY"] }}"
