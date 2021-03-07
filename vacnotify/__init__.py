@@ -44,7 +44,8 @@ def before_send(event, hint):
 sentry_sdk.init(
     dsn=app.config["SENTRY_INGEST"],
     integrations=[FlaskIntegration(), SqlalchemyIntegration(), CeleryIntegration()],
-    traces_sample_rate=app.config["SENTRY_SAMPLE_RATE"],
+    sample_rate=app.config["SENTRY_ERROR_SAMPLE_RATE"],
+    traces_sample_rate=app.config["SENTRY_TRANSACTION_SAMPLE_RATE"],
     environment=app.env,
     debug=app.debug,
     before_send=before_send
