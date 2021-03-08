@@ -10,6 +10,7 @@ from operator import attrgetter, itemgetter
 from flask import render_template, request, abort, current_app, jsonify, url_for
 from sqlalchemy.orm import joinedload
 from pywebpush import webpush, WebPushException
+from requests.exceptions import ConnectionError
 
 from vacnotify import vapid_pubkey as pubkey, vapid_privkey as privkey, vapid_claims as claims, cache
 from vacnotify.blueprint import main
@@ -136,7 +137,9 @@ def group_subscribe():
                                                                      push=1)}),
                                 vapid_private_key=privkey,
                                 vapid_claims=claims)
-                    except WebPushException:
+                    except (WebPushException, ConnectionError):
+                        with transaction() as t:
+                            t.delete(subscription)
                         return render_template("error.html.jinja2", error="Odber notifikácii sa nepodarilo potvrdiť.")
                     return render_template("ok.html.jinja2", msg="Odber notifikácii bol potvrdený.")
         else:
@@ -185,7 +188,7 @@ def spot_subscribe():
     if request.method == "GET" or not frm.validate_on_submit():
         places = VaccinationPlace.query.options(joinedload(VaccinationPlace.days)).filter_by(online=True).all()
         places.sort(key=lambda place: locale.strxfrm(place.city.name))
-        dates = list(map(attrgetter("date"), places[0].days))
+        dates = list(map(attrgetter("date"), places[0].days)) if places else []
         dates.sort()
 
         last_stats = VaccinationStats.query.order_by(VaccinationStats.id.desc()).first()
@@ -232,7 +235,9 @@ def spot_subscribe():
                                                  "endpoint": url_for(".spot_confirm", secret=hexlify(secret).decode(), push=1)}),
                                 vapid_private_key=privkey,
                                 vapid_claims=claims)
-                    except WebPushException:
+                    except (WebPushException, ConnectionError):
+                        with transaction() as t:
+                            t.delete(subscription)
                         return render_template("error.html.jinja2", error="Odber notifikácii sa nepodarilo potvrdiť.")
                     return render_template("ok.html.jinja2", msg="Odber notifikácii bol potvrdený.")
         else:
