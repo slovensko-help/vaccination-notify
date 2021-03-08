@@ -254,12 +254,19 @@
                 dot.append("circle")
                     .attr("r", 3);
 
-                dot.append("text")
-                    .attr("fill", "black")
-                    .attr("font-family", "sans-serif")
-                    .attr("font-size", 10)
-                    .attr("text-anchor", "middle")
-                    .attr("y", -8);
+                let valueLabel = dot.append("text")
+                                    .attr("fill", "black")
+                                    .attr("font-family", "sans-serif")
+                                    .attr("font-size", 10)
+                                    .attr("text-anchor", "middle")
+                                    .attr("font-weight", "bolder")
+                                    .attr("y", -8);
+                let timeLabel = dot.append("text")
+                                    .attr("fill", "black")
+                                    .attr("font-family", "sans-serif")
+                                    .attr("font-size", 10)
+                                    .attr("text-anchor", "middle")
+                                    .attr("y", -18);
 
                 function moved(event) {
                     event.preventDefault();
@@ -272,7 +279,8 @@
                         const val = stats[len - i - 1][s.param];
                         dot.attr("fill", s.color);
                         dot.attr("transform", `translate(${x(dates[i])},${y(val)})`);
-                        dot.select("text").text(val);
+                        valueLabel.text(val);
+                        timeLabel.text(multiFormat(dates[i]));
                     }
                 }
 
