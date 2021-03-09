@@ -6,6 +6,7 @@ import sentry_sdk
 from flask_mail import Message
 from sqlalchemy import and_
 from functools import wraps
+from itertools import zip_longest
 
 import click
 import re
@@ -17,6 +18,7 @@ from vacnotify.tasks.email import email_confirmation
 from vacnotify.tasks.push import push_confirmation
 from vacnotify.tasks.query import run, compute_subscription_stats
 from vacnotify.models import SpotSubscription, GroupSubscription, Status, SubscriptionType
+
 
 
 def command_transaction(func):
@@ -149,13 +151,41 @@ def find_email(email):
 @app.cli.command("send-email", help="Send email using the app's sender.")
 @command_transaction
 @click.option("-s", "--subject", required=True, help="The subject of the email.")
-@click.option("-b", "--body", help="The content of the email body.")
-@click.option("-t", "--type", "content_type", help="The type of the body.", type=click.Choice(("html", "text")), default="text")
-@click.argument("recipients", nargs=-1)
-def send_email(subject, body, content_type, recipients):
-    msg = Message(subject, recipients=list(recipients))
-    if content_type == "html":
-        msg.html = body
-    if content_type == "text":
-        msg.body = body
-    mail.send(msg)
+@click.option("-b", "--body", help="The content of the email body.", type=click.File())
+@click.option("-c", "--content-type", "content_type", help="The type of the body.", type=click.Choice(("html", "text")), default="text")
+@click.option("-t", "--type", "sub_type", type=click.Choice(("spot", "group", "both")), help="Which subscription type to send confirmation to.", default="both")
+@click.option("--status", type=click.Choice(Status), help="Status of subs to send to.", default=Status.CONFIRMED)
+@click.option("--batch", type=int, help="Amount of emails to send per connection.", default=1)
+@click.option("--dry-run", "dry_run", is_flag=True, help="Do not actually send anything.")
+def send_email(subject, body, content_type, sub_type, status, batch, dry_run):
+    def grouper(n, iterable, padvalue=None):
+        "grouper(3, 'abcdefg', 'x') --> ('a','b','c'), ('d','e','f'), ('g','x','x')"
+        return zip_longest(*[iter(iterable)] * n, fillvalue=padvalue)
+    to_send = set()
+    if sub_type in ("spot", "both"):
+        subs = SpotSubscription.query.filter(SpotSubscription.status == status).all()
+        to_send.update([sub.email for sub in subs])
+    if sub_type in ("group", "both"):
+        subs = GroupSubscription.query.filter(GroupSubscription.status == status).all()
+        to_send.update([sub.email for sub in subs])
+    click.echo(f"[ ] Senfing to {len(to_send)} emails. Batching to {batch}. {'Dry-run' if dry_run else ''}")
+    click.confirm("Continue?", abort=True)
+
+    content = body.read()
+
+    for email_batch in grouper(batch, to_send):
+        click.echo("[ ] Connecting to server.")
+        with mail.connect() as conn:
+            for email in email_batch:
+                if email is None:
+                    continue
+                if dry_run:
+                    click.echo(f"[ ] Would send email to {email}.")
+                    continue
+                click.echo(f"[ ] Sending email to {email}.")
+                msg = Message(subject, recipients=[email])
+                if content_type == "html":
+                    msg.html = content
+                if content_type == "text":
+                    msg.body = content
+                conn.send(msg)

@@ -385,7 +385,8 @@ def run():
             t.add(SubscriptionStats(now, **sub_stats))
 
     with sentry_sdk.start_span(op="notify", description="Notify groups"):
-        notify_groups()
+        #notify_groups()
+        pass
     with sentry_sdk.start_span(op="notify", description="Notify places"):
         notify_spots()
 
