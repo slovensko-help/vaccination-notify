@@ -20,3 +20,4 @@ email_validator
 wtforms
 pywebpush
 ua-parser
+tqdm

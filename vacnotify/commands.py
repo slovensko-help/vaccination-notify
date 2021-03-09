@@ -12,10 +12,11 @@ import click
 import re
 
 from sqlalchemy.orm import joinedload
+from tqdm import tqdm
 
 from vacnotify import app, mail
 from vacnotify.tasks.email import email_confirmation
-from vacnotify.tasks.push import push_confirmation
+from vacnotify.tasks.push import push_confirmation, push_notification
 from vacnotify.tasks.query import run, compute_subscription_stats
 from vacnotify.models import SpotSubscription, GroupSubscription, Status, SubscriptionType
 
@@ -154,26 +155,26 @@ def find_email(email):
 @click.option("-b", "--body", help="The content of the email body.", type=click.File())
 @click.option("-c", "--content-type", "content_type", help="The type of the body.", type=click.Choice(("html", "text")), default="text")
 @click.option("-t", "--type", "sub_type", type=click.Choice(("spot", "group", "both")), help="Which subscription type to send confirmation to.", default="both")
-@click.option("--status", type=click.Choice(Status), help="Status of subs to send to.", default=Status.CONFIRMED)
+@click.option("--status", type=click.Choice(("CONFIRMED", "UNCONFIRMED")), help="Status of subs to send to.", default="CONFIRMED")
 @click.option("--batch", type=int, help="Amount of emails to send per connection.", default=1)
 @click.option("--dry-run", "dry_run", is_flag=True, help="Do not actually send anything.")
 def send_email(subject, body, content_type, sub_type, status, batch, dry_run):
+    status = Status.CONFIRMED if status == "CONFIRMED" else Status.UNCONFIRMED
     def grouper(n, iterable, padvalue=None):
-        "grouper(3, 'abcdefg', 'x') --> ('a','b','c'), ('d','e','f'), ('g','x','x')"
         return zip_longest(*[iter(iterable)] * n, fillvalue=padvalue)
     to_send = set()
     if sub_type in ("spot", "both"):
-        subs = SpotSubscription.query.filter(SpotSubscription.status == status).all()
+        subs = SpotSubscription.query.filter(SpotSubscription.status == status, SpotSubscription.email.isnot(None)).all()
         to_send.update([sub.email for sub in subs])
     if sub_type in ("group", "both"):
-        subs = GroupSubscription.query.filter(GroupSubscription.status == status).all()
+        subs = GroupSubscription.query.filter(GroupSubscription.status == status, GroupSubscription.email.isnot(None)).all()
         to_send.update([sub.email for sub in subs])
-    click.echo(f"[ ] Senfing to {len(to_send)} emails. Batching to {batch}. {'Dry-run' if dry_run else ''}")
+    click.echo(f"[ ] Sending to {len(to_send)} emails. Batching to {batch}. {'Dry-run' if dry_run else ''}")
     click.confirm("Continue?", abort=True)
 
     content = body.read()
 
-    for email_batch in grouper(batch, to_send):
+    for email_batch in tqdm(grouper(batch, to_send)):
         click.echo("[ ] Connecting to server.")
         with mail.connect() as conn:
             for email in email_batch:
@@ -182,10 +183,37 @@ def send_email(subject, body, content_type, sub_type, status, batch, dry_run):
                 if dry_run:
                     click.echo(f"[ ] Would send email to {email}.")
                     continue
-                click.echo(f"[ ] Sending email to {email}.")
+                #click.echo(f"[ ] Sending email to {email}.")
                 msg = Message(subject, recipients=[email])
                 if content_type == "html":
                     msg.html = content
                 if content_type == "text":
                     msg.body = content
                 conn.send(msg)
+
+
+@app.cli.command("send-push")
+@click.option("-b", "--body", help="The content of the body.", type=click.File())
+@click.option("-t", "--type", "sub_type", type=click.Choice(("spot", "group", "both")), help="Which subscription type to send confirmation to.", default="both")
+@click.option("--status", type=click.Choice(("CONFIRMED", "UNCONFIRMED")), help="Status of subs to send to.", default="CONFIRMED")
+@click.option("--dry-run", "dry_run", is_flag=True, help="Do not actually send anything.")
+def send_push(body, sub_type, status, dry_run):
+    status = Status.CONFIRMED if status == "CONFIRMED" else Status.UNCONFIRMED
+    to_send = set()
+    if sub_type in ("spot", "both"):
+        subs = SpotSubscription.query.filter(SpotSubscription.status == status, SpotSubscription.push_sub_endpoint.isnot(None)).all()
+        to_send.update([sub.push_sub for sub in subs])
+    if sub_type in ("group", "both"):
+        subs = GroupSubscription.query.filter(GroupSubscription.status == status, GroupSubscription.push_sub_endpoint.isnot(None)).all()
+        to_send.update([sub.push_sub for sub in subs])
+    click.echo(f"[ ] Sending to {len(to_send)} subscriptions. {'Dry-run' if dry_run else ''}")
+    click.confirm("Continue?", abort=True)
+
+    content = body.read()
+
+    for push_sub in tqdm(to_send):
+        if dry_run:
+            click.echo(f"[ ] Would send PUSH.")
+            continue
+        sub_info = json.loads(push_sub)
+        push_notification(sub_info, content)
