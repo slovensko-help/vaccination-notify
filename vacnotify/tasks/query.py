@@ -259,11 +259,11 @@ def notify_groups():
     all_groups = EligibilityGroup.query.all()
     now = datetime.now()
     group_backoff_time = timedelta(seconds=current_app.config["GROUP_NOTIFICATION_BACKOFF"])
-    group_subs_email = GroupSubscription.query.populate_existing().options(selectinload(GroupSubscription.known_groups)).filter(
+    group_subs_email = GroupSubscription.query.filter(
         and_(GroupSubscription.status == Status.CONFIRMED,
              GroupSubscription.push_sub.is_(None),
              or_(GroupSubscription.last_notification_at.is_(None),
-                 GroupSubscription.last_notification_at < now - group_backoff_time))).all()
+                 GroupSubscription.last_notification_at < now - group_backoff_time)))
     for subscription in group_subs_email:
         try:
             new_subscription_groups = set(map(attrgetter("item_description"), set(all_groups) - set(subscription.known_groups)))
@@ -276,11 +276,11 @@ def notify_groups():
         except (ObjectDeletedError, StaleDataError) as e:
             logging.warn(f"Got some races: {e}")
 
-    group_subs_push = GroupSubscription.query.populate_existing().options(selectinload(GroupSubscription.known_groups)).filter(
+    group_subs_push = GroupSubscription.query.filter(
         and_(GroupSubscription.status == Status.CONFIRMED,
              GroupSubscription.email.is_(None),
              or_(GroupSubscription.last_notification_at.is_(None),
-                 GroupSubscription.last_notification_at < now - group_backoff_time))).all()
+                 GroupSubscription.last_notification_at < now - group_backoff_time)))
     for subscription in group_subs_push:
         try:
             new_subscription_groups = set(map(attrgetter("item_description"), set(all_groups) - set(subscription.known_groups)))
@@ -298,11 +298,11 @@ def notify_spots():
     # Send out the spot notifications.
     now = datetime.now()
     spot_backoff_time = timedelta(seconds=current_app.config["SPOT_NOTIFICATION_BACKOFF"])
-    spot_subs_email = SpotSubscription.query.populate_existing().options(selectinload(SpotSubscription.cities).selectinload(VaccinationCity.places), selectinload(SpotSubscription.known_cities)).filter(
+    spot_subs_email = SpotSubscription.query.filter(
         and_(SpotSubscription.status == Status.CONFIRMED,
              SpotSubscription.push_sub.is_(None),
              or_(SpotSubscription.last_notification_at.is_(None),
-                 SpotSubscription.last_notification_at < now - spot_backoff_time))).all()
+                 SpotSubscription.last_notification_at < now - spot_backoff_time)))
 
     for subscription in spot_subs_email:
         try:
@@ -322,11 +322,11 @@ def notify_spots():
         except (ObjectDeletedError, StaleDataError) as e:
             logging.warn(f"Got some races: {e}")
 
-    spot_subs_push = SpotSubscription.query.populate_existing().options(selectinload(SpotSubscription.cities).selectinload(VaccinationCity.places), selectinload(SpotSubscription.known_cities)).filter(
+    spot_subs_push = SpotSubscription.query.filter(
         and_(SpotSubscription.status == Status.CONFIRMED,
              SpotSubscription.email.is_(None),
              or_(SpotSubscription.last_notification_at.is_(None),
-                 SpotSubscription.last_notification_at < now - spot_backoff_time))).all()
+                 SpotSubscription.last_notification_at < now - spot_backoff_time)))
     for subscription in spot_subs_push:
         try:
             free_cities = set(city for city in subscription.cities if city.free_online)
@@ -385,7 +385,7 @@ def run():
             t.add(SubscriptionStats(now, **sub_stats))
 
     with sentry_sdk.start_span(op="notify", description="Notify groups"):
-        #notify_groups()
+        notify_groups()
         pass
     with sentry_sdk.start_span(op="notify", description="Notify places"):
         notify_spots()
