@@ -15,7 +15,7 @@ from celery.utils.log import get_task_logger
 from flask import current_app
 from requests.utils import default_user_agent
 from sqlalchemy import and_, or_
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload, subqueryload
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from stem import Signal
 from stem.control import Controller
@@ -296,29 +296,44 @@ def notify_groups():
 
 def notify_spots():
     # Send out the spot notifications.
+    all_cities = VaccinationCity.query.all()
+    all_places = VaccinationPlace.query.all()
+    free_map = {city.id: city.free_online for city in all_cities}
+    place_map = {place.id: (place.title, place.free) for place in all_places if place.online and place.free}
+
     now = datetime.now()
     spot_backoff_time = timedelta(seconds=current_app.config["SPOT_NOTIFICATION_BACKOFF"])
     spot_subs_email = SpotSubscription.query.filter(
         and_(SpotSubscription.status == Status.CONFIRMED,
              SpotSubscription.push_sub.is_(None),
              or_(SpotSubscription.last_notification_at.is_(None),
-                 SpotSubscription.last_notification_at < now - spot_backoff_time)))
+                 SpotSubscription.last_notification_at < now - spot_backoff_time))).all()
 
+    to_send_email = []
     for subscription in spot_subs_email:
-        try:
-            free_cities = set(city for city in subscription.cities if city.free_online)
+        free_cities = set(city for city in subscription.cities if free_map[city.id])
+        if free_cities != set(subscription.known_cities):
             city_diff = free_cities.difference(subscription.known_cities)
-            if free_cities != set(subscription.known_cities):
-                with transaction():
-                    if free_cities and all(city.free_online > 1 for city in city_diff):
-                        logging.info(f"Sending spot notification to [{subscription.id}] {remove_pii(subscription.email)}.")
-                        new_subscription_cities = {city.name: {
-                            "free": city.free_online,
-                            "places": [(place.title, place.free) for place in city.places if place.online and place.free]
-                        } for city in free_cities}
-                        email_notification_spot.delay(subscription.email, hexlify(subscription.secret).decode(), new_subscription_cities)
-                        subscription.last_notification_at = now
-                    subscription.known_cities = list(free_cities)
+            send_notification = all(free_map[city.id] > 1 for city in city_diff)
+            to_send_email.append({
+                "subscription": subscription,
+                "free_cities": free_cities,
+                "send_notification": send_notification
+            })
+    for entry in to_send_email:
+        subscription = entry['subscription']
+        try:
+            with transaction():
+                if entry["free_cities"] and entry["send_notification"]:
+                    logging.info(f"Sending spot notification to [{subscription.id}].")
+                    new_subscription_cities = {city.name: {
+                        "free": free_map[city.id],
+                        "places": [place_map[place.id] for place in city.places if place.id in place_map]
+                    } for city in entry["free_cities"]}
+                    email_notification_spot.delay(entry['subscription'].email, hexlify(subscription.secret).decode(),
+                                                  new_subscription_cities)
+                    subscription.last_notification_at = now
+                subscription.known_cities = list(entry["free_cities"])
         except (ObjectDeletedError, StaleDataError) as e:
             logging.warn(f"Got some races: {e}")
 
@@ -326,20 +341,30 @@ def notify_spots():
         and_(SpotSubscription.status == Status.CONFIRMED,
              SpotSubscription.email.is_(None),
              or_(SpotSubscription.last_notification_at.is_(None),
-                 SpotSubscription.last_notification_at < now - spot_backoff_time)))
+                 SpotSubscription.last_notification_at < now - spot_backoff_time))).all()
+    to_send_push = []
     for subscription in spot_subs_push:
-        try:
-            free_cities = set(city for city in subscription.cities if city.free_online)
+        free_cities = set(city for city in subscription.cities if free_map[city.id])
+        if free_cities != set(subscription.known_cities):
             city_diff = free_cities.difference(subscription.known_cities)
-            if free_cities != set(subscription.known_cities):
-                with transaction():
-                    if free_cities and all(city.free_online > 1 for city in city_diff):
-                        logging.info(f"Sending spot notification to [{subscription.id}].")
-                        new_subscription_cities = {city.name: city.free_online for city in free_cities}
-                        push_notification_spot.delay(json.loads(subscription.push_sub), hexlify(subscription.secret).decode(),
-                                                     new_subscription_cities)
-                        subscription.last_notification_at = now
-                    subscription.known_cities = list(free_cities)
+            send_notification = all(free_map[city.id] > 1 for city in city_diff)
+            to_send_push.append({
+                "subscription": subscription,
+                "free_cities": free_cities,
+                "send_notification": send_notification
+            })
+    for entry in to_send_push:
+        subscription = entry['subscription']
+        try:
+            with transaction():
+                if entry["free_cities"] and entry["send_notification"]:
+                    logging.info(f"Sending spot notification to [{subscription.id}].")
+                    new_subscription_cities = {city.name: free_map[city.id] for city in entry["free_cities"]}
+                    push_notification_spot.delay(json.loads(subscription.push_sub),
+                                                 hexlify(subscription.secret).decode(),
+                                                 new_subscription_cities)
+                    subscription.last_notification_at = now
+                subscription.known_cities = list(entry["free_cities"])
         except (ObjectDeletedError, StaleDataError) as e:
             logging.warn(f"Got some races: {e}")
 
@@ -385,7 +410,7 @@ def run():
             t.add(SubscriptionStats(now, **sub_stats))
 
     with sentry_sdk.start_span(op="notify", description="Notify groups"):
-        notify_groups()
+        #notify_groups()
         pass
     with sentry_sdk.start_span(op="notify", description="Notify places"):
         notify_spots()
