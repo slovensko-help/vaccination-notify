@@ -3,6 +3,7 @@ from binascii import hexlify
 from datetime import timedelta, datetime
 
 import sentry_sdk
+from flask import url_for
 from flask_mail import Message
 from sqlalchemy import and_
 from functools import wraps
@@ -159,36 +160,50 @@ def find_email(email):
 @click.option("--batch", type=int, help="Amount of emails to send per connection.", default=1)
 @click.option("--dry-run", "dry_run", is_flag=True, help="Do not actually send anything.")
 def send_email(subject, body, content_type, sub_type, status, batch, dry_run):
-    status = Status.CONFIRMED if status == "CONFIRMED" else Status.UNCONFIRMED
     def grouper(n, iterable, padvalue=None):
         return zip_longest(*[iter(iterable)] * n, fillvalue=padvalue)
+
+    status = Status.CONFIRMED if status == "CONFIRMED" else Status.UNCONFIRMED
+
     to_send = set()
     if sub_type in ("spot", "both"):
         subs = SpotSubscription.query.filter(SpotSubscription.status == status, SpotSubscription.email.isnot(None)).all()
-        to_send.update([sub.email for sub in subs])
+        to_send.update([(sub.email, sub.secret, "spot") for sub in subs])
     if sub_type in ("group", "both"):
         subs = GroupSubscription.query.filter(GroupSubscription.status == status, GroupSubscription.email.isnot(None)).all()
-        to_send.update([sub.email for sub in subs])
+        to_send.update([(sub.email, sub.secret, "group") for sub in subs])
     click.echo(f"[ ] Sending to {len(to_send)} emails. Batching to {batch}. {'Dry-run' if dry_run else ''}")
     click.confirm("Continue?", abort=True)
 
+    joined_send = {}
+    for email, secret, stype in to_send:
+        if secret in joined_send:
+            joined_send[secret] = (email, "both")
+        else:
+            joined_send[secret] = (email, stype)
+
     content = body.read()
 
-    for email_batch in tqdm(grouper(batch, to_send)):
+    for entry_batch in tqdm(grouper(batch, joined_send.items())):
         click.echo("[ ] Connecting to server.")
         with mail.connect() as conn:
-            for email in email_batch:
-                if email is None:
+            for entry in entry_batch:
+                if entry is None:
                     continue
+                secret, pair = entry
+                email, stype = pair
+                unsub_link = url_for(f"main.{stype}_unsubscribe", secret=secret)
                 if dry_run:
                     click.echo(f"[ ] Would send email to {email}.")
                     continue
-                #click.echo(f"[ ] Sending email to {email}.")
                 msg = Message(subject, recipients=[email])
                 if content_type == "html":
-                    msg.html = content
+                    msg.html = content + f"""\n<p>Ak už nechcete dostávať notifikačné emaily, kliknite na link nižšie alebo ho skopírujte do svojho webového
+                                                  prehliadača. Po odhlásení už notifikácie dostávať nebudete a Vaše osobné údaje (email) budú vymazané.
+                                               </p>
+                                               <a href="{ unsub_link }" target="_blank">{ unsub_link }</a>"""
                 if content_type == "text":
-                    msg.body = content
+                    msg.body = content + f"""\nAk už nechcete dostávať notifikačné emaily, kliknite na link nižšie alebo ho skopírujte do svojho webového prehliadača. Po odhlásení už notifikácie dostávať nebudete a Vaše osobné údaje (email) budú vymazané.\n{ unsub_link }"""
                 conn.send(msg)
 
 
