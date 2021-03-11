@@ -192,7 +192,7 @@ def send_email(subject, body, content_type, sub_type, status, batch, dry_run):
                     continue
                 secret, pair = entry
                 email, stype = pair
-                unsub_link = url_for(f"main.{stype}_unsubscribe", secret=secret)
+                unsub_link = url_for(f"main.{stype}_unsubscribe", secret=hexlify(secret).decode())
                 if dry_run:
                     click.echo(f"[ ] Would send email to {email}.")
                     continue
