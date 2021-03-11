@@ -185,9 +185,8 @@ def send_email(subject, body, content_type, sub_type, status, batch, dry_run):
     content = body.read()
 
     for entry_batch in tqdm(grouper(batch, joined_send.items())):
-        click.echo("[ ] Connecting to server.")
         with mail.connect() as conn:
-            for entry in entry_batch:
+            for entry in tqdm(entry_batch, leave=False):
                 if entry is None:
                     continue
                 secret, pair = entry
