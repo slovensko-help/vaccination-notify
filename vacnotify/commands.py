@@ -156,10 +156,11 @@ def find_email(email):
 @click.option("-b", "--body", help="The content of the email body.", type=click.File())
 @click.option("-c", "--content-type", "content_type", help="The type of the body.", type=click.Choice(("html", "text")), default="text")
 @click.option("-t", "--type", "sub_type", type=click.Choice(("spot", "group", "both")), help="Which subscription type to send confirmation to.", default="both")
+@click.option("-u", "--unsub", is_flag=True, help="Attach unsubscribe link.")
 @click.option("--status", type=click.Choice(("CONFIRMED", "UNCONFIRMED")), help="Status of subs to send to.", default="CONFIRMED")
 @click.option("--batch", type=int, help="Amount of emails to send per connection.", default=1)
 @click.option("--dry-run", "dry_run", is_flag=True, help="Do not actually send anything.")
-def send_email(subject, body, content_type, sub_type, status, batch, dry_run):
+def send_email(subject, body, content_type, sub_type, unsub, status, batch, dry_run):
     def grouper(n, iterable, padvalue=None):
         return zip_longest(*[iter(iterable)] * n, fillvalue=padvalue)
 
@@ -172,8 +173,6 @@ def send_email(subject, body, content_type, sub_type, status, batch, dry_run):
     if sub_type in ("group", "both"):
         subs = GroupSubscription.query.filter(GroupSubscription.status == status, GroupSubscription.email.isnot(None)).all()
         to_send.update([(sub.email, sub.secret, "group") for sub in subs])
-    click.echo(f"[ ] Sending to {len(to_send)} emails. Batching to {batch}. {'Dry-run' if dry_run else ''}")
-    click.confirm("Continue?", abort=True)
 
     joined_send = {}
     for email, secret, stype in to_send:
@@ -181,6 +180,9 @@ def send_email(subject, body, content_type, sub_type, status, batch, dry_run):
             joined_send[secret] = (email, "both")
         else:
             joined_send[secret] = (email, stype)
+
+    click.echo(f"[ ] Sending to {len(joined_send)} emails. Batching to {batch}. {'Dry-run' if dry_run else ''}")
+    click.confirm("Continue?", abort=True)
 
     content = body.read()
 
@@ -197,12 +199,16 @@ def send_email(subject, body, content_type, sub_type, status, batch, dry_run):
                     continue
                 msg = Message(subject, recipients=[email])
                 if content_type == "html":
-                    msg.html = content + f"""\n<p>Ak už nechcete dostávať notifikačné emaily, kliknite na link nižšie alebo ho skopírujte do svojho webového
+                    msg.html = content
+                    if unsub:
+                        msg.html += f"""\n<p>Ak už nechcete dostávať notifikačné emaily, kliknite na link nižšie alebo ho skopírujte do svojho webového
                                                   prehliadača. Po odhlásení už notifikácie dostávať nebudete a Vaše osobné údaje (email) budú vymazané.
                                                </p>
-                                               <a href="{ unsub_link }" target="_blank">{ unsub_link }</a>"""
+                                               <a href="{unsub_link}" target="_blank">{unsub_link}</a>"""
                 if content_type == "text":
-                    msg.body = content + f"""\nAk už nechcete dostávať notifikačné emaily, kliknite na link nižšie alebo ho skopírujte do svojho webového prehliadača. Po odhlásení už notifikácie dostávať nebudete a Vaše osobné údaje (email) budú vymazané.\n{ unsub_link }"""
+                    msg.body = content
+                    if unsub:
+                        msg.body += f"""\nAk už nechcete dostávať notifikačné emaily, kliknite na link nižšie alebo ho skopírujte do svojho webového prehliadača. Po odhlásení už notifikácie dostávať nebudete a Vaše osobné údaje (email) budú vymazané.\n{ unsub_link }"""
                 conn.send(msg)
 
 

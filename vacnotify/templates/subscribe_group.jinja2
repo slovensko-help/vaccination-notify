@@ -44,7 +44,8 @@
                                     {{ form.email(class_="form-control") }}
                                     <div class="form-text">Na tento email Vám budú chodiť notifikácie.</div>
                                 </div>
-                                <input id="email-submit" type="submit" class="btn btn-primary" value="Chcem notifikácie na email"/>
+                                <h2><span class="badge bg-secondary"><i class="fas fa-exclamation-triangle"></i> Notifikácie boli vypnuté.</span></h2>
+                                <!--<input id="email-submit" type="submit" class="btn btn-primary" value="Chcem notifikácie na email" disabled/>-->
                             </div>
                             <div class="col-sm gx-4 gy-4">
                                 <h3><i class="fas fa-bell"></i> PUSH notifikácie</h3>
@@ -52,7 +53,8 @@
                                     Pri použití push notifikácii nie je potrebný email.</p>
                                 {{ form.push_sub() }}
                                 <p id="push-unsupported" class="d-none"><i class="fas fa-exclamation-triangle"></i> Váš prehliadač nepodporuje PUSH notifikácie.</p>
-                                <input id="push-submit" type="submit" class="btn btn-primary" value="Chcem PUSH notifikácie"/>
+                                <h2><span class="badge bg-secondary"><i class="fas fa-exclamation-triangle"></i> Notifikácie boli vypnuté.</span></h2>
+                                <!--<input id="push-submit" type="submit" class="btn btn-primary" value="Chcem PUSH notifikácie" disabled/>-->
                             </div>
                         </div>
                         <div id="hcaptcha" class="h-captcha" data-sitekey="{{ config["HCAPTCHA_SITEKEY"] }}" data-callback="onSubmit" data-size="invisible"></div>
