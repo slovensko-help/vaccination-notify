@@ -2,7 +2,7 @@
 {% from "utils.html.jinja2" import render_alerts %}
 {% block head %}
     {{ super() }}
-    <meta name="description" content="Táto stránka poskytuje notifikácie o voľných miestach na očkovanie proti COVID-19 a tiež o momente otvorenia očkovacieho formuláru pre nové skupiny obyvateľov."/>
+    <meta name="description" content="Táto stránka poskytovala notifikácie o voľných miestach na očkovanie proti COVID-19 a tiež o momente otvorenia očkovacieho formuláru pre nové skupiny obyvateľov."/>
     <meta property="og:title" content="Notifikácie o COVID-19 vakcinácii"/>
     <meta property="og:type" content="website"/>
     <meta property="og:image" content="{{ url_for('static', filename='img/virus.svg', _external=True) }}"/>
@@ -16,61 +16,266 @@
     <div class="row">
         <div class="col-sm-10 mx-auto">
             <h1>Notifikácie o COVID-19 vakcinácii</h1>
-            <p class="lead"><b>Aj vy ste sa dozvedeli o otvorení očkovania pre novú skupinu ľudí z Facebooku ministra
-                zdravotníctva? Už nikdy viac!</b> 🔥</p>
-            <p class="lead">Táto stránka poskytuje notifikácie na Váš email o voľných miestach na očkovanie proti
+            <p class="lead">Táto stránka poskytovala notifikácie na Váš email o voľných miestach na očkovanie proti
                 ochoreniu COVID-19 a tiež o momente otvorenia očkovacieho formulára pre nové skupiny obyvateľov. Stránka
-                používa informácie od NCZI. Stránka neslúži na registrovanie na očkovanie, pre registráciu na očkovanie
-                použite <a href="https://www.old.korona.gov.sk/covid-19-vaccination-form.php" rel="noopener" target="_blank">formulár NCZI</a>.
+                používala informácie od NCZI. Stránka neslúži na registrovanie na očkovanie, pre registráciu na očkovanie
+                použite <a href="https://vakcinacia.nczisk.sk/" rel="noopener" target="_blank">formulár NCZI</a>.
                 Pre aktuálne informácie o ochorení COVID-19 choďte na <a href="https://korona.gov.sk" rel="noopener" target="_blank">korona.gov.sk</a>.</p>
             {{ render_alerts(get_alerts()) }}
         </div>
     </div>
     <div class="row mt-2 mb-5">
         <div class="col-sm-10 mx-auto">
-            <div class="row gx-4 gy-4">
-                <div class="col-sm">
-                    <div class="card bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">Voľné miesta</h5>
-                            <p class="card-text">Chcem dostávať notifikácie o voľných termínoch na&nbsp;očkovanie
-                                vo vybraných očkovacích miestach.</p>
-                            <a href="{{ url_for('main.spot_subscribe') }}" class="btn btn-primary">Ďalej</a>
-                            <a href="{{ url_for('main.spot_subscribe', _anchor="places-table") }}"
-                               class="btn btn-outline-secondary">Prehľad voľných termínov</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm">
-                    <div class="card bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">Nová skupina</h5>
-                            <p class="card-text">Chcem dostávať notifikácie o otvorení očkovania pre novú
-                                skupinu ľudí.</p>
-                            <a href="{{ url_for('main.group_subscribe') }}" class="btn btn-primary">Ďalej</a>
-                            <a href="{{ url_for('main.group_subscribe', _anchor="groups-list") }}"
-                               class="btn btn-outline-secondary">Prehľad skupín</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row mt-2 gx-4 gy-4">
-                <div class="col-sm">
-                    <div class="card bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">Štatistiky</h5>
-                            <p class="card-text">Chcem vidieť grafy s počtom dostupných termínov na očkovanie a
-                                dostupných očkovacích miest.</p>
-                            <a href="{{ url_for('main.stats') }}" class="btn btn-primary">Ďalej</a>
-                            <a href="{{ url_for('main.stats', _anchor="vaccinations") }}"
-                               class="btn btn-outline-secondary">Prehľad očkovania</a>
-                            <a href="{{ url_for('main.stats', _anchor="subscriptions") }}"
-                               class="btn btn-outline-secondary">Prehľad odberov notifikácii</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <p>
+                Služba bola vypnutá. Bola spustená registrácia do čakárne na očkovanie a notifikácie sú teda nepotrebné.
+                Pre registráciu do čakárne na očkovanie použite <a href="https://vakcinacia.nczisk.sk/" rel="noopener" target="_blank">formulár NCZI</a>.</p>
         </div>
+        <div id="vaccination-stats-spots"></div>
+        <div id="subscription-stats-both"></div>
     </div>
+
+    <script type="text/javascript">
+        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+        const bp = Math.max(vw, vh);
+        let width = 900;
+        let height = 300;
+        if (bp < 576) {
+            width *= 0.7;
+            height *= 0.7;
+        } else if (bp <= 768) {
+            width *= 0.8;
+            height *= 0.8;
+        } else if (bp <= 992) {
+            width *= 0.9;
+            height *= 0.9;
+        } else if (bp <= 1200) {
+        } else {
+            width *= 1.1;
+            height *= 1.1;
+        }
+
+        let margin = ({top: 20, right: 30, bottom: 30, left: 50});
+
+        let locale = {
+            "dateTime": "%A,%e.%B %Y, %X",
+            "date": "%-d.%-m.%Y",
+            "time": "%H:%M:%S",
+            "periods": ["AM", "PM"],
+            "days": ["nedeľa", "pondelok", "utorok", "streda", "štvrtok", "piatok", "sobota"],
+            "shortDays": ["ne.", "po.", "ut.", "st.", "št.", "pia.", "so."],
+            "months": ["január", "február", "marec", "apríl", "máj", "jún", "júl", "august", "september", "október", "november", "december"],
+            "shortMonths": ["jan", "feb", "mar", "apr", "máj", "jún", "júl", "aug", "sep", "okt", "nov", "dec"]
+        }
+        d3.timeFormatDefaultLocale(locale);
+
+        let formatMillisecond = d3.timeFormat(".%L"),
+            formatSecond = d3.timeFormat(":%S"),
+            formatMinute = d3.timeFormat("%H:%M"),
+            formatHour = d3.timeFormat("%H:00"),
+            formatDay = d3.timeFormat("%a %d"),
+            formatWeek = d3.timeFormat("%b %d"),
+            formatMonth = d3.timeFormat("%B"),
+            formatYear = d3.timeFormat("%Y");
+
+        function multiFormat(date) {
+            return (d3.timeSecond(date) < date ? formatMillisecond
+                : d3.timeMinute(date) < date ? formatSecond
+                    : d3.timeHour(date) < date ? formatMinute
+                        : d3.timeDay(date) < date ? formatHour
+                            : d3.timeMonth(date) < date ? (d3.timeWeek(date) < date ? formatDay : formatWeek)
+                                : d3.timeYear(date) < date ? formatMonth
+                                    : formatYear)(date);
+        }
+
+        function plotLine(stats, variables, id) {
+            //param, max_offset, color, label, id
+            let maxVal = Math.max.apply(null, variables.map(variable => d3.max(stats, d => d[variable.param]) + variable.max_offset));
+            let dates = stats.map(d => d.datetime).reverse();
+            let len = stats.length;
+            let y = d3.scaleLinear()
+                .domain([0, maxVal]).nice()
+                .range([height - margin.bottom, margin.top]);
+            let yAxis = g => {
+                let r = g.attr("transform", `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(y))
+                    .call(g => g.selectAll(".tick line").clone()
+                        .attr("x2", width - (margin.right + margin.left))
+                        .attr("stroke-opacity", 0.1));
+                variables.forEach((variable, i) => {
+                    r = r.call(g => g.select(`.tick:nth-of-type(${i + 2})`).insert("circle")
+                        .attr("fill", variable.color)
+                        .attr("cx", 10)
+                        .attr("r", 4));
+                    r = r.call(g => g.select(`.tick:nth-of-type(${i + 2}) text`).clone()
+                        .attr("x", 15)
+                        .attr("text-anchor", "start")
+                        .attr("font-weight", "bold")
+                        .text(variable.label));
+                });
+                return r;
+            }
+
+            let x = d3.scaleTime()
+                .domain(d3.extent(stats, d => d.datetime))
+                .range([margin.left, width - margin.right]);
+            let xAxis = g => g
+                .attr("transform", `translate(0,${height - margin.bottom})`)
+                .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0).tickFormat(multiFormat))
+                .call(g => g.selectAll(".tick line").clone()
+                    .attr("y2", -height + margin.top + margin.bottom)
+                    .attr("stroke-opacity", 0.1));
+
+            let hover = svg => {
+                if ("ontouchstart" in document) svg
+                    .style("-webkit-tap-highlight-color", "transparent")
+                    .on("touchmove", moved)
+                    .on("touchstart", entered)
+                    .on("touchend", left)
+                else svg
+                    .on("mousemove", moved)
+                    .on("mouseenter", entered)
+                    .on("mouseleave", left);
+
+                const dot = svg.append("g")
+                    .attr("display", "none");
+
+                dot.append("circle")
+                    .attr("r", 3);
+
+                let valueLabel = dot.append("text")
+                                    .attr("fill", "black")
+                                    .attr("font-family", "sans-serif")
+                                    .attr("font-size", 10)
+                                    .attr("text-anchor", "middle")
+                                    .attr("font-weight", "bolder")
+                                    .attr("y", -8);
+                let timeLabel = dot.append("text")
+                                    .attr("fill", "black")
+                                    .attr("font-family", "sans-serif")
+                                    .attr("font-size", 10)
+                                    .attr("text-anchor", "middle")
+                                    .attr("y", -18);
+
+                function moved(event) {
+                    event.preventDefault();
+                    const pointer = d3.pointer(event, this);
+                    const xm = x.invert(pointer[0]);
+                    const ym = y.invert(pointer[1]);
+                    const i = d3.bisectCenter(dates, xm);
+                    const s = d3.least(variables, variable => Math.abs(stats[len - i - 1][variable.param] - ym));
+                    if (s !== undefined) {
+                        const val = stats[len - i - 1][s.param];
+                        dot.attr("fill", s.color);
+                        dot.attr("transform", `translate(${x(dates[i])},${y(val)})`);
+                        valueLabel.text(val);
+                        timeLabel.text(multiFormat(dates[i]));
+                    }
+                }
+
+                function entered() {
+                    dot.attr("display", null);
+                }
+
+                function left() {
+                    dot.attr("display", "none");
+                }
+            }
+
+            const svg = d3.create("svg")
+                .attr("viewBox", [0, 0, width, height]);
+
+            variables.forEach((variable, i) => {
+                let line = d3.line()
+                    .defined(d => !isNaN(d[variable.param]))
+                    .x(d => x(d.datetime))
+                    .y(d => y(d[variable.param]));
+                let path = svg.append("path")
+                    .datum(stats)
+                    .attr("fill", "none")
+                    .attr("stroke", variable.color)
+                    .attr("stroke-width", 1.5)
+                    .attr("stroke-linejoin", "round")
+                    .attr("stroke-linecap", "round")
+                    .attr("d", line);
+                if (variable.attrs) {
+                    for (let attr in variable.attrs) {
+                        path = path.attr(attr, variable.attrs[attr]);
+                    }
+                }
+            });
+
+            svg.append("g")
+                .call(xAxis);
+
+            svg.append("g")
+                .call(yAxis);
+
+            svg.call(hover);
+
+            d3.select(id).append(() => svg.node());
+        }
+
+        Promise.all([d3.json("{{ url_for("main.stats_vac", _external=True) }}"), d3.json("{{ url_for("main.stats_subs", _external=True) }}")]).then(values => {
+            let vaccination_stats = values[0];
+            vaccination_stats.forEach(d => {
+                d.datetime = Date.parse(d.datetime)
+            });
+            let subscription_stats = values[1];
+            subscription_stats.forEach(d => {
+                d.datetime = Date.parse(d.datetime);
+                d.unique = d.unique_emails + d.unique_push_subs;
+                d.shared = d.shared_emails + d.shared_push_subs;
+                d.total_ids = d.spot_subs_top_id + d.group_subs_top_id;
+                d.spot_subs_total = d.spot_subs_confirmed + d.spot_subs_unconfirmed;
+                d.group_subs_total = d.group_subs_confirmed + d.group_subs_unconfirmed;
+            });
+
+            plotLine(vaccination_stats, [
+                {
+                    param: "total_free_online_spots",
+                    max_offset: 0,
+                    color: "#0d6efd",
+                    label: "História dostupných očkovacích termínov"
+                }
+            ], "#vaccination-stats-spots");
+
+            plotLine(subscription_stats, [
+                {
+                    param: "total_ids",
+                    max_offset: 0,
+                    color: "#343c4b",
+                    attrs: {
+                        "stroke-dasharray": "4"
+                    },
+                    label: "Odbery (aj zrušené)"
+                },
+                {
+                    param: "unique",
+                    max_offset: 0,
+                    color: "#0d6efd",
+                    label: "Odbery notifikácií"
+                },
+                {
+                    param: "spot_subs_total",
+                    max_offset: 0,
+                    color: "#3e7d00",
+                    label: "Odbery notifikácií o voľných miestach"
+                },
+                {
+                    param: "group_subs_total",
+                    max_offset: 0,
+                    color: "#ac1313",
+                    label: "Odbery notifikácii o novej skupine"
+                },
+                {
+                    param: "shared",
+                    max_offset: 0,
+                    color: "#7a21c1",
+                    label: "Zdieľané odbery"
+                }
+            ], "#subscription-stats-both");
+        });
+    </script>
 
 {% endblock %}

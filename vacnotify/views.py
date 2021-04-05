@@ -82,11 +82,20 @@ def substitute_lists():
 
 @main.route("/stats")
 def stats():
-    vaccination_stats = VaccinationStats.query.filter(VaccinationStats.datetime > (datetime.now() - timedelta(days=7))).order_by(VaccinationStats.id.desc()).all()
-    subscription_stats = SubscriptionStats.query.filter(SubscriptionStats.datetime > (datetime.now() - timedelta(days=7))).order_by(SubscriptionStats.id.desc()).all()
+    vaccination_stats = VaccinationStats.query.order_by(VaccinationStats.id.desc()).first()
+    subscription_stats = SubscriptionStats.query.order_by(SubscriptionStats.id.desc()).first()
 
-    return render_template("stats.html.jinja2", vaccination_stats=vaccination_stats, subscription_stats=subscription_stats,
-                           current_vstats=vaccination_stats[0], current_sstats=subscription_stats[0])
+    return render_template("stats.html.jinja2", current_vstats=vaccination_stats, current_sstats=subscription_stats)
+
+
+@main.route("/stats/vac.json")
+def stats_vac():
+    return jsonify(VaccinationStats.query.order_by(VaccinationStats.id.desc()).all())
+
+
+@main.route("/stats/subs.json")
+def stats_subs():
+    return jsonify(SubscriptionStats.query.order_by(SubscriptionStats.id.desc()).all())
 
 
 @main.route("/groups/subscribe", methods=["GET", "POST"])

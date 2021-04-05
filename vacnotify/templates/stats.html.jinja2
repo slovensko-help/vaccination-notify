@@ -135,17 +135,6 @@
         </div>
     </div>
     <script type="text/javascript">
-        let vaccination_stats = JSON.parse('{{ vaccination_stats | tojson }}');
-        vaccination_stats.forEach(d => {d.datetime = Date.parse(d.datetime)});
-        let subscription_stats = JSON.parse('{{ subscription_stats | tojson }}');
-        subscription_stats.forEach(d => {
-            d.datetime = Date.parse(d.datetime);
-            d.unique = d.unique_emails + d.unique_push_subs;
-            d.shared = d.shared_emails + d.shared_push_subs;
-            d.total_ids = d.spot_subs_top_id + d.group_subs_top_id;
-            d.spot_subs_total = d.spot_subs_confirmed + d.spot_subs_unconfirmed;
-            d.group_subs_total = d.group_subs_confirmed + d.group_subs_unconfirmed;
-        });
         const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
         const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
         const bp = Math.max(vw, vh);
@@ -327,139 +316,154 @@
             d3.select(id).append(() => svg.node());
         }
 
-        plotLine(vaccination_stats, [
-            {
-                param: "total_free_online_spots",
-                max_offset: 0,
-                color: "#0d6efd",
-                label: "Dostupné očkovacie termíny"
-            }
-        ], "#vaccination-stats-spots");
+        Promise.all([d3.json("{{ url_for("main.stats_vac", _external=True) }}"), d3.json("{{ url_for("main.stats_subs", _external=True) }}")]).then(values => {
+            let vaccination_stats = values[0];
+            vaccination_stats.forEach(d => {d.datetime = Date.parse(d.datetime)});
+            let subscription_stats = values[1];
+            subscription_stats.forEach(d => {
+                d.datetime = Date.parse(d.datetime);
+                d.unique = d.unique_emails + d.unique_push_subs;
+                d.shared = d.shared_emails + d.shared_push_subs;
+                d.total_ids = d.spot_subs_top_id + d.group_subs_top_id;
+                d.spot_subs_total = d.spot_subs_confirmed + d.spot_subs_unconfirmed;
+                d.group_subs_total = d.group_subs_confirmed + d.group_subs_unconfirmed;
+            });
 
-        plotLine(vaccination_stats, [
-            {
-                param: "online_places",
-                max_offset: 0,
-                color: "#0d6efd",
-                label: "Očkovacie miesta"
-            },
-            {
-                param: "online_cities",
-                max_offset: 0,
-                color: "#ac1313",
-                label: "Mestá s očkovacím miestom"
-            }
-        ], "#vaccination-stats-places");
+            plotLine(vaccination_stats, [
+                {
+                    param: "total_free_online_spots",
+                    max_offset: 0,
+                    color: "#0d6efd",
+                    label: "Dostupné očkovacie termíny"
+                }
+            ], "#vaccination-stats-spots");
 
-        plotLine(subscription_stats, [
-            {
-                param: "total_ids",
-                max_offset: 0,
-                color: "#343c4b",
-                attrs: {
-                    "stroke-dasharray": "4"
+            plotLine(vaccination_stats, [
+                {
+                    param: "online_places",
+                    max_offset: 0,
+                    color: "#0d6efd",
+                    label: "Očkovacie miesta"
                 },
-                label: "Odbery (aj zrušené)"
-            },
-            {
-                param: "unique",
-                max_offset: 0,
-                color: "#0d6efd",
-                label: "Odbery notifikácií"
-            },
-            {
-                param: "spot_subs_total",
-                max_offset: 0,
-                color: "#3e7d00",
-                label: "Odbery notifikácií o voľných miestach"
-            },
-            {
-                param: "group_subs_total",
-                max_offset: 0,
-                color: "#ac1313",
-                label: "Odbery notifikácii o novej skupine"
-            },
-            {
-                param: "shared",
-                max_offset: 0,
-                color: "#7a21c1",
-                label: "Zdieľané odbery"
-            }
-        ], "#subscription-stats-both");
+                {
+                    param: "online_cities",
+                    max_offset: 0,
+                    color: "#ac1313",
+                    label: "Mestá s očkovacím miestom"
+                }
+            ], "#vaccination-stats-places");
 
-        plotLine(subscription_stats, [
-            {
-                param: "spot_subs_top_id",
-                max_offset: 0,
-                color: "#343c4b",
-                attrs: {
-                    "stroke-dasharray": "4"
+            plotLine(subscription_stats, [
+                {
+                    param: "total_ids",
+                    max_offset: 0,
+                    color: "#343c4b",
+                    attrs: {
+                        "stroke-dasharray": "4"
+                    },
+                    label: "Odbery (aj zrušené)"
                 },
-                label: "Odbery (aj zrušené)"
-            },
-            {
-                param: "spot_subs_total",
-                max_offset: 0,
-                color: "#0d6efd",
-                label: "Všetky"
-            },
-            {
-                param: "spot_subs_confirmed",
-                max_offset: 0,
-                color: "#3e7d00",
-                label: "Potvrdené"
-            },
-            {
-                param: "spot_subs_unconfirmed",
-                max_offset: 0,
-                color: "#ac1313",
-                label: "Nepotvrdené"
-            }
-        ], "#subscription-stats-spots");
-
-        plotLine(subscription_stats, [
-            {
-                param: "group_subs_top_id",
-                max_offset: 0,
-                color: "#343c4b",
-                attrs: {
-                    "stroke-dasharray": "4"
+                {
+                    param: "unique",
+                    max_offset: 0,
+                    color: "#0d6efd",
+                    label: "Odbery notifikácií"
                 },
-                label: "Odbery (aj zrušené)"
-            },
-            {
-                param: "group_subs_total",
-                max_offset: 0,
-                color: "#0d6efd",
-                label: "Všetky"
-            },
-            {
-                param: "group_subs_confirmed",
-                max_offset: 0,
-                color: "#3e7d00",
-                label: "Potvrdené"
-            },
-            {
-                param: "group_subs_unconfirmed",
-                max_offset: 0,
-                color: "#ac1313",
-                label: "Nepotvrdené"
-            }
-        ], "#subscription-stats-groups");
+                {
+                    param: "spot_subs_total",
+                    max_offset: 0,
+                    color: "#3e7d00",
+                    label: "Odbery notifikácií o voľných miestach"
+                },
+                {
+                    param: "group_subs_total",
+                    max_offset: 0,
+                    color: "#ac1313",
+                    label: "Odbery notifikácii o novej skupine"
+                },
+                {
+                    param: "shared",
+                    max_offset: 0,
+                    color: "#7a21c1",
+                    label: "Zdieľané odbery"
+                }
+            ], "#subscription-stats-both");
 
-        plotLine(subscription_stats, [
-            {
-                param: "unique_emails",
-                max_offset: 0,
-                color: "#0d6efd",
-                label: "Email"
-            },
-            {
-                param: "unique_push_subs",
-                max_offset: 0,
-                color: "#3e7d00",
-                label: "Push notifikácie"
-            }
-        ], "#subscription-stats-types");
+            plotLine(subscription_stats, [
+                {
+                    param: "spot_subs_top_id",
+                    max_offset: 0,
+                    color: "#343c4b",
+                    attrs: {
+                        "stroke-dasharray": "4"
+                    },
+                    label: "Odbery (aj zrušené)"
+                },
+                {
+                    param: "spot_subs_total",
+                    max_offset: 0,
+                    color: "#0d6efd",
+                    label: "Všetky"
+                },
+                {
+                    param: "spot_subs_confirmed",
+                    max_offset: 0,
+                    color: "#3e7d00",
+                    label: "Potvrdené"
+                },
+                {
+                    param: "spot_subs_unconfirmed",
+                    max_offset: 0,
+                    color: "#ac1313",
+                    label: "Nepotvrdené"
+                }
+            ], "#subscription-stats-spots");
+
+            plotLine(subscription_stats, [
+                {
+                    param: "group_subs_top_id",
+                    max_offset: 0,
+                    color: "#343c4b",
+                    attrs: {
+                        "stroke-dasharray": "4"
+                    },
+                    label: "Odbery (aj zrušené)"
+                },
+                {
+                    param: "group_subs_total",
+                    max_offset: 0,
+                    color: "#0d6efd",
+                    label: "Všetky"
+                },
+                {
+                    param: "group_subs_confirmed",
+                    max_offset: 0,
+                    color: "#3e7d00",
+                    label: "Potvrdené"
+                },
+                {
+                    param: "group_subs_unconfirmed",
+                    max_offset: 0,
+                    color: "#ac1313",
+                    label: "Nepotvrdené"
+                }
+            ], "#subscription-stats-groups");
+
+            plotLine(subscription_stats, [
+                {
+                    param: "unique_emails",
+                    max_offset: 0,
+                    color: "#0d6efd",
+                    label: "Email"
+                },
+                {
+                    param: "unique_push_subs",
+                    max_offset: 0,
+                    color: "#3e7d00",
+                    label: "Push notifikácie"
+                }
+            ], "#subscription-stats-types");
+        });
+
     </script>
 {% endblock %}
