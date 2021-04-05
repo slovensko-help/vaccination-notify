@@ -89,11 +89,13 @@ def stats():
 
 
 @main.route("/stats/vac.json")
+@cache.cached(timeout=60*15)
 def stats_vac():
     return jsonify(VaccinationStats.query.order_by(VaccinationStats.id.desc()).all())
 
 
 @main.route("/stats/subs.json")
+@cache.cached(timeout=60*15)
 def stats_subs():
     return jsonify(SubscriptionStats.query.order_by(SubscriptionStats.id.desc()).all())
 
